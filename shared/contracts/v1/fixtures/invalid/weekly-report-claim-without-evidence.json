@@ -1,0 +1,21 @@
+{
+  "contract_version": "1.0",
+  "period_start": "2026-09-01",
+  "period_end": "2026-09-07",
+  "spontaneous_speaking_count": 1,
+  "prompted_speaking_count": 0,
+  "new_spontaneous_words": ["milk"],
+  "transferred_words": [],
+  "current_focus": "主动表达食物需求",
+  "scaffold_trend": "L3 → L2",
+  "evidence": [],
+  "mastery_updates": [
+    {
+      "expression": "milk",
+      "from": "PROMPTED_OUTPUT",
+      "to": "SPONTANEOUS_OUTPUT",
+      "evidence_ids": ["missing-evidence"]
+    }
+  ],
+  "mock": true
+}

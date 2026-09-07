@@ -1,0 +1,65 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/dashboard-snapshot.schema.json",
+  "title": "DashboardSnapshot",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "generated_at", "greeting", "pet", "highlight", "task", "metrics", "device", "mock"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "generated_at": {"type": "string", "pattern": "Z$"},
+    "greeting": {"type": "string", "minLength": 1, "maxLength": 80},
+    "pet": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "mood", "accessibility_label"],
+      "properties": {
+        "name": {"type": "string", "minLength": 1},
+        "mood": {"enum": ["calm", "curious", "delighted", "resting"]},
+        "accessibility_label": {"type": "string", "minLength": 1}
+      }
+    },
+    "highlight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["text", "evidence_id"],
+      "properties": {
+        "text": {"type": "string", "minLength": 1, "maxLength": 160},
+        "evidence_id": {"type": ["string", "null"]}
+      }
+    },
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["title", "subtitle", "progress", "action_label"],
+      "properties": {
+        "title": {"type": "string", "minLength": 1, "maxLength": 100},
+        "subtitle": {"type": "string", "maxLength": 160},
+        "progress": {"type": "number", "minimum": 0, "maximum": 1},
+        "action_label": {"type": "string", "minLength": 1, "maxLength": 40}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["spontaneous_speaking_count", "unprompted_output_count", "new_words"],
+      "properties": {
+        "spontaneous_speaking_count": {"type": "integer", "minimum": 0},
+        "unprompted_output_count": {"type": "integer", "minimum": 0},
+        "new_words": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    },
+    "device": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["device_id", "name", "online", "battery_percent"],
+      "properties": {
+        "device_id": {"type": "string", "minLength": 1},
+        "name": {"type": "string", "minLength": 1},
+        "online": {"type": "boolean"},
+        "battery_percent": {"type": ["integer", "null"], "minimum": 0, "maximum": 100}
+      }
+    },
+    "mock": {"type": "boolean"}
+  }
+}

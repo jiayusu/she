@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/device-command.schema.json",
+  "title": "DeviceCommand",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["command_id", "contract_version", "device_id", "session_id", "sequence", "issued_at", "expires_at", "type", "payload"],
+  "properties": {
+    "command_id": {"type": "string", "pattern": "^[0-9a-fA-F-]{36}$"},
+    "contract_version": {"const": "1.0"},
+    "device_id": {"type": "string", "minLength": 1, "maxLength": 80},
+    "session_id": {"type": "string", "minLength": 1, "maxLength": 80},
+    "sequence": {"type": "integer", "minimum": 0},
+    "issued_at": {"type": "string", "pattern": "Z$"},
+    "expires_at": {"type": "string", "pattern": "Z$"},
+    "type": {"enum": ["speak", "led", "capture", "stop_capture", "fallback"]},
+    "payload": {"type": "object"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"type": {"enum": ["speak", "fallback"]}}},
+      "then": {"properties": {"payload": {"type": "object", "additionalProperties": false, "required": ["text"], "properties": {"text": {"type": "string", "minLength": 1, "maxLength": 280}, "voice_id": {"type": "string", "maxLength": 80}}}}}
+    },
+    {
+      "if": {"properties": {"type": {"const": "led"}}},
+      "then": {"properties": {"payload": {"type": "object", "additionalProperties": false, "required": ["color", "pattern"], "properties": {"color": {"type": "string", "pattern": "^#[0-9A-Fa-f]{6}$"}, "pattern": {"enum": ["steady", "pulse", "off"]}}}}}
+    },
+    {
+      "if": {"properties": {"type": {"const": "capture"}}},
+      "then": {"properties": {"payload": {"type": "object", "additionalProperties": false, "required": ["window_ms"], "properties": {"window_ms": {"type": "integer", "minimum": 100, "maximum": 5000}}}}}
+    },
+    {
+      "if": {"properties": {"type": {"const": "stop_capture"}}},
+      "then": {"properties": {"payload": {"type": "object", "additionalProperties": false, "maxProperties": 0}}}
+    }
+  ]
+}

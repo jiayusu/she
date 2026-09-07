@@ -1,0 +1,29 @@
+{
+  "contract_version": "1.0",
+  "period_start": "2026-09-01",
+  "period_end": "2026-09-07",
+  "spontaneous_speaking_count": 32,
+  "prompted_speaking_count": 17,
+  "new_spontaneous_words": ["milk", "open"],
+  "transferred_words": ["apple"],
+  "current_focus": "主动表达食物需求",
+  "scaffold_trend": "L3 → L2",
+  "evidence": [
+    {
+      "evidence_id": "evidence-milk-001",
+      "kind": "spontaneous",
+      "expression": "milk",
+      "occurred_at": "2026-09-07T09:30:00Z",
+      "confidence": 0.96
+    }
+  ],
+  "mastery_updates": [
+    {
+      "expression": "milk",
+      "from": "PROMPTED_OUTPUT",
+      "to": "SPONTANEOUS_OUTPUT",
+      "evidence_ids": ["evidence-milk-001"]
+    }
+  ],
+  "mock": true
+}

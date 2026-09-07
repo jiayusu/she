@@ -1,0 +1,10 @@
+{
+  "contract_version": "1.0",
+  "session_budget_seconds": 600,
+  "preferred_topics": ["animals", "food"],
+  "avoid_topics": [],
+  "next_day_context": "明天去动物园",
+  "teaching_pressure": "low",
+  "updated_at": "2026-09-07T10:00:00Z",
+  "mock": true
+}

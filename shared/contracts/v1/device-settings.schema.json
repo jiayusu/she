@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/device-settings.schema.json",
+  "title": "DeviceSettings",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "device_id", "name", "online", "battery_percent", "volume", "led_enabled", "camera_enabled", "raw_audio_upload_enabled", "firmware_version", "last_seen_at", "mock"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "device_id": {"type": "string", "minLength": 1},
+    "name": {"type": "string", "minLength": 1, "maxLength": 60},
+    "online": {"type": "boolean"},
+    "battery_percent": {"type": ["integer", "null"], "minimum": 0, "maximum": 100},
+    "volume": {"type": "integer", "minimum": 0, "maximum": 100},
+    "led_enabled": {"type": "boolean"},
+    "camera_enabled": {"type": "boolean"},
+    "raw_audio_upload_enabled": {"type": "boolean"},
+    "firmware_version": {"type": "string", "minLength": 1},
+    "last_seen_at": {"type": ["string", "null"], "pattern": "Z$"},
+    "mock": {"type": "boolean"}
+  }
+}

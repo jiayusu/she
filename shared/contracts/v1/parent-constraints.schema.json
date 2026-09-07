@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/parent-constraints.schema.json",
+  "title": "ParentConstraints",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "session_budget_seconds", "preferred_topics", "avoid_topics", "next_day_context", "teaching_pressure", "updated_at", "mock"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "session_budget_seconds": {"type": "integer", "minimum": 60, "maximum": 3600},
+    "preferred_topics": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 40}},
+    "avoid_topics": {"type": "array", "maxItems": 10, "uniqueItems": true, "items": {"type": "string", "minLength": 1, "maxLength": 40}},
+    "next_day_context": {"type": "string", "maxLength": 200},
+    "teaching_pressure": {"enum": ["low", "normal"]},
+    "updated_at": {"type": "string", "pattern": "Z$"},
+    "mock": {"type": "boolean"}
+  }
+}

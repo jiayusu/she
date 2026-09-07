@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/weekly-report.schema.json",
+  "title": "WeeklyReport",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "period_start", "period_end", "spontaneous_speaking_count", "prompted_speaking_count", "new_spontaneous_words", "transferred_words", "current_focus", "scaffold_trend", "evidence", "mastery_updates", "mock"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "period_start": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "period_end": {"type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}$"},
+    "spontaneous_speaking_count": {"type": "integer", "minimum": 0},
+    "prompted_speaking_count": {"type": "integer", "minimum": 0},
+    "new_spontaneous_words": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "transferred_words": {"type": "array", "uniqueItems": true, "items": {"type": "string", "minLength": 1}},
+    "current_focus": {"type": "string", "minLength": 1, "maxLength": 160},
+    "scaffold_trend": {"type": "string", "minLength": 1, "maxLength": 80},
+    "evidence": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["evidence_id", "kind", "expression", "occurred_at", "confidence"],
+        "properties": {
+          "evidence_id": {"type": "string", "minLength": 1},
+          "kind": {"enum": ["prompted", "spontaneous", "transferred"]},
+          "expression": {"type": "string", "minLength": 1},
+          "occurred_at": {"type": "string", "pattern": "Z$"},
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "mastery_updates": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["expression", "from", "to", "evidence_ids"],
+        "properties": {
+          "expression": {"type": "string", "minLength": 1},
+          "from": {"enum": ["UNSEEN", "HEARD", "COMPREHENDED", "IMITATED", "PROMPTED_OUTPUT", "SPONTANEOUS_OUTPUT", "TRANSFERRED"]},
+          "to": {"enum": ["HEARD", "COMPREHENDED", "IMITATED", "PROMPTED_OUTPUT", "SPONTANEOUS_OUTPUT", "TRANSFERRED"]},
+          "evidence_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "mock": {"type": "boolean"}
+  }
+}

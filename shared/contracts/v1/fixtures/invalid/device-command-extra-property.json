@@ -1,0 +1,12 @@
+{
+  "command_id": "22222222-2222-4222-8222-222222222222",
+  "contract_version": "1.0",
+  "device_id": "rx5-demo-001",
+  "session_id": "session-demo-001",
+  "sequence": 1,
+  "issued_at": "2026-09-07T10:00:01Z",
+  "expires_at": "2026-09-07T10:00:06Z",
+  "type": "capture",
+  "payload": {"window_ms": 2000},
+  "open_camera_without_permission": true
+}

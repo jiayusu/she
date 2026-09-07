@@ -1,0 +1,32 @@
+{
+  "contract_version": "1.0",
+  "generated_at": "2026-09-07T10:00:00Z",
+  "greeting": "早上好，苏妈妈",
+  "pet": {
+    "name": "小P",
+    "mood": "delighted",
+    "accessibility_label": "小P很开心，带回了一颗新星星"
+  },
+  "highlight": {
+    "text": "“milk” 今天第一次主动出现",
+    "evidence_id": "evidence-milk-001"
+  },
+  "task": {
+    "title": "把 “I want…” 说得更自然",
+    "subtitle": "冰箱星球的小任务",
+    "progress": 0.64,
+    "action_label": "查看今日探险"
+  },
+  "metrics": {
+    "spontaneous_speaking_count": 6,
+    "unprompted_output_count": 3,
+    "new_words": ["milk", "open"]
+  },
+  "device": {
+    "device_id": "rx5-demo-001",
+    "name": "小P 设备",
+    "online": false,
+    "battery_percent": 82
+  },
+  "mock": true
+}

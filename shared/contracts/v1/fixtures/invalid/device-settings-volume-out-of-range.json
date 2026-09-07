@@ -1,0 +1,14 @@
+{
+  "contract_version": "1.0",
+  "device_id": "rx5-demo-001",
+  "name": "小P 设备",
+  "online": false,
+  "battery_percent": 82,
+  "volume": 180,
+  "led_enabled": true,
+  "camera_enabled": true,
+  "raw_audio_upload_enabled": false,
+  "firmware_version": "demo-0.1.0",
+  "last_seen_at": "2026-09-07T10:00:00Z",
+  "mock": true
+}
