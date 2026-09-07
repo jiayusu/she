@@ -9,6 +9,7 @@
 **/.mypy_cache/
 **/.ruff_cache/
 **/.venv/
+**/*.egg-info/
 
 **/DerivedData/
 **/.build/

@@ -1,0 +1,23 @@
+[Unit]
+Description=SHE RDK X5 device runtime
+After=network-online.target
+Wants=network-online.target
+ConditionPathExists=/etc/she-device.enabled
+
+[Service]
+Type=simple
+User=she-device
+Group=she-device
+WorkingDirectory=/opt/she
+EnvironmentFile=-/etc/she-device.env
+ExecStart=/opt/she/venv/bin/she-device capabilities
+Restart=on-failure
+RestartSec=5
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/she-device
+
+[Install]
+WantedBy=multi-user.target
