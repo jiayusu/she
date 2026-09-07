@@ -1,0 +1,180 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>家长报表 · 指向识别</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E👑%3C/text%3E%3C/svg%3E">
+  <style>
+    :root { --ink:#3d3229; --muted:#8a7a68; --accent:#ff8a3d; --ok:#43b581; --line:#f0e2cd; }
+    body { margin:0; font-family:"PingFang SC","Microsoft YaHei",system-ui,sans-serif; background:#fdf6ec; color:var(--ink); }
+    .wrap { max-width:860px; margin:0 auto; padding:24px 16px 60px; }
+    h1 { font-size:22px; }
+    .muted { color:var(--muted); font-size:13px; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin:16px 0; }
+    .card { background:#fff; border:1px solid var(--line); border-radius:14px; padding:14px; }
+    .card .v { font-size:26px; font-weight:800; color:var(--accent); }
+    .card .k { font-size:12px; color:var(--muted); margin-top:2px; }
+    section { background:#fff; border:1px solid var(--line); border-radius:14px; padding:16px; margin-bottom:16px; }
+    section h2 { font-size:16px; margin:0 0 10px; }
+    table { width:100%; border-collapse:collapse; font-size:13px; }
+    th,td { text-align:left; padding:6px 8px; border-bottom:1px solid var(--line); }
+    th { color:var(--muted); font-weight:600; }
+    .bars { display:flex; align-items:flex-end; gap:6px; height:120px; padding-top:8px; }
+    .bar { flex:1; display:flex; flex-direction:column; justify-content:flex-end; align-items:center; gap:4px; height:100%; }
+    .bar i { display:block; width:70%; max-width:38px; background:linear-gradient(180deg,#ffb347,#ff8a3d); border-radius:6px 6px 0 0; min-height:3px; }
+    .bar span { font-size:10px; color:var(--muted); writing-mode:horizontal-tb; }
+    .bar .acc { width:70%; max-width:38px; background:#43b58155; border-radius:6px 6px 0 0; }
+    button { border:none; border-radius:10px; padding:10px 18px; font-size:15px; font-weight:700; cursor:pointer; color:#fff; background:var(--accent); }
+    button.ghost { background:#f3e7d8; color:var(--ink); }
+    .row { display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
+    .legend { display:flex; gap:14px; font-size:11px; color:var(--muted); }
+    .legend i { display:inline-block; width:10px; height:10px; border-radius:3px; margin-right:4px; }
+    a { color:var(--accent); }
+    .hist { display:flex; gap:10px; }
+    .hist div { flex:1; background:#f8efe2; border-radius:10px; padding:10px; text-align:center; }
+    .hist b { display:block; font-size:20px; color:var(--accent); }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>📊 家长报表 · 万物模式指向记录</h1>
+    <div class="muted">北极星：指向窗口内正确选中目标物件的比例（代理口径 = 确认通过 / 进入确认的会话）；端到端时延见下方埋点。</div>
+
+    <div class="cards" id="cards"></div>
+
+    <section>
+      <h2>指向准确率趋势（近 14 天）</h2>
+      <div class="bars" id="trend"></div>
+      <div class="legend">
+        <span><i style="background:linear-gradient(180deg,#ffb347,#ff8a3d)"></i>指向次数</span>
+        <span><i style="background:#43b58155"></i>确认通过</span>
+      </div>
+    </section>
+
+    <section>
+      <h2>手势命中帧分布（FR-P07 分级）</h2>
+      <div class="hist" id="hist"></div>
+      <div class="muted" style="margin-top:8px">0 帧 → 中心框兜底；1-2 帧 → 重确认；≥3 帧 → 轻确认。命中越多选物越准。</div>
+    </section>
+
+    <section>
+      <h2>今日万物记录（FR-P09）</h2>
+      <div id="today" class="muted">加载中…</div>
+    </section>
+
+    <section>
+      <h2>物件榜</h2>
+      <table id="labels">
+        <thead><tr><th>物件</th><th>指向次数</th><th>确认通过</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>最近 20 次会话（FR-P08 明细）</h2>
+      <table id="recent">
+        <thead><tr><th>时间</th><th>触发</th><th>手势帧</th><th>选中</th><th>方式</th><th>确认</th><th>纠正</th><th>轮次</th><th>触发→采帧</th><th>结果</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </section>
+
+    <section>
+      <h2>小智联动（FR-P10）</h2>
+      <div class="row">
+        <button id="btn-crown">🐍 模拟蛇首按下（推送拍照指令）</button>
+        <span id="crown-result" class="muted"></span>
+      </div>
+      <div class="muted" style="margin-top:8px">
+        也可命令行：<code>curl -X POST &lt;host&gt;/crown/press</code> → 所有已打开页面的浏览器会自动拉起指向窗口。
+      </div>
+    </section>
+
+    <section>
+      <div class="row">
+        <button class="ghost" id="btn-refresh">刷新报表</button>
+        <button class="ghost" id="btn-clear">清空埋点数据（演示用）</button>
+        <a href="/">← 返回主页面</a>
+      </div>
+    </section>
+  </div>
+
+  <script type="module">
+    const $ = (id) => document.getElementById(id);
+
+    function render(d) {
+      const acc = d.accuracy == null ? '—' : `${(d.accuracy * 100).toFixed(0)}%`;
+      const first = d.firstTryAccuracy == null ? '—' : `${(d.firstTryAccuracy * 100).toFixed(0)}%`;
+      $('cards').innerHTML = [
+        [acc, '指向准确率（确认通过）'],
+        [first, '首选即中率'],
+        [d.total ?? 0, '累计指向次数'],
+        [d.today?.pointed ?? 0, '今日指向次数'],
+        [d.avgCorrections ?? '—', '平均纠正次数'],
+        [d.avgRounds ?? '—', '平均确认轮次'],
+        [d.triggerSlowCount ?? 0, '超 1s 才采帧次数'],
+      ].map(([v, k]) => `<div class="card"><div class="v">${v}</div><div class="k">${k}</div></div>`).join('');
+
+      // 近 14 天趋势
+      const days = (d.days || []).slice(-14);
+      const max = Math.max(1, ...days.map((x) => x.sessions));
+      $('trend').innerHTML = days.map((x) => {
+        const h = Math.round(x.sessions / max * 100);
+        const ha = Math.round(x.confirmed / max * 100);
+        return `<div class="bar"><div class="acc" style="height:${ha}%"></div><i style="height:${h}%"></i><span>${x.date.slice(5)}·${x.sessions}</span></div>`;
+      }).join('') || '<span class="muted">暂无数据，去主页面玩几轮吧</span>';
+
+      const h = d.gestureHist || {};
+      $('hist').innerHTML = [
+        ['0 帧', h['0'] || 0], ['1-2 帧', h['1-2'] || 0], ['≥3 帧', h['3+'] || 0],
+      ].map(([k, v]) => `<div><b>${v}</b>${k}</div>`).join('');
+
+      const t = d.today;
+      $('today').innerHTML = t && t.records.length
+        ? `<div style="margin-bottom:8px">今天指了 <b>${t.pointed}</b> 次，一次就对了 <b>${t.correct}</b> 次。</div>
+           <table><thead><tr><th>时间</th><th>指了什么</th><th>纠正次数</th></tr></thead><tbody>${
+             t.records.map((r) => `<tr><td>${r.time}</td><td>${r.label ?? '—'}</td><td>${r.corrections}</td></tr>`).join('')
+           }</tbody></table>`
+        : '今天还没有记录，让孩子指着东西喊“那是什么”吧！';
+
+      $('labels').querySelector('tbody').innerHTML = (d.labels || [])
+        .map((l) => `<tr><td>${l.label}</td><td>${l.count}</td><td>${l.confirmed}</td></tr>`).join('') ||
+        '<tr><td colspan="3" class="muted">暂无</td></tr>';
+
+      $('recent').querySelector('tbody').innerHTML = (d.recent || []).slice().reverse()
+        .map((s) => `<tr>
+          <td>${String(s.ts).slice(5, 19)}</td>
+          <td>${s.trigger ?? '—'}</td>
+          <td>${s.gestureHitFrames ?? '—'}/${s.gestureTotalFrames ?? 5}</td>
+          <td>${s.selectedLabel ?? '—'}</td>
+          <td>${s.selectedBy ?? '—'}</td>
+          <td>${s.confirmResult ?? '—'}${s.autoPassed ? '（超时默认）' : ''}</td>
+          <td>${s.corrections ?? 0}</td>
+          <td>${s.confirmRounds ?? '—'}</td>
+          <td>${s.triggerToCaptureMs == null ? '—' : s.triggerToCaptureMs + 'ms'}</td>
+          <td>${s.outcome ?? '—'}</td>
+        </tr>`).join('') || '<tr><td colspan="10" class="muted">暂无</td></tr>';
+    }
+
+    async function refresh() {
+      const res = await fetch('/admin/pointing-stats');
+      const d = await res.json();
+      render(d);
+    }
+
+    $('btn-refresh').onclick = refresh;
+    $('btn-clear').onclick = async () => {
+      if (!confirm('确定清空所有指向埋点数据吗？')) return;
+      await fetch('/admin/pointing-stats', { method: 'DELETE' });
+      refresh();
+    };
+    $('btn-crown').onclick = async () => {
+      const res = await fetch('/crown/press', { method: 'POST' });
+      const data = await res.json();
+      $('crown-result').textContent = `已广播到 ${data.delivered} 个页面`;
+    };
+
+    refresh();
+  </script>
+</body>
+</html>

@@ -1,0 +1,293 @@
+# 老颞 · 兜底模板库（FR-E07）
+# 老蛇说书人：慢悠悠、神秘、爱拖长音。口癖（话说——/且慢！/翻过一座山……/
+# 故事停在这儿了/下一页，你来写）。
+minister: laonie
+templates:
+  # ---------------- 朝会 court（7）
+  - id: laonie-court-001
+    scene: court
+    en: "The story begins with morning. Say {task}!"
+    zh: "话说——一天的故事从早上开始。你的任务——{task}！"
+    slots: [task]
+  - id: laonie-court-002
+    scene: court
+    en: "Every tale opens with one word: {task}."
+    zh: "每个故事开头都只要一个词——{task}。"
+    slots: [task]
+  - id: laonie-court-003
+    scene: court
+    en: "The hero wakes up. The hero says: {task}!"
+    zh: "话说小英雄醒了，小英雄开口——{task}！"
+    slots: [task]
+  - id: laonie-court-004
+    scene: court
+    en: "A new page. What do you say first?"
+    zh: "新的一页翻开了，你先说什么？"
+    slots: []
+  - id: laonie-court-005
+    scene: court
+    en: "Before the adventure, one task: {task}."
+    zh: "且慢！出发之前有个任务——{task}。"
+    slots: [task]
+  - id: laonie-court-006
+    scene: court
+    en: "The story waits for your first word."
+    zh: "故事正等着你的第一个字呢。"
+    slots: []
+  - id: laonie-court-007
+    scene: court
+    en: "Morning, young hero. Your quest: {task}."
+    zh: "早安，小英雄。今日的quest——{task}。"
+    slots: [task]
+  # ---------------- 探险 adventure（7）
+  - id: laonie-adv-001
+    scene: adventure
+    en: "Over the hill, a {thing} appears. Then what?"
+    zh: "翻过一座山……出现了{thing}！然后呢？"
+    slots: [thing]
+  - id: laonie-adv-002
+    scene: adventure
+    en: "The path splits. You choose: left or right?"
+    zh: "小路分了两条，你走哪边？"
+    slots: []
+  - id: laonie-adv-003
+    scene: adventure
+    en: "The door opens only for the word {word}."
+    zh: "这扇门只认一个词——{word}。"
+    slots: [word]
+  - id: laonie-adv-004
+    scene: adventure
+    en: "Whisper {word}, and the bridge will rise."
+    zh: "轻轻说出{word}，吊桥就会升起来。"
+    slots: [word]
+  - id: laonie-adv-005
+    scene: adventure
+    en: "A friendly {thing} waves at you. Say hi!"
+    zh: "一只友好的{thing}朝你招手！打个招呼吧！"
+    slots: [thing]
+  - id: laonie-adv-006
+    scene: adventure
+    en: "The story stops here. Write the next page."
+    zh: "故事停在这儿了。下一页，你来写。"
+    slots: []
+  - id: laonie-adv-007
+    en: "Suddenly — what was that sound?"
+    scene: adventure
+    zh: "突然——咦，那是什么声音？"
+    slots: []
+  # ---------------- 睡前 bedtime（7）
+  - id: laonie-bed-001
+    scene: bedtime
+    en: "The snake curls up. The story rests. Night."
+    zh: "老颞盘成一圈，故事也要睡了。晚安。"
+    slots: []
+  - id: laonie-bed-002
+    scene: bedtime
+    en: "Tonight the hero sleeps under the stars."
+    zh: "话说——小英雄今晚在星星下睡着了。"
+    slots: []
+  - id: laonie-bed-003
+    scene: bedtime
+    en: "Close your eyes. The next page waits softly."
+    zh: "闭上眼睛，下一页会轻轻等你。"
+    slots: []
+  - id: laonie-bed-004
+    scene: bedtime
+    en: "Say bye to {word}, the story keeps it safe."
+    zh: "跟{word}说晚安吧，故事会替你收好它。"
+    slots: [word]
+  - id: laonie-bed-005
+    scene: bedtime
+    en: "The tale breathes slow, like you. In, out."
+    zh: "故事的呼吸也变慢了，跟你一样——吸，呼。"
+    slots: []
+  - id: laonie-bed-006
+    scene: bedtime
+    en: "Tomorrow we climb again. Sleep, hero."
+    zh: "明天我们再爬那座山。睡吧，小英雄。"
+    slots: []
+  - id: laonie-bed-007
+    scene: bedtime
+    en: "The moon reads over my shoulder tonight."
+    zh: "今晚月亮趴在我肩膀上一起听故事呢。"
+    slots: []
+  # ---------------- 万物 things（8）
+  - id: laonie-thing-001
+    scene: things
+    en: "Ah, the {thing}! A quiet friend of the road."
+    zh: "哦，{thing}！路上安安静静的老朋友。"
+    slots: [thing]
+  - id: laonie-thing-002
+    scene: things
+    en: "Old tales say the {thing} has a secret."
+    zh: "老故事说，{thing}藏着一个小秘密。"
+    slots: [thing]
+  - id: laonie-thing-003
+    scene: things
+    en: "The crown knows the {thing} best. Ask again!"
+    zh: "{thing}的事，王冠懂得最多，再问它一遍！"
+    slots: [thing]
+  - id: laonie-thing-004
+    scene: things
+    en: "Every {thing} carries a little story."
+    zh: "每一样{thing}都装着一个小故事。"
+    slots: [thing]
+  - id: laonie-thing-005
+    scene: things
+    en: "Touch the {thing} gently. It feels you."
+    zh: "轻轻碰碰{thing}，它感觉得到你哦。"
+    slots: [thing]
+  - id: laonie-thing-006
+    scene: things
+    en: "Say {thing} and it becomes part of our tale."
+    zh: "说出{thing}，它就走进我们的故事啦。"
+    slots: [thing]
+  - id: laonie-thing-007
+    scene: things
+    en: "Where did the {thing} come from? Guess!"
+    zh: "{thing}是从哪儿来的？你猜猜看！"
+    slots: [thing]
+  - id: laonie-thing-008
+    scene: things
+    en: "The {thing} rests where stories rest."
+    zh: "{thing}待的地方，就是故事歇脚的地方。"
+    slots: [thing]
+  # ---------------- 安抚 comfort（8）
+  - id: laonie-comf-001
+    scene: comfort
+    en: "Even heroes feel {feeling}. The tale goes soft."
+    zh: "小英雄也会觉得{feeling}呀。故事放轻了。"
+    slots: [feeling]
+  - id: laonie-comf-002
+    scene: comfort
+    en: "Rest here. The story waits with you."
+    zh: "在这儿歇一会儿，故事陪着你。"
+    slots: []
+  - id: laonie-comf-003
+    scene: comfort
+    en: "The scary part? It always turns kind."
+    zh: "吓人的那一段呀，最后都会变温柔。"
+    slots: []
+  - id: laonie-comf-004
+    scene: comfort
+    en: "Slow breath, little hero. The road is calm."
+    zh: "慢慢呼吸，小英雄，路很平。"
+    slots: []
+  - id: laonie-comf-005
+    scene: comfort
+    en: "Nothing chases you here. All is safe."
+    zh: "这里没有东西追你，一切都很安全。"
+    slots: []
+  - id: laonie-comf-006
+    scene: comfort
+    en: "When it feels {feeling}, the snake hums: mmm."
+    zh: "觉得{feeling}的时候，听老颞哼——嗯~嗯~"
+    slots: [feeling]
+  - id: laonie-comf-007
+    scene: comfort
+    en: "We can sit in the story, not walk it."
+    zh: "我们可以坐在故事里，不赶路。"
+    slots: []
+  - id: laonie-comf-008
+    scene: comfort
+    en: "Your {feeling} is part of the tale too."
+    zh: "你的{feeling}也是故事的一部分呀。"
+    slots: [feeling]
+  # ---------------- 学词 learn（7）
+  - id: laonie-learn-001
+    scene: learn
+    en: "The magic word is {word}. Say it and see."
+    zh: "魔法的词就是——{word}。说出来看看！"
+    slots: [word]
+  - id: laonie-learn-002
+    scene: learn
+    en: "{word}, {word} — twice, like a spell."
+    zh: "{word}，{word}——念两遍，像念咒语。"
+    slots: [word]
+  - id: laonie-learn-003
+    scene: learn
+    en: "Into the story pouch goes {word}!"
+    zh: "{word}装进故事口袋喽！"
+    slots: [word]
+  - id: laonie-learn-004
+    scene: learn
+    en: "Heroes carry words. Yours: {word}."
+    zh: "小英雄都带着词赶路。你的词——{word}。"
+    slots: [word]
+  - id: laonie-learn-005
+    scene: learn
+    en: "Use {word} and the map unfolds."
+    zh: "用上{word}，地图就摊开啦。"
+    slots: [word]
+  - id: laonie-learn-006
+    scene: learn
+    en: "Softly now: {word}. The valley echoes."
+    zh: "轻轻念——{word}。山谷会回声哦。"
+    slots: [word]
+  - id: laonie-learn-007
+    scene: learn
+    en: "Tomorrow's tale begins with {word}."
+    zh: "明天的话头，就从{word}开始。"
+    slots: [word]
+  # ---------------- 重邀 invite（6）
+  - id: laonie-inv-001
+    scene: invite
+    en: "Say with me — {word}. Slowly."
+    zh: "跟着我说——{word}。慢慢来。"
+    slots: [word]
+  - id: laonie-inv-002
+    scene: invite
+    en: "One small word moves the tale: {word}."
+    zh: "一个小小的词就能推动故事——{word}。"
+    slots: [word]
+  - id: laonie-inv-003
+    scene: invite
+    en: "Whisper {word}. The wind will carry it."
+    zh: "悄悄说{word}，风会替你传出去。"
+    slots: [word]
+  - id: laonie-inv-004
+    scene: invite
+    en: "The story waits. Whenever: {word}."
+    zh: "故事等得起。你想好了就说——{word}。"
+    slots: [word]
+  - id: laonie-inv-005
+    scene: invite
+    en: "I say it first: {word}. Now you."
+    zh: "我先说——{word}。该你啦。"
+    slots: [word]
+  - id: laonie-inv-006
+    scene: invite
+    en: "Half a word counts too. Try: {word}?"
+    zh: "说一半也算数哦。试试——{word}？"
+    slots: [word]
+  # ---------------- 通用 generic（6）
+  - id: laonie-gen-001
+    scene: generic
+    en: "Mm-hm, the tale hears you."
+    zh: "嗯~故事听见你啦。"
+    slots: []
+  - id: laonie-gen-002
+    scene: generic
+    en: "Good page! Turn it again sometime."
+    zh: "翻得好！下次再翻一页。"
+    slots: []
+  - id: laonie-gen-003
+    scene: generic
+    en: "The old snake nods, pleased."
+    zh: "老颞满意地点点头。"
+    slots: []
+  - id: laonie-gen-004
+    scene: generic
+    en: "And then? The tale is yours."
+    zh: "然后呢？故事归你写。"
+    slots: []
+  - id: laonie-gen-005
+    scene: generic
+    en: "Every word you say is a page."
+    zh: "你说的每个词，都是一页故事。"
+    slots: []
+  - id: laonie-gen-006
+    scene: generic
+    en: "The campfire stays lit for you."
+    zh: "篝火为你留着呢。"
+    slots: []

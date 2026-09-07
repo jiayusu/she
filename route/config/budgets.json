@@ -1,0 +1,10 @@
+{
+  "comment": "上下文注入包 token 预算(FR-G03):闲聊 500 / 任务 1500 / 小P 澄清 300。预算不足时按优先级 裁剪最近对话轮。",
+  "default_budget": 1500,
+  "by_intent": {
+    "chitchat": 500,
+    "clarify": 300
+  },
+  "max_recent_turns": 10,
+  "max_today_words": 30
+}

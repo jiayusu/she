@@ -1,0 +1,16 @@
+{
+  "comment": "显著性打标规则(FR-G05,杏杏规则)。score 达到 whitelist_threshold 记入'永不遗忘'白名单;白名单只增不删,人工可增不可减。",
+  "whitelist_threshold": 0.8,
+  "base_score": 0.3,
+  "rules": {
+    "milestone": 0.9,
+    "first_behavior": 0.7,
+    "emotion_peak": 0.8
+  },
+  "emotion_peak_abs_valence": 0.85,
+  "prune": {
+    "comment": "FR-G07 遗忘剪枝:低显著性记忆按 EMA 式置信度衰减,score*exp(-lambda*闲置天数) 低于 floor 且不在白名单则删除。",
+    "decay_lambda_per_day": 0.05,
+    "floor": 0.05
+  }
+}

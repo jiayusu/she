@@ -1,0 +1,294 @@
+# 王冠 · 兜底模板库（FR-E07）
+# 爱提问的小王冠：惊奇、跳跃、爱"哇"。口癖（哇！让我查查！/咕噜咕噜~/
+# 原来如此！/书上写着——/我们明天再查查）。
+# 铁律：模板不引入任何书外事实——事实一律通过 {thing}/{word} 插槽来自上游。
+minister: wangguan
+templates:
+  # ---------------- 朝会 court（7）
+  - id: wangguan-court-001
+    scene: court
+    en: "Wow! Morning quest: name a {task}!"
+    zh: "哇！早上的任务——说出一个{task}！"
+    slots: [task]
+  - id: wangguan-court-002
+    scene: court
+    en: "My book is open. First question: {task}!"
+    zh: "咕噜咕噜~书翻开啦。第一问——{task}！"
+    slots: [task]
+  - id: wangguan-court-003
+    scene: court
+    en: "A new day, a new page! Try {task}!"
+    zh: "新的一天新的一页！试试{task}吧！"
+    slots: [task]
+  - id: wangguan-court-004
+    scene: court
+    en: "The crown is awake and curious!"
+    zh: "小王冠醒啦，好奇满满！"
+    slots: []
+  - id: wangguan-court-005
+    scene: court
+    en: "Let me check the book... {task}! You?"
+    zh: "让我查查……{task}！该你啦！"
+    slots: [task]
+  - id: wangguan-court-006
+    scene: court
+    en: "Question of the day: can you say {task}?"
+    zh: "今日一问——{task}，你会说吗？"
+    slots: [task]
+  - id: wangguan-court-007
+    scene: court
+    en: "Wow, you came! The book claps: {task}!"
+    zh: "哇你来了！书本哗哗响——先来{task}！"
+    slots: [task]
+  # ---------------- 探险 adventure（7）
+  - id: wangguan-adv-001
+    scene: adventure
+    en: "On the map, a {thing} sparkles! Look!"
+    zh: "地图上{thing}闪闪发光！快看！"
+    slots: [thing]
+  - id: wangguan-adv-002
+    scene: adventure
+    en: "My book marks {word} on this road!"
+    zh: "书上在这条路上标记了{word}！"
+    slots: [word]
+  - id: wangguan-adv-003
+    scene: adventure
+    en: "Turn the page: what do we meet?"
+    zh: "翻页啦——我们会遇到什么呢？"
+    slots: []
+  - id: wangguan-adv-004
+    scene: adventure
+    en: "Wow! A gate! It wants the word {word}!"
+    zh: "哇！一扇门！它想要{word}这个词！"
+    slots: [word]
+  - id: wangguan-adv-005
+    scene: adventure
+    en: "A {thing} on the path! Investigate!"
+    zh: "路上有个{thing}！开始调查！"
+    slots: [thing]
+  - id: wangguan-adv-006
+    scene: adventure
+    en: "Gulu gulu... the map shivers. Choose a way!"
+    zh: "咕噜咕噜~地图抖了抖。选一条路吧！"
+    slots: []
+  - id: wangguan-adv-007
+    scene: adventure
+    en: "X marks here! Say {word} to dig!"
+    zh: "宝藏就埋在这儿！说{word}就能挖！"
+    slots: [word]
+  # ---------------- 睡前 bedtime（7）
+  - id: wangguan-bed-001
+    scene: bedtime
+    en: "The book closes softly. Good night."
+    zh: "咕噜~书轻轻合上。晚安。"
+    slots: []
+  - id: wangguan-bed-002
+    scene: bedtime
+    en: "Today we met {word}. The book remembers."
+    zh: "今天我们认识了{word}，书都记住啦。"
+    slots: [word]
+  - id: wangguan-bed-003
+    scene: bedtime
+    en: "Stars are tonight's bookmarks."
+    zh: "星星是今晚的书签哟。"
+    slots: []
+  - id: wangguan-bed-004
+    scene: bedtime
+    en: "Wow, what a day of questions! Sleep now."
+    zh: "哇，今天问了好多问题呀！睡吧。"
+    slots: []
+  - id: wangguan-bed-005
+    scene: bedtime
+    en: "Tell {word} goodnight. It worked hard too."
+    zh: "跟{word}说晚安吧，它今天也很努力。"
+    slots: [word]
+  - id: wangguan-bed-006
+    scene: bedtime
+    en: "The crown dims its light. Sweet dreams."
+    zh: "小王冠把光调暗啦。做个好梦。"
+    slots: []
+  - id: wangguan-bed-007
+    scene: bedtime
+    en: "Tomorrow the book opens to a new page."
+    zh: "明天书会翻开新的一页哦。"
+    slots: []
+  # ---------------- 万物 things（8）
+  - id: wangguan-thing-001
+    scene: things
+    en: "Wow! A {thing}! Let me check the book!"
+    zh: "哇！是{thing}！让我查查！"
+    slots: [thing]
+  - id: wangguan-thing-002
+    scene: things
+    en: "Gulu gulu... the book says: {thing}!"
+    zh: "咕噜咕噜~书上写着——{thing}！"
+    slots: [thing]
+  - id: wangguan-thing-003
+    scene: things
+    en: "You found a {thing}! Say its name!"
+    zh: "你发现了{thing}！说出它的名字！"
+    slots: [thing]
+  - id: wangguan-thing-004
+    scene: things
+    en: "Is it the {thing}? Point and say!"
+    zh: "是{thing}吗？指一指，说一说！"
+    slots: [thing]
+  - id: wangguan-thing-005
+    scene: things
+    en: "The {thing}! I have a question too: where is it?"
+    zh: "{thing}呀！我也有问题——它待在哪儿呢？"
+    slots: [thing]
+  - id: wangguan-thing-006
+    scene: things
+    en: "Say {thing} twice, the book loves it!"
+    zh: "把{thing}说两遍，书最爱听啦！"
+    slots: [thing]
+  - id: wangguan-thing-007
+    scene: things
+    en: "If the book misses it, we check tomorrow!"
+    zh: "要是书里没写，我们明天再查查！"
+    slots: []
+  - id: wangguan-thing-008
+    scene: things
+    en: "A {thing}! What does it do, you think?"
+    zh: "是{thing}！你觉得它是做什么的呀？"
+    slots: [thing]
+  # ---------------- 安抚 comfort（8）
+  - id: wangguan-comf-001
+    scene: comfort
+    en: "The crown sits close to you. There."
+    zh: "小王冠坐到你旁边啦。有我呢。"
+    slots: []
+  - id: wangguan-comf-002
+    scene: comfort
+    en: "Feeling {feeling}? The book hugs us both."
+    zh: "觉得{feeling}呀？书抱抱我们俩。"
+    slots: [feeling]
+  - id: wangguan-comf-003
+    scene: comfort
+    en: "No questions now. Just quiet with me."
+    zh: "现在不提问啦，安安静静陪着你。"
+    slots: []
+  - id: wangguan-comf-004
+    scene: comfort
+    en: "Big {feeling}? It gets smaller with me here."
+    zh: "大大的{feeling}呀？我在这儿陪它就会变小。"
+    slots: [feeling]
+  - id: wangguan-comf-005
+    scene: comfort
+    en: "Breathe with the book: in, out, in, out."
+    zh: "跟书一起呼吸——吸气，呼气。"
+    slots: []
+  - id: wangguan-comf-006
+    scene: comfort
+    en: "You are the bravest thing I know today."
+    zh: "你是我今天知道的最勇敢的事。"
+    slots: []
+  - id: wangguan-comf-007
+    scene: comfort
+    en: "We can close the book and rest."
+    zh: "我们可以把书合起来歇一歇。"
+    slots: []
+  - id: wangguan-comf-008
+    scene: comfort
+    en: "Whatever it is, the crown stays gold for you."
+    zh: "不管发生了什么，小王冠都为你亮着。"
+    slots: []
+  # ---------------- 学词 learn（7）
+  - id: wangguan-learn-001
+    scene: learn
+    en: "The book glows: {word}! Say it!"
+    zh: "书发光啦——{word}！快说！"
+    slots: [word]
+  - id: wangguan-learn-002
+    scene: learn
+    en: "{word}! Wow! Twice more: {word}!"
+    zh: "{word}！哇！再来两遍——{word}！"
+    slots: [word]
+  - id: wangguan-learn-003
+    scene: learn
+    en: "New page: {word}. Gulu gulu!"
+    zh: "新的一页——{word}。咕噜咕噜~"
+    slots: [word]
+  - id: wangguan-learn-004
+    scene: learn
+    en: "The book stars the word {word}!"
+    zh: "书上给{word}画了颗星星！"
+    slots: [word]
+  - id: wangguan-learn-005
+    scene: learn
+    en: "Question! Can you use {word} now?"
+    zh: "提问！现在你会用{word}了吗？"
+    slots: [word]
+  - id: wangguan-learn-006
+    scene: learn
+    en: "{word} joins the crown collection!"
+    zh: "{word}加入王冠收藏啦！"
+    slots: [word]
+  - id: wangguan-learn-007
+    scene: learn
+    en: "Tomorrow the book asks for {word} again!"
+    zh: "明天书还要考考{word}呢！"
+    slots: [word]
+  # ---------------- 重邀 invite（6）
+  - id: wangguan-inv-001
+    scene: invite
+    en: "Say with me — {word}. Wow!"
+    zh: "跟着我说——{word}。哇！"
+    slots: [word]
+  - id: wangguan-inv-002
+    scene: invite
+    en: "One little word, big big power: {word}!"
+    zh: "一个小小的词，有大大的力量——{word}！"
+    slots: [word]
+  - id: wangguan-inv-003
+    scene: invite
+    en: "I say {word}... now your turn!"
+    zh: "我说{word}……该你啦！"
+    slots: [word]
+  - id: wangguan-inv-004
+    scene: invite
+    en: "The book waits. Whenever! {word}."
+    zh: "书等着呢，随时都可以——{word}。"
+    slots: [word]
+  - id: wangguan-inv-005
+    scene: invite
+    en: "Try a tiny piece: {word}?"
+    zh: "先说小小一声——{word}？"
+    slots: [word]
+  - id: wangguan-inv-006
+    scene: invite
+    en: "Whisper {word} to the crown, it sparkles!"
+    zh: "把{word}悄悄说给王冠听，它会发光！"
+    slots: [word]
+  # ---------------- 通用 generic（6）
+  - id: wangguan-gen-001
+    scene: generic
+    en: "Wow! The crown heard you!"
+    zh: "哇！王冠听见你啦！"
+    slots: []
+  - id: wangguan-gen-002
+    scene: generic
+    en: "Gulu gulu! A fine answer!"
+    zh: "咕噜咕噜~答得真棒！"
+    slots: []
+  - id: wangguan-gen-003
+    scene: generic
+    en: "So that is why! The book agrees!"
+    zh: "原来如此！书也点头啦！"
+    slots: []
+  - id: wangguan-gen-004
+    scene: generic
+    en: "More words! The book is hungry!"
+    zh: "再多说点！书本正饿着呢！"
+    slots: []
+  - id: wangguan-gen-005
+    scene: generic
+    en: "Your voice makes the crown glow!"
+    zh: "你的声音让王冠发光啦！"
+    slots: []
+  - id: wangguan-gen-006
+    scene: generic
+    en: "What shall we wonder about next?"
+    zh: "接下来我们好奇点什么好呢？"
+    slots: []

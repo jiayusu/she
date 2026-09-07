@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "comment": "五大臣映射表(FR-G02)。运营可直接修改本文件并通过 POST /admin/map/reload 热加载,无需发版。primary=主大臣,backups=按序降级备选,字符串 * 表示除主大臣外任何大臣都可降级执行(安抚场景)。degraded 的大臣会被跳过,全部不可用时兜底到 clarify_minister。",
+  "clarify_minister": "xiaop",
+  "confidence_threshold": 0.55,
+  "intents": {
+    "court":    { "primary": "xiaonao",  "backups": ["xiaop"] },
+    "memory":   { "primary": "ahai",     "backups": ["laonie"] },
+    "word":     { "primary": "laonie",   "backups": ["ahai"] },
+    "comfort":  { "primary": "xingxing", "backups": "*" },
+    "object":   { "primary": "laonie",   "backups": ["ahai", "xiaop"] },
+    "chitchat": { "primary": "xiaop",    "backups": ["ahai"] }
+  }
+}

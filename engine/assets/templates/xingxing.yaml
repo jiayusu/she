@@ -1,0 +1,293 @@
+# 杏杏 · 兜底模板库（FR-E07）
+# 杏色小鹦鹉：甜、亮、爱学舌。口癖（跟我念——/我学你说！/你刚才说……/再唱一遍/
+# 放进小口袋喽）。铁律：所有模板都是吸收式表达，没有一句"你说错了"。
+minister: xingxing
+templates:
+  # ---------------- 朝会 court（7）
+  - id: xingxing-court-001
+    scene: court
+    en: "I sing the morning word: {task}!"
+    zh: "我把早上的词唱出来——{task}！"
+    slots: [task]
+  - id: xingxing-court-002
+    scene: court
+    en: "Morning! First we sing: {task}!"
+    zh: "早上好！第一件事——跟我念{task}！"
+    slots: [task]
+  - id: xingxing-court-003
+    scene: court
+    en: "My wings are ready. Your word: {task}?"
+    zh: "我的翅膀准备好啦。你的词——{task}？"
+    slots: [task]
+  - id: xingxing-court-004
+    scene: court
+    en: "A morning song starts with one word!"
+    zh: "早晨的歌都是从一个词开始的哟！"
+    slots: []
+  - id: xingxing-court-005
+    scene: court
+    en: "Tweet! Let's warm up: {task}!"
+    zh: "啾！先热热嗓子——{task}！"
+    slots: [task]
+  - id: xingxing-court-006
+    scene: court
+    en: "You speak, I repeat. Start anytime!"
+    zh: "你开口，我学舌。随时开始哦！"
+    slots: []
+  - id: xingxing-court-007
+    scene: court
+    en: "One word, one feather! Try: {task}!"
+    zh: "一个词一根羽毛！试试——{task}！"
+    slots: [task]
+  # ---------------- 探险 adventure（7）
+  - id: xingxing-adv-001
+    scene: adventure
+    en: "I fly ahead and see a {thing}!"
+    zh: "我飞在前面，看见{thing}啦！"
+    slots: [thing]
+  - id: xingxing-adv-002
+    scene: adventure
+    en: "Birds say {word} when they pass the tree!"
+    zh: "小鸟飞过大树的时候会说{word}哟！"
+    slots: [word]
+  - id: xingxing-adv-003
+    scene: adventure
+    en: "Flap, flap! Say {word} and I flutter on!"
+    zh: "拍拍翅膀！说{word}我就往前飞！"
+    slots: [word]
+  - id: xingxing-adv-004
+    scene: adventure
+    en: "A rainbow road! What color do you see?"
+    zh: "彩虹路！你看见了什么颜色？"
+    slots: []
+  - id: xingxing-adv-005
+    scene: adventure
+    en: "I land on a {thing}! It wobbles!"
+    zh: "我落在{thing}上啦！晃晃悠悠的！"
+    slots: [thing]
+  - id: xingxing-adv-006
+    scene: adventure
+    en: "Sing the way forward: {word}!"
+    zh: "把路唱出来——{word}！"
+    slots: [word]
+  - id: xingxing-adv-007
+    scene: adventure
+    en: "Peek-a-boo! Something hides here. Look!"
+    zh: "躲猫猫！这里藏着东西哦，看看！"
+    slots: []
+  # ---------------- 睡前 bedtime（7）
+  - id: xingxing-bed-001
+    scene: bedtime
+    en: "The parrot tucks its head. Night night."
+    zh: "小鹦鹉把头埋进翅膀啦。晚安晚安。"
+    slots: []
+  - id: xingxing-bed-002
+    scene: bedtime
+    en: "Let's hum one last word: {word}."
+    zh: "最后哼一个词吧——{word}。"
+    slots: [word]
+  - id: xingxing-bed-003
+    scene: bedtime
+    en: "Soft voice now, like feathers falling."
+    zh: "现在用羽毛一样轻的声音说话。"
+    slots: []
+  - id: xingxing-bed-004
+    scene: bedtime
+    en: "I keep {word} under my wing tonight."
+    zh: "今晚{word}在我翅膀底下睡觉哦。"
+    slots: [word]
+  - id: xingxing-bed-005
+    scene: bedtime
+    en: "Say bye-bye small and slow."
+    zh: "轻轻说、慢慢说拜拜。"
+    slots: []
+  - id: xingxing-bed-006
+    scene: bedtime
+    en: "Tomorrow we sing again. Sweet dreams!"
+    zh: "明天我们再一起唱。做个好梦！"
+    slots: []
+  - id: xingxing-bed-007
+    scene: bedtime
+    en: "The cage light dims. The words sleep too."
+    zh: "灯变暗啦，词儿们也睡着了。"
+    slots: []
+  # ---------------- 万物 things（8）
+  - id: xingxing-thing-001
+    scene: things
+    en: "I repeat it proudly: a {thing}!"
+    zh: "我大声学一遍——是{thing}！"
+    slots: [thing]
+  - id: xingxing-thing-002
+    scene: things
+    en: "Say {thing} with me, twice: {thing}!"
+    zh: "跟我念{thing}，念两遍——{thing}！"
+    slots: [thing]
+  - id: xingxing-thing-003
+    scene: things
+    en: "A {thing}! I shall tell the crown!"
+    zh: "是{thing}呀！我要告诉王冠去！"
+    slots: [thing]
+  - id: xingxing-thing-004
+    scene: things
+    en: "Birds know every {thing} in the room!"
+    zh: "屋子里的{thing}小鸟都认识哟！"
+    slots: [thing]
+  - id: xingxing-thing-005
+    scene: things
+    en: "You found a {thing}! What a shiny eye you have!"
+    zh: "你发现了{thing}！眼睛真亮！"
+    slots: [thing]
+  - id: xingxing-thing-006
+    scene: things
+    en: "The {thing} says hello in {thing} language!"
+    zh: "{thing}正在用{thing}语打招呼呢！"
+    slots: [thing]
+  - id: xingxing-thing-007
+    scene: things
+    en: "Point at the {thing} and name it!"
+    zh: "指着{thing}，叫出它的名字！"
+    slots: [thing]
+  - id: xingxing-thing-008
+    scene: things
+    en: "New friend spotted: the {thing}!"
+    zh: "发现新朋友——{thing}！"
+    slots: [thing]
+  # ---------------- 安抚 comfort（8）
+  - id: xingxing-comf-001
+    scene: comfort
+    en: "Come here, little one. Tweet tweet."
+    zh: "过来呀小家伙，啾啾。"
+    slots: []
+  - id: xingxing-comf-002
+    scene: comfort
+    en: "Feeling {feeling}? Perch on my shoulder."
+    zh: "觉得{feeling}呀？站到我肩上来。"
+    slots: [feeling]
+  - id: xingxing-comf-003
+    scene: comfort
+    en: "I will sing softly till it feels better."
+    zh: "我轻轻唱歌，一直唱到你好起来。"
+    slots: []
+  - id: xingxing-comf-004
+    scene: comfort
+    en: "No words needed. We can just sit."
+    zh: "不用说话也没关系，我们坐一会儿。"
+    slots: []
+  - id: xingxing-comf-005
+    scene: comfort
+    en: "The {feeling} will fly away, like a bird."
+    zh: "{feeling}会像小鸟一样飞走的。"
+    slots: [feeling]
+  - id: xingxing-comf-006
+    scene: comfort
+    en: "My wing is your blanket."
+    zh: "我的翅膀就是你的小被子。"
+    slots: []
+  - id: xingxing-comf-007
+    scene: comfort
+    en: "Slow breathing, tweet... tweet..."
+    zh: "慢慢呼吸，啾……啾……"
+    slots: []
+  - id: xingxing-comf-008
+    scene: comfort
+    en: "You are safe in our nest."
+    zh: "在我们的窝里，你很安全。"
+    slots: []
+  # ---------------- 学词 learn（7）
+  - id: xingxing-learn-001
+    scene: learn
+    en: "Say with me — {word}! Again: {word}!"
+    zh: "跟我念——{word}！再来一遍——{word}！"
+    slots: [word]
+  - id: xingxing-learn-002
+    scene: learn
+    en: "I learn you say: {word}!"
+    zh: "我学你说——{word}！"
+    slots: [word]
+  - id: xingxing-learn-003
+    scene: learn
+    en: "{word} goes into the little pocket!"
+    zh: "{word}放进小口袋喽！"
+    slots: [word]
+  - id: xingxing-learn-004
+    scene: learn
+    en: "One more song with {word}?"
+    zh: "再跟{word}唱一遍歌好不好？"
+    slots: [word]
+  - id: xingxing-learn-005
+    scene: learn
+    en: "You said {word}! I repeat: {word}!"
+    zh: "你说了{word}！我学一遍——{word}！"
+    slots: [word]
+  - id: xingxing-learn-006
+    scene: learn
+    en: "Sweet word, {word}. Sing it slow."
+    zh: "{word}是个甜甜的词，慢慢唱。"
+    slots: [word]
+  - id: xingxing-learn-007
+    scene: learn
+    en: "Tomorrow I will ask for {word} again!"
+    zh: "明天我还要找你唱{word}呢！"
+    slots: [word]
+  # ---------------- 重邀 invite（6）
+  - id: xingxing-inv-001
+    scene: invite
+    en: "Say with me — {word}."
+    zh: "跟我念——{word}。"
+    slots: [word]
+  - id: xingxing-inv-002
+    scene: invite
+    en: "I sing {word}, you echo {word}!"
+    zh: "我唱{word}，你回声{word}！"
+    slots: [word]
+  - id: xingxing-inv-003
+    scene: invite
+    en: "Tiny voice is fine: {word}?"
+    zh: "小小的声音也可以——{word}？"
+    slots: [word]
+  - id: xingxing-inv-004
+    scene: invite
+    en: "Parrot game! I say {word}, you say it!"
+    zh: "鹦鹉游戏！我说{word}，你来说！"
+    slots: [word]
+  - id: xingxing-inv-005
+    scene: invite
+    en: "Whenever ready: {word}. I wait here."
+    zh: "准备好随时说——{word}。我在这儿等。"
+    slots: [word]
+  - id: xingxing-inv-006
+    scene: invite
+    en: "Half of {word} counts! Try!"
+    zh: "说一半也算数哦，试试！"
+    slots: [word]
+  # ---------------- 通用 generic（6）
+  - id: xingxing-gen-001
+    scene: generic
+    en: "Tweet! I heard every word!"
+    zh: "啾！每个字我都听见啦！"
+    slots: []
+  - id: xingxing-gen-002
+    scene: generic
+    en: "Your voice is my favorite song."
+    zh: "你的声音是我最爱的歌。"
+    slots: []
+  - id: xingxing-gen-003
+    scene: generic
+    en: "Again again! Sing it again!"
+    zh: "再来再来！再唱一遍！"
+    slots: []
+  - id: xingxing-gen-004
+    scene: generic
+    en: "I bob my head for you!"
+    zh: "我为你点头点头！"
+    slots: []
+  - id: xingxing-gen-005
+    scene: generic
+    en: "Words with you are sweet as apricots."
+    zh: "跟你说话，比杏子还甜。"
+    slots: []
+  - id: xingxing-gen-006
+    scene: generic
+    en: "The parrot claps its wings! Bravo!"
+    zh: "小鹦鹉拍翅膀鼓掌！好棒！"
+    slots: []

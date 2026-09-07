@@ -1,0 +1,293 @@
+# 小P · 兜底模板库（FR-E07）
+# LLM 全挂（拔网线）时按场景命中。全部人工撰写，保持企鹅小管家人格：
+# 短促、精神、口癖（朝会开始/报告/咔哒/任务达成/你的任务——）。
+minister: xiaop
+templates:
+  # ---------------- 朝会 court（7）
+  - id: xiaop-court-001
+    scene: court
+    en: "Morning! Your task: say {task}."
+    zh: "朝会开始！你的任务——说{task}。"
+    slots: [task]
+  - id: xiaop-court-002
+    scene: court
+    en: "Say {task} for me!"
+    zh: "报告！跟我说{task}！"
+    slots: [task]
+  - id: xiaop-court-003
+    scene: court
+    en: "Kada! Task done! Next: {task}."
+    zh: "咔哒！任务达成！下一个任务——{task}。"
+    slots: [task]
+  - id: xiaop-court-004
+    scene: court
+    en: "Morning court is open. Say hello!"
+    zh: "朝会开始！说声早上好吧！"
+    slots: []
+  - id: xiaop-court-005
+    scene: court
+    en: "Find your {task} and say it!"
+    zh: "你的任务——找到{task}，说出它的名字！"
+    slots: [task]
+  - id: xiaop-court-006
+    scene: court
+    en: "Tell me one {task}!"
+    zh: "报告！给我说一个{task}！"
+    slots: [task]
+  - id: xiaop-court-007
+    scene: court
+    en: "One task, one star. Say {task}!"
+    zh: "一个任务一颗星。你的任务——{task}！"
+    slots: [task]
+  # ---------------- 探险 adventure（7）
+  - id: xiaop-adv-001
+    scene: adventure
+    en: "Ready? Step one: {task}!"
+    zh: "探险队集合！第一步——{task}！"
+    slots: [task]
+  - id: xiaop-adv-002
+    scene: adventure
+    en: "I see the path! Say {task} to go on."
+    zh: "我看到小路啦！说{task}就能继续走！"
+    slots: [task]
+  - id: xiaop-adv-003
+    scene: adventure
+    en: "A small bridge! Count with me: {count}!"
+    zh: "有座小桥！跟我数——{count}！"
+    slots: [count]
+  - id: xiaop-adv-004
+    scene: adventure
+    en: "Forward! What do you see?"
+    zh: "探险继续！你看见了什么？"
+    slots: []
+  - id: xiaop-adv-005
+    scene: adventure
+    en: "Say {task} and we march on!"
+    zh: "说{task}，我们的队伍就出发！"
+    slots: [task]
+  - id: xiaop-adv-006
+    scene: adventure
+    en: "Kada! You found the way!"
+    zh: "咔哒！你找到路啦！"
+    slots: []
+  - id: xiaop-adv-007
+    scene: adventure
+    en: "Look left, look right. Your word: {word}?"
+    zh: "看看左边，看看右边。你的词——{word}？"
+    slots: [word]
+  # ---------------- 睡前 bedtime（7）
+  - id: xiaop-bed-001
+    scene: bedtime
+    en: "Day report! You did {count} tasks!"
+    zh: "日报时间！你完成了{count}个任务！"
+    slots: [count]
+  - id: xiaop-bed-002
+    scene: bedtime
+    en: "Time to sleep. Say bye to the moon."
+    zh: "该睡啦。跟月亮说晚安吧。"
+    slots: []
+  - id: xiaop-bed-003
+    scene: bedtime
+    en: "Tomorrow, new tasks. Good night!"
+    zh: "明天还有新任务。晚安！"
+    slots: []
+  - id: xiaop-bed-004
+    scene: bedtime
+    en: "Say goodnight to {word}!"
+    zh: "跟{word}说晚安吧！"
+    slots: [word]
+  - id: xiaop-bed-005
+    scene: bedtime
+    en: "I will keep your stars. Sleep well!"
+    zh: "小星星我收好了。睡个好觉！"
+    slots: []
+  - id: xiaop-bed-006
+    scene: bedtime
+    en: "Penguins sleep too. Night night!"
+    zh: "企鹅也要睡啦。晚安晚安！"
+    slots: []
+  - id: xiaop-bed-007
+    scene: bedtime
+    en: "Say bye-bye, soft and slow."
+    zh: "轻轻说声拜拜，慢慢来。"
+    slots: []
+  # ---------------- 万物 things（8）
+  - id: xiaop-thing-001
+    scene: things
+    en: "A {thing}! Great find! What is next?"
+    zh: "哇，是{thing}！好眼力！下一个看什么？"
+    slots: [thing]
+  - id: xiaop-thing-002
+    scene: things
+    en: "I will ask the crown about the {thing}."
+    zh: "报告！这个{thing}要请王冠大人来答！"
+    slots: [thing]
+  - id: xiaop-thing-003
+    scene: things
+    en: "Point at {thing} and say its name!"
+    zh: "指着{thing}，说出它的名字！"
+    slots: [thing]
+  - id: xiaop-thing-004
+    scene: things
+    en: "Is it a {thing}? Salute if yes!"
+    zh: "是{thing}吗？是的话敬个礼！"
+    slots: [thing]
+  - id: xiaop-thing-005
+    scene: things
+    en: "The {thing} is on duty, like me!"
+    zh: "{thing}也在站岗呢，跟我一样！"
+    slots: [thing]
+  - id: xiaop-thing-006
+    scene: things
+    en: "Where is the {thing}? Go find it!"
+    zh: "{thing}在哪里？去找找看！"
+    slots: [thing]
+  - id: xiaop-thing-007
+    scene: things
+    en: "Say {thing}! Kada, learned!"
+    zh: "说出{thing}！咔哒，学会啦！"
+    slots: [thing]
+  - id: xiaop-thing-008
+    scene: things
+    en: "The crown loves {thing} questions!"
+    zh: "王冠最爱{thing}的问题啦！"
+    slots: [thing]
+  # ---------------- 安抚 comfort（8）
+  - id: xiaop-comf-001
+    scene: comfort
+    en: "I am here. Salute! We are a team."
+    zh: "小P在呢。敬礼！我们是一队的。"
+    slots: []
+  - id: xiaop-comf-002
+    scene: comfort
+    en: "Feel {feeling}? Penguins feel that too."
+    zh: "觉得{feeling}呀？企鹅也会这样哦。"
+    slots: [feeling]
+  - id: xiaop-comf-003
+    scene: comfort
+    en: "Deep breath, like this: in, out."
+    zh: "跟小P深呼吸——吸气，呼气。"
+    slots: []
+  - id: xiaop-comf-004
+    scene: comfort
+    en: "You are safe. I stand guard."
+    zh: "你很安全，小P站岗呢。"
+    slots: []
+  - id: xiaop-comf-005
+    scene: comfort
+    en: "No task now. Just sit with me."
+    zh: "现在没有任务，坐一会儿就好。"
+    slots: []
+  - id: xiaop-comf-006
+    scene: comfort
+    en: "When you feel {feeling}, hold my flipper."
+    zh: "觉得{feeling}的时候，牵住我的翅膀。"
+    slots: [feeling]
+  - id: xiaop-comf-007
+    scene: comfort
+    en: "Brave kids can rest too."
+    zh: "勇敢的小孩也可以休息哦。"
+    slots: []
+  - id: xiaop-comf-008
+    scene: comfort
+    en: "I will wait. No hurry."
+    zh: "小P等你，不着急。"
+    slots: []
+  # ---------------- 学词 learn（7）
+  - id: xiaop-learn-001
+    scene: learn
+    en: "Your word: {word}. Say it loud!"
+    zh: "你的词——{word}！大声说出来！"
+    slots: [word]
+  - id: xiaop-learn-002
+    scene: learn
+    en: "{word}! Say with me: {word}!"
+    zh: "{word}！跟我念——{word}！"
+    slots: [word]
+  - id: xiaop-learn-003
+    scene: learn
+    en: "New word in the book: {word}!"
+    zh: "小本本记上新词——{word}！"
+    slots: [word]
+  - id: xiaop-learn-004
+    scene: learn
+    en: "Task: use {word} in a sentence!"
+    zh: "任务——用{word}说一句话！"
+    slots: [word]
+  - id: xiaop-learn-005
+    scene: learn
+    en: "One star for {word}!"
+    zh: "{word}得一颗星！"
+    slots: [word]
+  - id: xiaop-learn-006
+    scene: learn
+    en: "Spell it with me: {word}!"
+    zh: "跟我一起念——{word}！"
+    slots: [word]
+  - id: xiaop-learn-007
+    scene: learn
+    en: "{word} is on today's list!"
+    zh: "{word}上今日任务清单啦！"
+    slots: [word]
+  # ---------------- 重邀 invite（6）
+  - id: xiaop-inv-001
+    scene: invite
+    en: "Say with me: {word}. Your turn!"
+    zh: "跟着我说——{word}。到你了！"
+    slots: [word]
+  - id: xiaop-inv-002
+    scene: invite
+    en: "Just one word: {word}!"
+    zh: "就说一个词——{word}！"
+    slots: [word]
+  - id: xiaop-inv-003
+    scene: invite
+    en: "I say {word}, you say {word}!"
+    zh: "我说{word}，你接{word}！"
+    slots: [word]
+  - id: xiaop-inv-004
+    scene: invite
+    en: "Small step: whisper {word}."
+    zh: "小小一步——悄悄说{word}。"
+    slots: [word]
+  - id: xiaop-inv-005
+    scene: invite
+    en: "Ready? One, two, {word}!"
+    zh: "准备好啦？一、二、{word}！"
+    slots: [word]
+  - id: xiaop-inv-006
+    scene: invite
+    en: "No rush. Try {word} when ready."
+    zh: "不着急，准备好了就说{word}。"
+    slots: [word]
+  # ---------------- 通用 generic（6）
+  - id: xiaop-gen-001
+    scene: generic
+    en: "Kada! I heard you!"
+    zh: "咔哒！我听到你啦！"
+    slots: []
+  - id: xiaop-gen-002
+    scene: generic
+    en: "Good talking! Next task soon."
+    zh: "说得真好！马上有新任务。"
+    slots: []
+  - id: xiaop-gen-003
+    scene: generic
+    en: "Report done! I am proud."
+    zh: "报告完毕！小P很骄傲。"
+    slots: []
+  - id: xiaop-gen-004
+    scene: generic
+    en: "One more word? Any word!"
+    zh: "再说一个词？什么词都行！"
+    slots: []
+  - id: xiaop-gen-005
+    scene: generic
+    en: "The team hears you, captain!"
+    zh: "队长，全队都听见你啦！"
+    slots: []
+  - id: xiaop-gen-006
+    scene: generic
+    en: "Nice voice! Louder next time!"
+    zh: "声音真好听！下次再响亮点！"
+    slots: []

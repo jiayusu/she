@@ -1,0 +1,16 @@
+# 原始下载文件(体积大, 按 README W1 步骤重新获取)
+raw/conceptnet-assertions-*.csv.gz
+
+# 运行产物
+data/kg.db*
+data/kg_test.db*
+data/kg.graphml
+data/embeddings/
+data/snapshots/
+data/packs/
+data/edges_candidates.csv.gz
+data/reports/llm_clean_decisions.jsonl
+data/reports/acceptance_report.json
+
+__pycache__/
+*.pyc

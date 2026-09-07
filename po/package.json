@@ -1,0 +1,14 @@
+{
+  "name": "pointing-module",
+  "version": "1.0.0",
+  "description": "指向识别模块（浏览器端）：MediaPipe Hands 指向手势 + 2D 射线选物 + 确认话术兜底",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "start": "node server/server.js",
+    "test": "node --test tests/*.test.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

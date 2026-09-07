@@ -1,0 +1,71 @@
+{
+  "comment": "意图分类词典(FR-G01)。pattern 为 JS 正则,weight 为加分。emotion_boost 见 config/salience.json 同级的 emotion 规则:情绪效价 valence<=-0.5 时给 comfort 加分。",
+  "intents": {
+    "memory": [
+      { "pattern": "什么来着", "weight": 3.0 },
+      { "pattern": "记不记得|还记得|还记得吗|忘了|忘了吗|忘记了", "weight": 2.5 },
+      { "pattern": "(昨天|上次|那天|之前|前几天|刚才).*(教会?|学|说|讲|玩|发生|去|吃|看)", "weight": 2.5 },
+      { "pattern": "教会?.*(什么|什么来着)", "weight": 2.5 },
+      { "pattern": "(以前|之前).*(告诉|说过|讲过)", "weight": 2.0 },
+      { "pattern": "再讲一遍|再(说|讲)一次|上次的故事|昨天(发生|玩|学)", "weight": 2.0 },
+      { "pattern": "小熊(记得|学过|会什么)", "weight": 2.0 },
+      { "pattern": "回忆|想起来了吗|你记得吗", "weight": 1.5 }
+    ],
+    "court": [
+      { "pattern": "朝会|上朝|开朝|升朝|早朝", "weight": 3.0 },
+      { "pattern": "(大臣们|各位大臣).*(集合|到齐|开始|点名)", "weight": 2.5 },
+      { "pattern": "敲钟|升帐|金銮殿|上殿", "weight": 2.0 },
+      { "pattern": "今天(要|该)?(开|上)朝", "weight": 2.5 },
+      { "pattern": "传(朕的)?(旨|令)|宣.{0,4}觐见", "weight": 2.0 }
+    ],
+    "word": [
+      { "pattern": "是什么意思|啥意思|什么含义", "weight": 3.0 },
+      { "pattern": "怎么读|怎么念|怎么写|怎么拼", "weight": 3.0 },
+      { "pattern": "(教|学)(我|会我)?(一)?(个|下)?(新)?(的)?(词|字|单词|成语)", "weight": 2.5 },
+      { "pattern": "这个字|那个词|生字|新词|成语", "weight": 2.0 },
+      { "pattern": "用.{1,8}(怎么说|怎么读|怎么念|怎么写)", "weight": 2.0 },
+      { "pattern": "什么意思呀|啥呀这是", "weight": 2.0 }
+    ],
+    "comfort": [
+      { "pattern": "害怕|好怕|我怕|不敢|吓(死|到)", "weight": 3.0 },
+      { "pattern": "难过|伤心|委屈|想哭|呜呜|呜呜呜", "weight": 3.0 },
+      { "pattern": "不想(一个人|睡|上学|去)|睡不着|做噩梦|噩梦", "weight": 2.5 },
+      { "pattern": "打雷|闪电|黑漆漆|好黑|停电", "weight": 2.0 },
+      { "pattern": "抱抱|陪我|别(走|离开)|留下来", "weight": 2.0 },
+      { "pattern": "疼|痛|不舒服|生病", "weight": 2.0 }
+    ],
+    "object": [
+      { "pattern": "^这是什么$|^这是什么呀|这是什么(东西|声音)|是什么(声音|动静|响声)", "weight": 3.0 },
+      { "pattern": "(冰箱|电视|洗衣机|空调|微波炉|风扇|桌子|椅子|门|窗|台灯|水壶|闹钟).{0,12}(为什么|怎么会?|怎么在|怎么自己)", "weight": 3.0 },
+      { "pattern": "为什么(会)?(响|动|亮|转|叫|冒|滴|闪|震)", "weight": 2.5 },
+      { "pattern": "(那个|这个)(东西|盒子|机器)(在干嘛|怎么了|会说话)", "weight": 2.5 },
+      { "pattern": "(天|太阳|月亮|星星|云|雨|风|彩虹)(为什么|怎么会)", "weight": 2.0 },
+      { "pattern": "它是活的|它会(听|说话|动)", "weight": 2.0 }
+    ],
+    "chitchat": [
+      { "pattern": "^(你好|哈喽|hello|嗨|hi|嗨哟)", "weight": 3.0 },
+      { "pattern": "哈哈|嘿嘿|嘻嘻|好开心|真好玩|太好玩了", "weight": 2.0 },
+      { "pattern": "讲个笑话|说个好玩的|陪我玩|一起玩", "weight": 2.5 },
+      { "pattern": "好无聊|无聊死了", "weight": 2.0 },
+      { "pattern": "我喜欢你|你真棒|你真可爱", "weight": 2.0 },
+      { "pattern": "今天(真|好)(开心|高兴|快乐)", "weight": 2.0 }
+    ]
+  },
+  "emotion_boost": {
+    "comment": "声学情绪分对意图的加权(FR-G01 输入含声学情绪分)。",
+    "comfort_valence_below": -0.4,
+    "comfort_boost": 2.2,
+    "comfort_negative_labels": ["sad", "afraid", "angry", "sobbing", "crying"],
+    "chitchat_valence_above": 0.6,
+    "chitchat_boost": 0.6
+  },
+  "injection_patterns": [
+    "忽略(之前|以上|上面)(的)?(所有)?(指令|规则|设定)",
+    "(system\\s*prompt|system instructions)",
+    "你现在是(个|一个)?(不|没有)(受|限)(任何)?(限制|约束)",
+    "关闭(内容)?(安全|过滤|审查)",
+    "(ignore|disregard)\\s+(all\\s+)?(previous|prior|above)",
+    "(解锁|解除)(安全|限制|审查)模式",
+    "jailbreak|dan模式|开发者模式已开启"
+  ]
+}

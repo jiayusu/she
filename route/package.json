@@ -1,0 +1,25 @@
+{
+  "name": "five-ministers-dispatch",
+  "version": "1.0.0",
+  "private": true,
+  "description": "03 五大臣 Agent 调度 — 意图路由 / 上下文注入 / 记忆读写调度 (task b9d7d95ef06a070951d9b5a82093e7a7fc9f040f)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "dev": "tsx watch src/index.ts",
+    "test": "tsx --test test/*.test.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "@types/ws": "^8.5.13",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

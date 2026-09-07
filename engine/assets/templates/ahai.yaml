@@ -1,0 +1,293 @@
+# 阿海 · 兜底模板库（FR-E07）
+# 老海獭：温柔、慢、低。口癖（没关系的~/海浪轻轻的~/我记得呀……/
+# 肚子上的小石头数完了/慢慢来）。禁则融入模板：无"错"字、无比较、无催促。
+minister: ahai
+templates:
+  # ---------------- 朝会 court（7）
+  - id: ahai-court-001
+    scene: court
+    en: "Morning, little wave. Today we may try {task}."
+    zh: "早啊，小浪花。今天呀，我们可以试试{task}。"
+    slots: [task]
+  - id: ahai-court-002
+    scene: court
+    en: "The sea woke up softly. Your word: {task}?"
+    zh: "海面轻轻醒来了。你的词——{task}？"
+    slots: [task]
+  - id: ahai-court-003
+    scene: court
+    en: "Whenever you like, we start with {task}."
+    zh: "你想什么时候开始都行，就从{task}开始。"
+    slots: [task]
+  - id: ahai-court-004
+    scene: court
+    en: "I remember you. Good morning, friend."
+    zh: "我记得呀……是你。早上好呀，小朋友。"
+    slots: []
+  - id: ahai-court-005
+    scene: court
+    en: "The morning is patient, like me. Try {task}?"
+    zh: "早晨跟我一样有耐心。试试{task}好不好？"
+    slots: [task]
+  - id: ahai-court-006
+    scene: court
+    en: "One gentle task today: {task}."
+    zh: "今天只有一件温柔的小任务——{task}。"
+    slots: [task]
+  - id: ahai-court-007
+    scene: court
+    en: "The tide says hello. You too?"
+    zh: "潮水说早上好啦。你也说一声好吗？"
+    slots: []
+  # ---------------- 探险 adventure（7）
+  - id: ahai-adv-001
+    scene: adventure
+    en: "The boat drifts to a {thing}. Look."
+    zh: "小船漂到了{thing}旁边。你看。"
+    slots: [thing]
+  - id: ahai-adv-002
+    scene: adventure
+    en: "Waves carry the word {word} to shore."
+    zh: "海浪把{word}轻轻送到岸边。"
+    slots: [word]
+  - id: ahai-adv-003
+    scene: adventure
+    en: "We float past a {thing}. It glimmers."
+    zh: "我们漂过{thing}，它一闪一闪的。"
+    slots: [thing]
+  - id: ahai-adv-004
+    scene: adventure
+    en: "Say {word}, and the sail fills with wind."
+    zh: "说出{word}，帆就鼓起来啦。"
+    slots: [word]
+  - id: ahai-adv-005
+    scene: adventure
+    en: "A fish leaps! Where did it go?"
+    zh: "一条鱼跳出来了！它去哪儿了呀？"
+    slots: []
+  - id: ahai-adv-006
+    scene: adventure
+    en: "The sea likes your voice. Go on."
+    zh: "大海喜欢你的声音，继续说说看。"
+    slots: []
+  - id: ahai-adv-007
+    scene: adventure
+    en: "Slow ripples. A {thing} sleeps below."
+    zh: "波纹慢慢散开，{thing}在水下睡着啦。"
+    slots: [thing]
+  # ---------------- 睡前 bedtime（7）
+  - id: ahai-bed-001
+    scene: bedtime
+    en: "Count my stones: one... two... sleep."
+    zh: "数数肚子上的小石头——一颗、两颗……睡吧。"
+    slots: []
+  - id: ahai-bed-002
+    scene: bedtime
+    en: "The sea hums low. Close your eyes."
+    zh: "海在低低地哼歌。闭上眼睛吧。"
+    slots: []
+  - id: ahai-bed-003
+    scene: bedtime
+    en: "Today's words rest on my belly. All safe."
+    zh: "今天学的词都躺在我的肚皮上呢，都好好的。"
+    slots: []
+  - id: ahai-bed-004
+    scene: bedtime
+    en: "Goodnight, {word}. See you tomorrow."
+    zh: "{word}，晚安。明天见。"
+    slots: [word]
+  - id: ahai-bed-005
+    scene: bedtime
+    en: "The waves get smaller... and smaller..."
+    zh: "浪花越来越小……越来越小……"
+    slots: []
+  - id: ahai-bed-006
+    scene: bedtime
+    en: "I remember today. You did well. Night."
+    zh: "我记得呀……今天你做得很好。晚安。"
+    slots: []
+  - id: ahai-bed-007
+    scene: bedtime
+    en: "The moon floats on the water. Soft night."
+    zh: "月亮浮在水面上呢。夜轻轻的。"
+    slots: []
+  # ---------------- 万物 things（8）
+  - id: ahai-thing-001
+    scene: things
+    en: "A {thing}. The sea knows it well."
+    zh: "是{thing}呀。大海跟它很熟呢。"
+    slots: [thing]
+  - id: ahai-thing-002
+    scene: things
+    en: "Old {thing}, quiet friend. Say its name?"
+    zh: "老老实实的{thing}。叫叫它的名字好不好？"
+    slots: [thing]
+  - id: ahai-thing-003
+    scene: things
+    en: "We can ask the crown about the {thing}."
+    zh: "{thing}的事呀，可以请王冠帮忙看看。"
+    slots: [thing]
+  - id: ahai-thing-004
+    scene: things
+    en: "The {thing} waits. No hurry to name it."
+    zh: "{thing}在慢慢等呢，不急着叫它的名字。"
+    slots: [thing]
+  - id: ahai-thing-005
+    scene: things
+    en: "Gently touch the {thing}. It is calm."
+    zh: "轻轻摸摸{thing}，它安安静静的。"
+    slots: [thing]
+  - id: ahai-thing-006
+    scene: things
+    en: "The {thing} rides the same sea as us."
+    zh: "{thing}和我们漂在同一片海上呢。"
+    slots: [thing]
+  - id: ahai-thing-007
+    scene: things
+    en: "Whisper {thing} to the water."
+    zh: "把{thing}轻轻说给水听。"
+    slots: [thing]
+  - id: ahai-thing-008
+    scene: things
+    en: "Where the {thing} rests, ripples ring."
+    zh: "{thing}歇着的地方，水纹一圈一圈的。"
+    slots: [thing]
+  # ---------------- 安抚 comfort（8）
+  - id: ahai-comf-001
+    scene: comfort
+    en: "I am here. The sea holds us both."
+    zh: "我在呢。海把我们俩都托着呢。"
+    slots: []
+  - id: ahai-comf-002
+    scene: comfort
+    en: "Feeling {feeling}? That is okay. Sit with me."
+    zh: "觉得{feeling}呀？没关系的~坐我旁边来。"
+    slots: [feeling]
+  - id: ahai-comf-003
+    scene: comfort
+    en: "The wave comes, the wave goes. Breathe."
+    zh: "浪来了，浪又走了。慢慢呼吸。"
+    slots: []
+  - id: ahai-comf-004
+    scene: comfort
+    en: "You do not need words now. I stay."
+    zh: "现在不用说话也没关系，我陪着你。"
+    slots: []
+  - id: ahai-comf-005
+    scene: comfort
+    en: "Big feelings float by. You float too."
+    zh: "大大的情绪飘过去，你也轻轻飘着。"
+    slots: []
+  - id: ahai-comf-006
+    scene: comfort
+    en: "When it is {feeling}, hold my paw."
+    zh: "觉得{feeling}的时候，牵住我的手。"
+    slots: [feeling]
+  - id: ahai-comf-007
+    scene: comfort
+    en: "Tomorrow the sea is new again."
+    zh: "明天海又是新的啦。"
+    slots: []
+  - id: ahai-comf-008
+    scene: comfort
+    en: "Your {feeling} is safe with me."
+    zh: "你的{feeling}交给我保管，放心。"
+    slots: [feeling]
+  # ---------------- 学词 learn（7）
+  - id: ahai-learn-001
+    scene: learn
+    en: "Today's word: {word}. No hurry."
+    zh: "今天的词是{word}。慢慢来。"
+    slots: [word]
+  - id: ahai-learn-002
+    scene: learn
+    en: "Say {word} to the sea. It echoes kindly."
+    zh: "把{word}说给海听，海会温柔地回你。"
+    slots: [word]
+  - id: ahai-learn-003
+    scene: learn
+    en: "I put {word} on my belly stone."
+    zh: "我把{word}放在肚皮的小石头上啦。"
+    slots: [word]
+  - id: ahai-learn-004
+    scene: learn
+    en: "{word}, softly now. The sea is listening."
+    zh: "轻轻念{word}，海在听呢。"
+    slots: [word]
+  - id: ahai-learn-005
+    scene: learn
+    en: "One shell for {word}. Into the pouch."
+    zh: "{word}换一枚小贝壳，装进口袋。"
+    slots: [word]
+  - id: ahai-learn-006
+    scene: learn
+    en: "I remember you liked {word}."
+    zh: "我记得呀……你喜欢过{word}呢。"
+    slots: [word]
+  - id: ahai-learn-007
+    scene: learn
+    en: "{word} floats back tomorrow. You will see."
+    zh: "{word}明天还会漂回来的，你会再见到它。"
+    slots: [word]
+  # ---------------- 重邀 invite（6）
+  - id: ahai-inv-001
+    scene: invite
+    en: "Say with me — {word}. Slowly, like waves."
+    zh: "跟着我说——{word}。像浪一样，慢慢地说。"
+    slots: [word]
+  - id: ahai-inv-002
+    scene: invite
+    en: "Only if you like: {word}."
+    zh: "想说的就说——{word}。不想说也没关系。"
+    slots: [word]
+  - id: ahai-inv-003
+    scene: invite
+    en: "I whisper {word}. You whisper after."
+    zh: "我悄悄说{word}，你悄悄跟我。"
+    slots: [word]
+  - id: ahai-inv-004
+    scene: invite
+    en: "Whenever ready. {word} waits."
+    zh: "不着急，{word}会等你。"
+    slots: [word]
+  - id: ahai-inv-005
+    scene: invite
+    en: "Small voice, big brave: try {word}."
+    zh: "小小的声音也是大大的勇敢——试试{word}。"
+    slots: [word]
+  - id: ahai-inv-006
+    scene: invite
+    en: "Just half of {word} is a good start."
+    zh: "说出{word}的一半，就已经很棒啦。"
+    slots: [word]
+  # ---------------- 通用 generic（6）
+  - id: ahai-gen-001
+    scene: generic
+    en: "Mm. The sea heard that."
+    zh: "嗯~海听见啦。"
+    slots: []
+  - id: ahai-gen-002
+    scene: generic
+    en: "Good, gentle voice. I like it."
+    zh: "真温柔的声音呀，我喜欢。"
+    slots: []
+  - id: ahai-gen-003
+    scene: generic
+    en: "I keep that in my memory sea."
+    zh: "我把这句话存进记忆的大海里啦。"
+    slots: []
+  - id: ahai-gen-004
+    scene: generic
+    en: "Slow is fine. Everything comes."
+    zh: "慢一点也好，该来的都会来。"
+    slots: []
+  - id: ahai-gen-005
+    scene: generic
+    en: "Another little word? Any is welcome."
+    zh: "再说一个小小的词？什么词都欢迎。"
+    slots: []
+  - id: ahai-gen-006
+    scene: generic
+    en: "The otter nods, warm and slow."
+    zh: "老海獭点点头，暖暖的，慢慢的。"
+    slots: []
