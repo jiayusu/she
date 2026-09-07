@@ -2590,3 +2590,16 @@ A:\working\she\skills\she-ios-soft-orbit\SKILL.md
 跨端契约顺序与 incident recovery 已由本文件、Schema validator 和 playbook 模板约束。无 skill 压力测试表明通用 Agent 能正确处理这两类问题，因此不重复建立文档 skill；机械约束优先自动化。
 
 RDK X5 首次连接流程当前保存在 release playbook。只有完成一次真实板端执行、修正和复验后，才允许建立 `she-rx5-preflight` skill。
+
+## 39.5 当前实现状态（2026-09-07）
+
+新的学习优先调度入口已在 `A:\working\she\route` 提供：
+
+```text
+POST /agent/direct
+```
+
+该入口返回 `curriculum`、`scaffold`、`story` 和唯一 `teaching_action`，不返回 minister，
+并严格区分 `language_level` 与 `scaffold_level`。旧的 `POST /agent/dispatch` 保留为兼容接口，
+仅用于迁移期客户端；新客户端必须使用 `/agent/direct`。导演只产生保守的 candidate memory
+策略，不直接写 Learner Profile、KG 或 SQLite。

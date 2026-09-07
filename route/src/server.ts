@@ -1,4 +1,5 @@
 // HTTP + WS 服务(接口契约见 PRD §6):
+//   POST /agent/direct   { utterance, asr, emotion, session_id } → learning decision
 //   POST /agent/dispatch  { utterance, asr, emotion, session_id } → { minister, ctx_bundle, memory_write_ack }
 //   WS   /agent/session   会话状态订阅(App 端"当前哪位大臣值守"灯效同步)
 // 另含 /admin/* 运维端点与 /healthz。
@@ -83,6 +84,10 @@ export function createServer(app: App): HttpServerInfo {
       const parsed = (await parseJsonBody(body)) as never;
       const resp = await app.dispatch(parsed);
       sendJson(res, 200, resp);
+    }],
+    ['POST', /^\/agent\/direct$/, async ({ res, body }) => {
+      const parsed = (await parseJsonBody(body)) as never;
+      sendJson(res, 200, app.direct(parsed));
     }],
     ['GET', /^\/agent\/session\/(?<id>.+)$/, async ({ res, params }) => {
       const state = app.sessions.list().find((s) => s.session_id === params.id);

@@ -28,7 +28,8 @@ async function main(): Promise<void> {
     throw e;
   }
   console.log(`[route] 五大臣调度服务已启动`);
-  console.log(`  POST /agent/dispatch   http://127.0.0.1:${info.port}/agent/dispatch`);
+  console.log(`  POST /agent/direct     http://127.0.0.1:${info.port}/agent/direct`);
+  console.log(`  POST /agent/dispatch   http://127.0.0.1:${info.port}/agent/dispatch (legacy)`);
   console.log(`  WS   /agent/session    ws://127.0.0.1:${info.port}/agent/session`);
   console.log(`  健康检查               http://127.0.0.1:${info.port}/healthz`);
   console.log(`  管理端点               http://127.0.0.1:${info.port}/admin/*`);

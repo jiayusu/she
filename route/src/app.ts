@@ -13,6 +13,8 @@ import {
   type IntentResult,
   type MinisterId,
   type WriteAckItem,
+  type DirectRequest,
+  type DirectResponse,
 } from './types.ts';
 import { normalizeAsr, normalizeEmotion, newId } from './util.ts';
 import { IntentClassifier, makeClarifyQuestion } from './intent.ts';
@@ -30,6 +32,7 @@ import { JobScheduler, createConsolidateJob, createPruneJob, createReviewJob } f
 import { ToolGateway } from './hooks.ts';
 import { DEFAULT_LEXICON, loadConfigs, loadJson } from './config.ts';
 import type { LexiconCfg } from './intent.ts';
+import { LearningDirector } from './learning-director.ts';
 
 export interface AppOptions {
   dataDir: string;
@@ -62,6 +65,7 @@ export class App {
   readonly consolidation: ConsolidationService;
   readonly jobs: JobScheduler;
   readonly dataDir: string;
+  readonly learningDirector = new LearningDirector();
 
   private degraded = new Set<MinisterId>();
   private mapFile: string | null;
@@ -307,6 +311,19 @@ export class App {
         output_filtered: outputFiltered,
       },
     };
+  }
+
+  /** New learning-first decision API. It never selects or exposes a minister. */
+  direct(req: DirectRequest): DirectResponse {
+    if (!req || typeof req !== 'object' || typeof req.session_id !== 'string' || !req.session_id) {
+      throw new DispatchError('缺少 session_id');
+    }
+    if (typeof req.utterance !== 'string') throw new DispatchError('缺少 utterance');
+    const hook = this.tools.runInputHooks(req.utterance, normalizeEmotion(req.emotion));
+    const response = this.learningDirector.direct({ ...req, utterance: hook.text });
+    response.safety.input_filtered = hook.filtered;
+    response.safety.injection_suspected = hook.injection_suspected;
+    return response;
   }
 
   // ---- 运维 ----

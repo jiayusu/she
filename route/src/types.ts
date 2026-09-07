@@ -127,6 +127,69 @@ export interface DispatchResponse {
   safety: DispatchSafety;
 }
 
+/** Learning-first contracts. These replace minister selection on new callers. */
+export interface CurriculumProposal {
+  primary_target: string;
+  review_targets: string[];
+  i_plus_1_target: string;
+  language_level: number;
+  priority: number;
+}
+
+export interface ScaffoldProposal {
+  scaffold_level: number;
+  prompt_pattern: string;
+  fallback_pattern: string;
+  max_attempts: number;
+}
+
+export interface StoryProposal {
+  story_action: string;
+  world_role: string;
+  success_feedback: string;
+  state_patch: Record<string, unknown>;
+}
+
+export interface TeachingAction {
+  learning_goal: string;
+  target_expression: string;
+  language_level: number;
+  scaffold_level: number;
+  teaching_action: 'ask' | 'reinvite' | 'prompt' | 'recast' | 'advance_story' | 'explore' | 'pause';
+  correction_policy: 'recast' | 'ignore' | 'explicit_later';
+  story_action: string;
+  success_condition: Record<string, unknown>;
+  memory_policy: 'no_write' | 'candidate' | 'confirmed';
+}
+
+export interface DirectRequest {
+  session_id: string;
+  utterance: string;
+  asr?: AsrMeta | number;
+  emotion?: number | Partial<Emotion>;
+  detected_object?: string | null;
+  story_state?: Record<string, unknown>;
+  learner_state?: Record<string, unknown>;
+  recent_attempts?: Array<{ success?: boolean; scaffold_level?: number }>;
+}
+
+export interface DirectResponse {
+  contract_version: '1.0';
+  session_id: string;
+  learning_goal: string;
+  target_expression: string;
+  curriculum: CurriculumProposal;
+  scaffold: ScaffoldProposal;
+  story: StoryProposal;
+  teaching_action: TeachingAction;
+  /** Flattened aliases keep the migration contract convenient for thin clients. */
+  scaffold_level: number;
+  story_action: string;
+  success_condition: Record<string, unknown>;
+  ctx_bundle: { session_state: Record<string, unknown>; story_state: Record<string, unknown>; learner_state: Record<string, unknown> };
+  safety: { emotion_priority: boolean; input_filtered: boolean; injection_suspected: boolean };
+}
+
 export interface IntentResult {
   intent: Intent;
   confidence: number;

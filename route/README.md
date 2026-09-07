@@ -27,7 +27,8 @@ FR-G08	工具边界：KG 查询/日程提醒等走 MCP tool-call（LLM 自主调
 全部调度决策留审计日志（路由理由/注入内容摘要/写库结果）
 6. 接口
 plain
-POST /agent/dispatch  { utterance, asr, emotion, session_id } → { minister, ctx_bundle, memory_write_ack }
+POST /agent/direct    { utterance, asr, emotion, session_id } → { teaching_action, scaffold, story }
+POST /agent/dispatch  { utterance, asr, emotion, session_id } → legacy minister route
 WS   /agent/session   会话状态订阅（App 端看"当前哪位大臣值守"灯效同步）
 依赖: ASR(02) / 剧情引擎(01) / 记忆存储(04) / 内容安全钩子(05)
 

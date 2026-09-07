@@ -4,6 +4,27 @@ Base URL:`http://127.0.0.1:8787`(端口 `PORT` 环境变量,默认 8787)。
 
 ## 对外接口(PRD §6)
 
+### POST /agent/direct
+
+Learning-first decision endpoint. It is the preferred integration surface for new clients and
+never returns a minister or changes long-term learner state. The director combines the current
+utterance, optional detected object, learner snapshot, recent attempts and emotion signal into
+one `teaching_action` with separate `language_level` and `scaffold_level` fields.
+
+```json
+{
+  "session_id": "demo",
+  "utterance": "milk",
+  "detected_object": "milk",
+  "recent_attempts": []
+}
+```
+
+The response contains `curriculum`, `scaffold`, `story`, `teaching_action` and an explicit
+`safety` object. Flattened aliases (`scaffold_level`, `story_action`, `success_condition`) and a
+sanitized `ctx_bundle` are included for thin clients. `memory_policy` is conservative (`candidate`) and must be promoted by an
+assessment/shared-state service before any confirmed learner write.
+
 ### POST /agent/dispatch
 
 ```jsonc
