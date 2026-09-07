@@ -1,0 +1,46 @@
+name: SHEParentApp
+options:
+  bundleIdPrefix: com.jiayusu.she
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: "5.9"
+    IPHONEOS_DEPLOYMENT_TARGET: "17.0"
+    TARGETED_DEVICE_FAMILY: "1,2"
+targets:
+  SHEParentApp:
+    type: application
+    platform: iOS
+    sources:
+      - path: SHEParentApp
+    configFiles:
+      Debug: Config/Debug.xcconfig
+      Release: Config/Release.xcconfig
+    info:
+      path: Generated/Info.plist
+      properties:
+        CFBundleDisplayName: 小P家长端
+        UILaunchScreen: {}
+        API_BASE_URL: $(API_BASE_URL)
+        NSAppTransportSecurity:
+          NSAllowsLocalNetworking: true
+  SHEParentAppTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: SHEParentAppTests
+    resources:
+      - path: ../../shared/contracts/v1/fixtures/valid
+        buildPhase: resources
+    dependencies:
+      - target: SHEParentApp
+schemes:
+  SHEParentApp:
+    build:
+      targets:
+        SHEParentApp: all
+        SHEParentAppTests: [test]
+    test:
+      targets:
+        - SHEParentAppTests
