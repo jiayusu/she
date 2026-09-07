@@ -12,7 +12,7 @@ struct SHEParentApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Text("小P家长端")
+            RootTabView(model: model)
                 .task { await model.load() }
         }
     }
