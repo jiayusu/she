@@ -67,6 +67,9 @@ class DeviceRuntime:
     async def heartbeat(self) -> None:
         await self.transport.send_event(self._event("heartbeat", {}))
 
+    async def wake(self, source: str = "simulator") -> None:
+        await self.transport.send_event(self._event("wake", {"source": source}))
+
     async def _ack(self, command: DeviceCommand, status: str, error_code: str | None = None) -> None:
         await self.transport.send_event(
             self._event(

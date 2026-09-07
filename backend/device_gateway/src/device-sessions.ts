@@ -45,6 +45,7 @@ export class DeviceSessionRegistry {
       lastSequence: session.lastSequence,
       lastHeartbeatAt: session.lastHeartbeatAt,
       acceptedEvents: session.acceptedEvents,
+      acceptedEventTypes: [...session.acceptedEventTypes],
       pendingCommands: session.pendingCommands.size,
     };
   }
@@ -114,6 +115,7 @@ export class DeviceSessionRegistry {
           nextCommandSequence: 0,
           lastHeartbeatAt: event.occurred_at,
           acceptedEvents: 0,
+          acceptedEventTypes: [],
           seenEventIds: new Set(),
           eventOrder: [],
           pendingCommands: new Map(),
@@ -138,6 +140,8 @@ export class DeviceSessionRegistry {
       session.lastSequence = event.sequence;
       session.lastHeartbeatAt = event.occurred_at;
       session.acceptedEvents += 1;
+      session.acceptedEventTypes.push(event.type);
+      if (session.acceptedEventTypes.length > 32) session.acceptedEventTypes.shift();
       session.seenEventIds.add(event.event_id);
       session.eventOrder.push(event.event_id);
       if (session.eventOrder.length > MAX_EVENT_IDS) {

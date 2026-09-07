@@ -42,6 +42,7 @@ export interface DeviceSession {
   nextCommandSequence: number;
   lastHeartbeatAt: string;
   acceptedEvents: number;
+  acceptedEventTypes: DeviceEvent["type"][];
   seenEventIds: Set<string>;
   eventOrder: string[];
   pendingCommands: Map<string, DeviceCommand>;
@@ -54,5 +55,6 @@ export interface DeviceSessionSnapshot {
   lastSequence: number;
   lastHeartbeatAt: string;
   acceptedEvents: number;
+  acceptedEventTypes: DeviceEvent["type"][];
   pendingCommands: number;
 }
