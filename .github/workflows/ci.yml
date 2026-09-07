@@ -1,0 +1,96 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  platform-independent:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: |
+            backend/device_gateway/package-lock.json
+            po/package-lock.json
+            route/package-lock.json
+      - name: Install Python dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install -r "$GITHUB_WORKSPACE/shared/contracts/requirements-dev.txt"
+          python -m pip install -e "$GITHUB_WORKSPACE/engine[dev]"
+          python -m pip install -e "$GITHUB_WORKSPACE/clients/hardware-rx5[dev]"
+          python -m pip install -r "$GITHUB_WORKSPACE/store/requirements.txt"
+          python -m pip install -r "$GITHUB_WORKSPACE/zhihu/requirements.txt"
+      - name: Install Node dependencies
+        run: |
+          npm ci --prefix "$GITHUB_WORKSPACE/backend/device_gateway"
+          npm ci --prefix "$GITHUB_WORKSPACE/po"
+          npm ci --prefix "$GITHUB_WORKSPACE/route"
+      - name: Verify all platform-independent components
+        shell: pwsh
+        run: "& '$env:GITHUB_WORKSPACE/scripts/verify.ps1'"
+      - name: Audit repository
+        shell: pwsh
+        run: "& '$env:GITHUB_WORKSPACE/scripts/audit_repository.ps1'"
+
+  ios:
+    runs-on: macos-15
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install XcodeGen
+        run: brew install xcodegen
+      - name: Generate project
+        run: xcodegen generate --spec "$GITHUB_WORKSPACE/clients/ios/project.yml"
+      - name: Select an available iOS 17+ simulator
+        run: |
+          python3 - <<'PY' >> "$GITHUB_ENV"
+          import json, subprocess
+          payload = json.loads(subprocess.check_output(["xcrun", "simctl", "list", "devices", "available", "-j"]))
+          choices = []
+          for runtime, devices in payload["devices"].items():
+              if "iOS" not in runtime:
+                  continue
+              version = runtime.rsplit("iOS-", 1)[-1].replace("-", ".")
+              try:
+                  major = int(version.split(".")[0])
+              except ValueError:
+                  continue
+              if major >= 17:
+                  choices.extend(device for device in devices if device.get("isAvailable") and "iPhone" in device.get("name", ""))
+          if not choices:
+              raise SystemExit("No available iOS 17+ iPhone simulator")
+          print(f"SIMULATOR_UDID={choices[0]['udid']}")
+          PY
+      - name: Build
+        run: |
+          xcodebuild -project "$GITHUB_WORKSPACE/clients/ios/SHEParentApp.xcodeproj" \
+            -scheme SHEParentApp \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            CODE_SIGNING_ALLOWED=NO build
+      - name: Test
+        run: |
+          xcodebuild -project "$GITHUB_WORKSPACE/clients/ios/SHEParentApp.xcodeproj" \
+            -scheme SHEParentApp \
+            -destination "platform=iOS Simulator,id=$SIMULATOR_UDID" \
+            -resultBundlePath "$RUNNER_TEMP/SHEParentApp.xcresult" \
+            CODE_SIGNING_ALLOWED=NO test
+      - name: Upload failed XCTest result
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: SHEParentApp-xcresult
+          path: ${{ runner.temp }}/SHEParentApp.xcresult
+          if-no-files-found: ignore
