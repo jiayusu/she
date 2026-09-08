@@ -19,6 +19,7 @@ final class AppModel: NSObject {
     private(set) var deviceSettings: DeviceSettings?
     private(set) var parentConstraints: ParentConstraints?
     private(set) var transientError: AppAPIError?
+    private(set) var refreshError: AppAPIError?
 
     init(api: AppAPI) {
         self.api = api
@@ -26,8 +27,13 @@ final class AppModel: NSObject {
     }
 
     func load() async {
-        phase = .loading
-        transientError = nil
+        // A refresh over existing evidence must never blank the screen:
+        // keep showing saved content and surface a gentle refresh error instead.
+        let hasEvidence = dashboard != nil
+        if !hasEvidence {
+            phase = .loading
+        }
+        refreshError = nil
         do {
             let dashboard = try await api.dashboard()
             let report = try await api.weeklyReport()
@@ -37,14 +43,27 @@ final class AppModel: NSObject {
             self.deviceSettings = settings
             phase = .ready
         } catch let error as AppAPIError {
-            dashboard = nil
-            weeklyReport = nil
-            deviceSettings = nil
-            transientError = error
-            phase = .offline
+            if hasEvidence {
+                refreshError = error
+            } else {
+                dashboard = nil
+                weeklyReport = nil
+                deviceSettings = nil
+                transientError = error
+                refreshError = error
+                phase = .offline
+            }
         } catch {
-            transientError = .invalidResponse
-            phase = .offline
+            if hasEvidence {
+                refreshError = .invalidResponse
+            } else {
+                dashboard = nil
+                weeklyReport = nil
+                deviceSettings = nil
+                transientError = .invalidResponse
+                refreshError = .invalidResponse
+                phase = .offline
+            }
         }
     }
 

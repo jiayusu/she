@@ -21,10 +21,11 @@ export class DemoRepository {
     private constraintsValue: JsonObject,
   ) {}
 
-  static async load(contractRoot: string): Promise<DemoRepository> {
+  static async load(contractRoot: string, learningReportUrl?: string): Promise<DemoRepository> {
+    const report = await loadLearningReport(contractRoot, learningReportUrl);
     return new DemoRepository(
       await fixture(contractRoot, "dashboard-snapshot.json"),
-      await fixture(contractRoot, "weekly-report.json"),
+      report,
       await fixture(contractRoot, "device-settings.json"),
       await fixture(contractRoot, "parent-constraints.json"),
     );
@@ -67,5 +68,20 @@ export class DemoRepository {
 
   constraints(): JsonObject {
     return clone(this.constraintsValue);
+  }
+}
+
+async function loadLearningReport(contractRoot: string, url?: string): Promise<JsonObject> {
+  const fallback = await fixture(contractRoot, "weekly-report.json");
+  if (!url) return fallback;
+  try {
+    const response = await fetch(url, { headers: { accept: "application/json" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const value = await response.json() as JsonObject;
+    if (value.contract_version !== CONTRACT_VERSION || !Array.isArray(value.evidence)) throw new Error("incompatible learning report");
+    return value;
+  } catch (error) {
+    console.warn(`[gateway] learning report service unavailable; using labelled fallback: ${(error as Error).message}`);
+    return fallback;
   }
 }

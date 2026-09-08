@@ -29,6 +29,11 @@ export class DeviceSessionRegistry {
   constructor(
     private readonly validators: ContractValidators,
     private readonly now: () => Date = () => new Date(),
+    private readonly hooks: {
+      onEvent?: (event: DeviceEvent, snapshot: DeviceSessionSnapshot) => void;
+      onCommand?: (command: DeviceCommand) => void;
+      onClose?: (deviceId: string) => void;
+    } = {},
   ) {}
 
   attach(server: WebSocketServer): void {
@@ -69,6 +74,7 @@ export class DeviceSessionRegistry {
     if (!result.ok) throw new Error("invalid_device_command");
     session.pendingCommands.set(command.command_id, command);
     send(session.socket, command);
+    this.hooks.onCommand?.(command);
     return command;
   }
 
@@ -122,6 +128,25 @@ export class DeviceSessionRegistry {
         };
         this.sessions.set(event.device_id, session);
         boundDeviceId = event.device_id;
+      } else if (event.type === "hello" && !session.online && event.session_id !== session.sessionId) {
+        // A process restart gets a new session id. Replace the offline record
+        // while retaining the device identity and leaving the old socket inert.
+        session = {
+          deviceId: event.device_id,
+          sessionId: event.session_id,
+          socket,
+          online: true,
+          lastSequence: -1,
+          nextCommandSequence: 0,
+          lastHeartbeatAt: event.occurred_at,
+          acceptedEvents: 0,
+          acceptedEventTypes: [],
+          seenEventIds: new Set(),
+          eventOrder: [],
+          pendingCommands: new Map(),
+        };
+        this.sessions.set(event.device_id, session);
+        boundDeviceId = event.device_id;
       }
 
       if (session.seenEventIds.has(event.event_id)) {
@@ -151,13 +176,17 @@ export class DeviceSessionRegistry {
       if (event.type === "command_ack") {
         session.pendingCommands.delete(String(event.payload.command_id));
       }
+      this.hooks.onEvent?.(event, this.snapshot(event.device_id)!);
       send(socket, { contract_version: CONTRACT_VERSION, status: "accepted", event_id: event.event_id });
     });
 
     socket.on("close", () => {
       if (!boundDeviceId) return;
       const session = this.sessions.get(boundDeviceId);
-      if (session?.socket === socket) session.online = false;
+      if (session?.socket === socket) {
+        session.online = false;
+        this.hooks.onClose?.(boundDeviceId);
+      }
     });
   }
 }

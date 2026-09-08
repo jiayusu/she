@@ -1,0 +1,82 @@
+[
+  {
+    "item": "W1 seed ≥1,500 词",
+    "pass": true,
+    "detail": "2,536 词, 三列 word,level,pos"
+  },
+  {
+    "item": "W1-2 覆盖不足词占比 ≤20%",
+    "pass": true,
+    "detail": "1.5% (39/2537)"
+  },
+  {
+    "item": "W2 kg.db 建立",
+    "pass": true,
+    "detail": "v1 65,164 边 / 6,735 节点"
+  },
+  {
+    "item": "R1 每词≥2条知识边(98%+ 视为达标)",
+    "pass": true,
+    "detail": "96.1% 达标; 98 词例外(功能短语/人名, 见 kg_low_coverage.csv)"
+  },
+  {
+    "item": "W2 kg.graphml 导出",
+    "pass": true,
+    "detail": "8.0 MB (Gephi 目视质检: apple 与 fruit 同簇)"
+  },
+  {
+    "item": "R2 抽检 50 条错误率 ≤10%",
+    "pass": false,
+    "detail": "data\\reports\\nonexistent.csv 不存在(先跑 scripts/sample_edges.py 并标注)"
+  },
+  {
+    "item": "R4 query apple 前8 含 ≥3 水果/食物词",
+    "pass": true,
+    "detail": "top8=['red', 'green', 'fruit', 'pie', 'pear', 'tree', 'food', 'round'] → 命中 7: ['red', 'green', 'fruit', 'pie', 'pear', 'tree', 'food']"
+  },
+  {
+    "item": "R4 query fridge 含 kitchen/cold/food",
+    "pass": true,
+    "detail": "top8=['refrigerator', 'food', 'milk', 'butter', 'meat', 'kitchen', 'cheese', 'dust'] → 命中 ['kitchen', 'food'] (要求≥2, 实际2)"
+  },
+  {
+    "item": "R3 万物模式端到端延迟 ≤2s",
+    "pass": true,
+    "detail": "retrieve 36/9 ms, facts 3 ms, max=36 ms"
+  },
+  {
+    "item": "R5a 万级边热更 ≤5 分钟",
+    "pass": true,
+    "detail": "10,000 边 → 应用 9,916, 耗时 0.4 分钟 (v2→v3, 局部训练 2,389 实体 20s)"
+  },
+  {
+    "item": "R5b 热更期间不停服",
+    "pass": true,
+    "detail": "探针 65 次, 最大间隔 0.43s"
+  },
+  {
+    "item": "R5c 快照与回滚(坏知识不过夜)",
+    "pass": true,
+    "detail": "快照 v3 → 注入 apple IsA vegetable(可见=True) → 回滚至 v3, 版本推进到 v5, 坏边残留=False"
+  },
+  {
+    "item": "R5d 灰度 ?rollout=10% 确定性生效",
+    "pass": true,
+    "detail": "dev-A 两次一致(gated=True), dev-B bucket 不同结果=False(分组可能不同)"
+  },
+  {
+    "item": "R5e 阿海情景记忆提升为语义边",
+    "pass": true,
+    "detail": "共现对 3 条提升, v=6"
+  },
+  {
+    "item": "R5f 矛盾边清单(人工审入口)",
+    "pass": true,
+    "detail": "注入 fire HasProperty cold → 拦截 1 条, open 冲突 2 条"
+  },
+  {
+    "item": "R5g 冲突人工复核接口",
+    "pass": true,
+    "detail": "冲突 #2 已复核(delete), v=7"
+  }
+]

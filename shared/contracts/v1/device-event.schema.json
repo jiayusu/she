@@ -12,7 +12,7 @@
     "session_id": {"type": "string", "minLength": 1, "maxLength": 80},
     "sequence": {"type": "integer", "minimum": 0},
     "occurred_at": {"type": "string", "pattern": "Z$"},
-    "type": {"enum": ["hello", "wake", "touch", "pointing", "device_state", "command_ack", "heartbeat"]},
+    "type": {"enum": ["hello", "wake", "touch", "pointing", "device_state", "capability_unavailable", "command_ack", "heartbeat"]},
     "payload": {"type": "object"}
   },
   "allOf": [
@@ -25,8 +25,26 @@
             "additionalProperties": false,
             "required": ["runtime_version", "capabilities"],
             "properties": {
+              "firmware_version": {"type": "string", "maxLength": 80},
               "runtime_version": {"type": "string", "minLength": 1},
               "capabilities": {"type": "array", "uniqueItems": true, "items": {"type": "string"}}
+            }
+          }
+        }
+      }
+    },
+    {
+      "if": {"properties": {"type": {"const": "capability_unavailable"}}},
+      "then": {
+        "properties": {
+          "payload": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["capability", "provider", "error_code"],
+            "properties": {
+              "capability": {"type": "string", "minLength": 1},
+              "provider": {"type": "string", "minLength": 1},
+              "error_code": {"type": "string", "minLength": 1}
             }
           }
         }

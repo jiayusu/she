@@ -3,6 +3,7 @@ from __future__ import annotations
 import argparse
 import asyncio
 import json
+import os
 from datetime import datetime, timezone
 from random import Random
 
@@ -11,6 +12,7 @@ from .adapters.simulator import MemoryTransport, SimulatorAudio, SimulatorCamera
 from .contracts import DeviceCommand
 from .redaction import redact_for_log
 from .runtime import DeviceRuntime
+from .factory import create_runtime
 
 
 def _fixed_clock() -> datetime:
@@ -63,9 +65,25 @@ def main(argv: list[str] | None = None) -> int:
     simulate = subparsers.add_parser("simulate", help="run the deterministic hardware simulator")
     simulate.add_argument("--once", action="store_true", required=True)
     subparsers.add_parser("capabilities", help="inspect RDK X5 dependencies without touching hardware")
+    run = subparsers.add_parser("run", help="run the gateway-connected RX5 runtime")
+    run.add_argument("--hardware-mode", choices=("rdk", "simulator"), default=None)
     args = parser.parse_args(argv)
     if args.mode == "simulate":
         asyncio.run(_simulate_once())
+        return 0
+    if args.mode == "run":
+        runtime, capabilities, report = create_runtime(mode=args.hardware_mode)
+        try:
+            asyncio.run(
+                runtime.run(
+                    capabilities,
+                    capability_report=report,
+                    firmware_version=os.environ.get("SHE_FIRMWARE_VERSION", "unknown"),
+                    runtime_version=os.environ.get("SHE_RUNTIME_VERSION", "0.1.0"),
+                )
+            )
+        except KeyboardInterrupt:
+            runtime.on_disconnect()
         return 0
     print(json.dumps(discover_capabilities(), ensure_ascii=False, sort_keys=True))
     return 0

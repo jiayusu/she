@@ -6,6 +6,7 @@ import { WebSocketServer } from "ws";
 import { ContractValidators, defaultContractRoot } from "./contracts.js";
 import { DemoRepository } from "./demo-repository.js";
 import { DeviceSessionRegistry } from "./device-sessions.js";
+import { DigitalTwinRegistry } from "./digital-twin.js";
 import { CONTRACT_VERSION, type JsonObject } from "./types.js";
 
 
@@ -13,6 +14,8 @@ export interface GatewayOptions {
   host?: string;
   port?: number;
   contractRoot?: string;
+  learningReportUrl?: string;
+  deviceToken?: string;
 }
 
 export interface GatewayHandle {
@@ -20,6 +23,7 @@ export interface GatewayHandle {
   wsUrl: string;
   port: number;
   sessions: DeviceSessionRegistry;
+  twins: DigitalTwinRegistry;
   close(): Promise<void>;
 }
 
@@ -52,10 +56,16 @@ async function readJson(request: IncomingMessage): Promise<JsonObject> {
 
 export async function createGateway(options: GatewayOptions = {}): Promise<GatewayHandle> {
   const host = options.host ?? "127.0.0.1";
+  const deviceToken = options.deviceToken ?? process.env.SHE_DEVICE_TOKEN;
   const contractRoot = options.contractRoot ?? defaultContractRoot();
   const validators = await ContractValidators.load(contractRoot);
-  const repository = await DemoRepository.load(contractRoot);
-  const sessions = new DeviceSessionRegistry(validators);
+  const repository = await DemoRepository.load(contractRoot, options.learningReportUrl ?? process.env.SHE_LEARNING_REPORT_URL);
+  const twins = new DigitalTwinRegistry();
+  const sessions = new DeviceSessionRegistry(validators, undefined, {
+    onEvent: (event, snapshot) => twins.onEvent(event, snapshot),
+    onCommand: (command) => twins.onCommand(command),
+    onClose: (deviceId) => twins.onClosed(deviceId),
+  });
   const webSockets = new WebSocketServer({ noServer: true });
   sessions.attach(webSockets);
 
@@ -70,6 +80,38 @@ export async function createGateway(options: GatewayOptions = {}): Promise<Gatew
         reply(response, 200, repository.dashboard());
       } else if (request.method === "GET" && url.pathname === "/v1/reports/weekly") {
         reply(response, 200, repository.weeklyReport());
+      } else if (request.method === "GET" && url.pathname.match(/^\/v1\/devices\/[^/]+\/twin$/)) {
+        const deviceId = decodeURIComponent(url.pathname.split("/")[3] ?? "");
+        const twin = twins.get(deviceId);
+        if (twin) reply(response, 200, twin);
+        else if (repository.device(deviceId)) reply(response, 200, {
+          device_id: deviceId, online: false, session_id: null, capabilities: [], capability_errors: {},
+          runtime: { firmware_version: null, runtime_version: null },
+          telemetry: { battery_percent: null, temperature_c: null, network: null },
+          privacy: { camera_enabled: true, raw_audio_upload_enabled: false },
+          last_event: null, last_command: null, updated_at: new Date(0).toISOString(),
+        });
+        else fail(response, 404, "device_not_found", "Device does not exist.");
+      } else if (request.method === "GET" && url.pathname.match(/^\/v1\/devices\/[^/]+\/timeline$/)) {
+        const deviceId = decodeURIComponent(url.pathname.split("/")[3] ?? "");
+        if (!repository.device(deviceId) && !twins.get(deviceId)) fail(response, 404, "device_not_found", "Device does not exist.");
+        else reply(response, 200, { device_id: deviceId, items: twins.timeline(deviceId, Number(url.searchParams.get("limit") ?? "100")) });
+      } else if (request.method === "POST" && url.pathname.match(/^\/v1\/devices\/[^/]+\/commands$/)) {
+        const deviceId = decodeURIComponent(url.pathname.split("/")[3] ?? "");
+        const value = await readJson(request);
+        const type = value.type;
+        const payload = value.payload;
+        if (typeof type !== "string" || !payload || typeof payload !== "object" || Array.isArray(payload)) {
+          fail(response, 400, "invalid_command", "Command requires a type and object payload.");
+          return;
+        }
+        try {
+          const command = sessions.sendCommand(deviceId, { type: type as never, payload: payload as JsonObject });
+          reply(response, 202, command);
+        } catch (caught) {
+          const reason = caught instanceof Error ? caught.message : "command_failed";
+          fail(response, reason === "device_offline" ? 409 : 400, reason, "Command could not be issued.");
+        }
       } else if (request.method === "GET" && deviceMatch) {
         const device = repository.device(decodeURIComponent(deviceMatch[1] ?? ""));
         if (device) reply(response, 200, device);
@@ -123,6 +165,14 @@ export async function createGateway(options: GatewayOptions = {}): Promise<Gatew
       socket.destroy();
       return;
     }
+    if (deviceToken) {
+      const authorization = request.headers.authorization;
+      if (authorization !== `Bearer ${deviceToken}`) {
+        socket.write("HTTP/1.1 401 Unauthorized\r\nConnection: close\r\n\r\n");
+        socket.destroy();
+        return;
+      }
+    }
     webSockets.handleUpgrade(request, socket, head, (webSocket) => webSockets.emit("connection", webSocket, request));
   });
 
@@ -137,6 +187,7 @@ export async function createGateway(options: GatewayOptions = {}): Promise<Gatew
     wsUrl: `ws://${host}:${address.port}`,
     port: address.port,
     sessions,
+    twins,
     close: async () => {
       for (const client of webSockets.clients) client.terminate();
       webSockets.close();

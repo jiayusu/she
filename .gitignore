@@ -22,17 +22,20 @@
 *.log
 *.pid
 
-kg/raw/conceptnet-assertions-5.7.0.csv.gz
-kg/data/embeddings/
-kg/data/snapshots/
-kg/data/reports/
-kg/data/edges_candidates.csv.gz
+backend/knowledge_graph/raw/conceptnet-assertions-5.7.0.csv.gz
+backend/knowledge_graph/data/embeddings/
+backend/knowledge_graph/data/snapshots/
+backend/knowledge_graph/data/reports/
+backend/knowledge_graph/data/edges_candidates.csv.gz
 
-route/data/audit/
-route/data/reports/
-route/data/snapshots/
-route/data/stores/
-po/data/*.jsonl
-zhihu/data/
+agents/director/data/audit/
+agents/director/data/reports/
+agents/director/data/snapshots/
+agents/director/data/stores/
+agents/director/data/learning-events.jsonl
+backend/pointing/data/*.jsonl
+backend/intel/data/
+backend/intel/.tmp/
+backend/intel/.env
 
 clients/hardware-rx5/.state/

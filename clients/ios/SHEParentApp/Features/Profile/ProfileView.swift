@@ -1,12 +1,17 @@
 import SwiftUI
 
 struct ProfileView: View {
+    private enum GoalSaveState {
+        case idle, saving, saved, failed
+    }
+
     @Bindable var model: AppModel
     @State private var sessionMinutes = 10.0
     @State private var nextDayContext = "明天去动物园"
     @State private var showingExport = false
     @State private var showingErase = false
     @State private var privacyResult: String?
+    @State private var goalSaveState: GoalSaveState = .idle
 
     var body: some View {
         NavigationStack {
@@ -20,21 +25,26 @@ struct ProfileView: View {
 
                 Section("下一次互动") {
                     Stepper("时长 \(Int(sessionMinutes)) 分钟", value: $sessionMinutes, in: 5...30, step: 5)
+                        .sensoryFeedback(.selection, trigger: Int(sessionMinutes))
                     TextField("明天的场景", text: $nextDayContext)
-                    Button("保存家长目标") {
-                        Task {
-                            await model.updateParentConstraints(
-                                ParentConstraintsUpdate(
-                                    sessionBudgetSeconds: Int(sessionMinutes * 60),
-                                    preferredTopics: ["animals", "food"],
-                                    avoidTopics: [],
-                                    nextDayContext: nextDayContext,
-                                    teachingPressure: .low
-                                )
-                            )
-                        }
+                    Button {
+                        Task { await saveParentGoals() }
+                    } label: {
+                        goalButtonLabel
                     }
-                    .frame(minHeight: 44)
+                    .buttonStyle(SoftOrbitPrimaryButtonStyle())
+                    .disabled(goalSaveState == .saving)
+                    .contentTransition(.symbolEffect(.replace))
+                    .animation(
+                        SoftOrbit.Motion.settle,
+                        value: goalSaveState
+                    )
+                    .sensoryFeedback(.success, trigger: goalSaveState) { _, state in
+                        state == .saved
+                    }
+                    .sensoryFeedback(.warning, trigger: goalSaveState) { _, state in
+                        state == .failed
+                    }
                 }
 
                 Section("隐私与数据") {
@@ -66,6 +76,49 @@ struct ProfileView: View {
             }
         }
         .softOrbitPage()
+    }
+
+    @ViewBuilder
+    private var goalButtonLabel: some View {
+        switch goalSaveState {
+        case .idle:
+            Text("保存家长目标")
+        case .saving:
+            HStack(spacing: SoftOrbit.Spacing.small) {
+                ProgressView()
+                    .controlSize(.small)
+                    .tint(.white)
+                Text(AccessibilityCopy.parentGoalSaving)
+            }
+        case .saved:
+            Label(AccessibilityCopy.parentGoalSaved, systemImage: "checkmark.circle.fill")
+        case .failed:
+            Label(AccessibilityCopy.parentGoalSaveFailed, systemImage: "arrow.uturn.backward.circle")
+        }
+    }
+
+    private func saveParentGoals() async {
+        goalSaveState = .saving
+        await model.updateParentConstraints(
+            ParentConstraintsUpdate(
+                sessionBudgetSeconds: Int(sessionMinutes * 60),
+                preferredTopics: ["animals", "food"],
+                avoidTopics: [],
+                nextDayContext: nextDayContext,
+                teachingPressure: .low
+            )
+        )
+        let saved = model.parentConstraints.map { constraints in
+            constraints.sessionBudgetSeconds == Int(sessionMinutes * 60)
+                && constraints.nextDayContext == nextDayContext
+        } ?? false
+        goalSaveState = saved ? .saved : .failed
+        if saved {
+            try? await Task.sleep(for: .seconds(2.4))
+            if goalSaveState == .saved {
+                goalSaveState = .idle
+            }
+        }
     }
 
     private func performPrivacy(export: Bool) async {

@@ -29,6 +29,35 @@ final class AppModelTests: XCTestCase {
         XCTAssertNil(model.dashboard)
     }
 
+    func testFailedRefreshKeepsEvidenceAndReportsRefreshError() async {
+        let api = MockAppAPI()
+        let model = AppModel(api: api)
+        await model.load()
+        let dashboard = model.dashboard
+        api.failure = .offline
+
+        await model.load()
+
+        XCTAssertEqual(model.phase, .ready)
+        XCTAssertEqual(model.dashboard, dashboard)
+        XCTAssertEqual(model.refreshError, .offline)
+        XCTAssertNil(model.transientError)
+    }
+
+    func testRefreshWithEvidenceDoesNotDropBackToSkeleton() async {
+        let api = MockAppAPI()
+        api.delayNanoseconds = 50_000_000
+        let model = AppModel(api: api)
+        await model.load()
+
+        let refresh = Task { await model.load() }
+        await Task.yield()
+        XCTAssertEqual(model.phase, .ready)
+        await refresh.value
+
+        XCTAssertEqual(model.phase, .ready)
+    }
+
     func testFailedSettingsPatchRollsBackOptimisticChange() async {
         let api = MockAppAPI()
         let model = AppModel(api: api)

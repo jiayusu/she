@@ -2,6 +2,7 @@ import SwiftUI
 
 struct TodayView: View {
     @Bindable var model: AppModel
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         NavigationStack {
@@ -19,6 +20,10 @@ struct TodayView: View {
                     }
                 }
             }
+            .animation(
+                reduceMotion ? nil : SoftOrbit.Motion.settle,
+                value: model.phase
+            )
             .navigationTitle("今天")
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -28,7 +33,14 @@ struct TodayView: View {
     private func dashboardView(_ dashboard: DashboardSnapshot) -> some View {
         ScrollView {
             VStack(spacing: SoftOrbit.Spacing.large) {
+                if model.refreshError != nil {
+                    staleBanner
+                }
+
                 VStack(alignment: .leading, spacing: SoftOrbit.Spacing.small) {
+                    Text("家庭学习台")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(SoftOrbit.lavender)
                     Text(dashboard.greeting)
                         .font(.largeTitle.bold())
                     Label(
@@ -40,20 +52,28 @@ struct TodayView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityElement(children: .combine)
+                .softOrbitEntrance(index: 0)
 
-                VStack(spacing: SoftOrbit.Spacing.medium) {
-                    PetOrbView(statusLabel: dashboard.pet.accessibilityLabel)
-                    GlassCard {
-                        Label(dashboard.highlight.text, systemImage: "star.fill")
-                            .font(.headline)
-                            .foregroundStyle(SoftOrbit.ink)
-                            .accessibilityLabel("今日发现，\(dashboard.highlight.text)")
+                GlassCard {
+                    HStack(alignment: .center, spacing: SoftOrbit.Spacing.medium) {
+                        PetOrbView(statusLabel: dashboard.pet.accessibilityLabel, size: 132)
+                        VStack(alignment: .leading, spacing: SoftOrbit.Spacing.small) {
+                            Text("小P的观察")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(.secondary)
+                            Label(dashboard.highlight.text, systemImage: "star.fill")
+                                .font(.headline.weight(.semibold))
+                                .foregroundStyle(SoftOrbit.ink)
+                                .accessibilityLabel("今日发现，\(dashboard.highlight.text)")
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
+                .softOrbitEntrance(index: 1)
 
                 GlassCard {
                     VStack(alignment: .leading, spacing: SoftOrbit.Spacing.medium) {
-                        Text("接下来")
+                        Text("下一步")
                             .font(.caption.weight(.semibold))
                             .foregroundStyle(SoftOrbit.lavender)
                         Text(dashboard.task.title)
@@ -61,19 +81,40 @@ struct TodayView: View {
                         Text(dashboard.task.subtitle)
                             .foregroundStyle(.secondary)
                         ProgressView(value: dashboard.task.progress)
-                            .tint(SoftOrbit.lavender)
+                            .tint(SoftOrbit.mint)
                         Button(dashboard.task.actionLabel) {}
-                            .buttonStyle(.borderedProminent)
-                            .controlSize(.large)
-                            .frame(minHeight: 44)
+                            .buttonStyle(SoftOrbitPrimaryButtonStyle())
                     }
                 }
+                .softOrbitEntrance(index: 2)
 
                 metrics(dashboard.metrics)
+                    .softOrbitEntrance(index: 3)
             }
+            .animation(
+                reduceMotion ? nil : SoftOrbit.Motion.settle,
+                value: model.refreshError
+            )
             .padding(SoftOrbit.Spacing.large)
         }
         .refreshable { await model.load() }
+    }
+
+    private var staleBanner: some View {
+        Label(AccessibilityCopy.staleContentBanner, systemImage: "wifi.exclamationmark")
+            .font(.footnote.weight(.medium))
+            .foregroundStyle(SoftOrbit.warm)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(SoftOrbit.Spacing.small)
+            .background(
+                SoftOrbit.surface,
+                in: RoundedRectangle(cornerRadius: SoftOrbit.Radius.small, style: .continuous)
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: SoftOrbit.Radius.small, style: .continuous)
+                    .strokeBorder(SoftOrbit.warm.opacity(0.35), lineWidth: 1)
+            }
+            .transition(.move(edge: .top).combined(with: .opacity))
     }
 
     private func metrics(_ metrics: DashboardMetrics) -> some View {
@@ -99,14 +140,15 @@ struct TodayView: View {
     private var loadingView: some View {
         ScrollView {
             VStack(spacing: SoftOrbit.Spacing.large) {
-                RoundedRectangle(cornerRadius: SoftOrbit.Radius.small).fill(.quaternary).frame(height: 58)
-                Circle().fill(SoftOrbit.lavender.opacity(0.16)).frame(width: 210, height: 210)
+                RoundedRectangle(cornerRadius: SoftOrbit.Radius.small, style: .continuous).fill(.quaternary).frame(height: 58)
+                Circle().fill(SoftOrbit.lavender.opacity(0.12)).frame(width: 150, height: 150)
                 ForEach(0..<3, id: \.self) { _ in
-                    RoundedRectangle(cornerRadius: SoftOrbit.Radius.card).fill(.quaternary).frame(height: 120)
+                    RoundedRectangle(cornerRadius: SoftOrbit.Radius.card, style: .continuous).fill(.quaternary).frame(height: 120)
                 }
             }
             .padding(SoftOrbit.Spacing.large)
             .redacted(reason: .placeholder)
+            .softOrbitPulse()
             .accessibilityLabel("正在准备今天的家庭摘要")
         }
     }
@@ -118,8 +160,7 @@ struct TodayView: View {
             Text("暂时没连上家庭服务。已有内容不会丢失，可以稍后再试。")
         } actions: {
             Button("重新连接") { Task { await model.load() } }
-                .buttonStyle(.borderedProminent)
-                .frame(minHeight: 44)
+                .buttonStyle(SoftOrbitPrimaryButtonStyle())
         }
     }
 

@@ -20,4 +20,15 @@ final class AccessibilityContractTests: XCTestCase {
         XCTAssertTrue(AccessibilityCopy.demoPrivacyNotice.contains("演示"))
         XCTAssertFalse(AccessibilityCopy.demoPrivacyNotice.contains("已删除"))
     }
+
+    func testStaleContentBannerStaysHonestAboutFreshness() {
+        XCTAssertTrue(AccessibilityCopy.staleContentBanner.contains("没有刷新成功"))
+        XCTAssertTrue(AccessibilityCopy.staleContentBanner.contains("已保存"))
+    }
+
+    func testParentGoalSaveCopyUsesCalmOutcomeWording() {
+        XCTAssertEqual(AccessibilityCopy.parentGoalSaving, "正在保存")
+        XCTAssertEqual(AccessibilityCopy.parentGoalSaved, "已保存到家庭计划")
+        XCTAssertEqual(AccessibilityCopy.parentGoalSaveFailed, "暂时没有保存成功")
+    }
 }

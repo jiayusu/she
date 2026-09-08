@@ -3,6 +3,23 @@
 > 项目级 Agent 架构与后台组件协作约定
 > 适用范围：儿童英语启蒙穿戴设备后台、LLM 剧情引擎、知识图谱、记忆、指向识别、数据情报及后续 Agent 实现。
 
+## Canonical Ownership Map
+
+The retired top-level directories `engine`, `route`, `kg`, `store`, `po`, and `zhihu` are migration sources only. New code and operational references use:
+
+```text
+agents/interaction       Interaction Agent and presentation assets
+agents/director          Learning Director and orchestration
+backend/knowledge_graph  reviewed, versioned KG service
+backend/memory_store     shared memory service
+backend/pointing         pointing recognition service
+backend/intel            Zhihu/data intelligence pipeline
+backend/digital_twin     server-owned device twin state
+backend/device_gateway   sole hardware/software transport boundary
+```
+
+The RX5 runtime is mocked until physical SSH validation. See `backend/digital_twin/deployment.md` and `clients/hardware-rx5/docs/deployment.md`.
+
 ---
 
 ## 0. 项目目标
@@ -638,7 +655,7 @@ scaffold_level
 
 ## 7.6 与现有引擎关系
 
-现有：
+现有基础设施（已迁移至规范目录）：
 
 ```text
 stuck.py
@@ -1587,11 +1604,13 @@ shared/
 现有：
 
 ```text
-engine/
-kb/
-store/
-pointing/
-intel/
+agents/interaction/
+agents/director/
+backend/knowledge_graph/
+backend/memory_store/
+backend/pointing/
+backend/intel/
+backend/digital_twin/
 ```
 
 继续作为 deterministic service / infrastructure 使用。
@@ -2593,7 +2612,7 @@ RDK X5 首次连接流程当前保存在 release playbook。只有完成一次�
 
 ## 39.5 当前实现状态（2026-09-07）
 
-新的学习优先调度入口已在 `A:\working\she\route` 提供：
+新的学习优先调度入口已在 `A:\working\she\agents\director` 提供：
 
 ```text
 POST /agent/direct

@@ -2,6 +2,7 @@ import SwiftUI
 
 struct DeviceView: View {
     @Bindable var model: AppModel
+    @State private var volumeDraft: Double?
 
     var body: some View {
         NavigationStack {
@@ -14,22 +15,43 @@ struct DeviceView: View {
                     }
 
                     Section("声音与灯光") {
-                        VStack(alignment: .leading) {
-                            Text("音量 \(settings.volume)")
+                        VStack(alignment: .leading, spacing: SoftOrbit.Spacing.xSmall) {
+                            Text("音量 \(Int(effectiveVolume))")
                             Slider(
                                 value: Binding(
-                                    get: { Double(model.deviceSettings?.volume ?? settings.volume) },
-                                    set: { value in Task { await model.updateDeviceSettings(DeviceSettingsPatch(volume: Int(value))) } }
+                                    get: { effectiveVolume },
+                                    set: { volumeDraft = $0 }
                                 ),
                                 in: 0...100,
-                                step: 1
+                                step: 1,
+                                onEditingChanged: { editing in
+                                    guard !editing, let draft = volumeDraft else { return }
+                                    // Keep the draft visible until the model catches up,
+                                    // so the slider never snaps back mid-round-trip.
+                                    Task { await model.updateDeviceSettings(DeviceSettingsPatch(volume: Int(draft))) }
+                                }
                             )
+                            .sensoryFeedback(
+                                .selection,
+                                trigger: volumeDraft.map { Int($0) }
+                            ) { _, newValue in
+                                newValue != nil
+                            }
+                            .onChange(of: model.deviceSettings?.volume) { _, volume in
+                                if let draft = volumeDraft, Int(draft) == volume {
+                                    volumeDraft = nil
+                                }
+                            }
+                            .onChange(of: model.transientError) { _, error in
+                                if error != nil { volumeDraft = nil }
+                            }
                             .accessibilityLabel("设备音量")
                         }
                         Toggle(
                             "启用陪伴灯",
                             isOn: toggleBinding(settings.ledEnabled) { DeviceSettingsPatch(ledEnabled: $0) }
                         )
+                        .sensoryFeedback(.impact(weight: .light, intensity: 0.9), trigger: settings.ledEnabled)
                     }
 
                     Section("感知与隐私") {
@@ -37,10 +59,12 @@ struct DeviceView: View {
                             AccessibilityCopy.cameraControl,
                             isOn: toggleBinding(settings.cameraEnabled) { DeviceSettingsPatch(cameraEnabled: $0) }
                         )
+                        .sensoryFeedback(.impact(weight: .light, intensity: 0.9), trigger: settings.cameraEnabled)
                         Toggle(
                             AccessibilityCopy.rawAudioControl,
                             isOn: toggleBinding(settings.rawAudioUploadEnabled) { DeviceSettingsPatch(rawAudioUploadEnabled: $0) }
                         )
+                        .sensoryFeedback(.impact(weight: .light, intensity: 0.9), trigger: settings.rawAudioUploadEnabled)
                         Text("摄像头只在明确触发的短窗口内开启；原始画面默认不落盘。")
                             .font(.footnote)
                             .foregroundStyle(.secondary)
@@ -60,6 +84,10 @@ struct DeviceView: View {
             .navigationTitle("设备")
         }
         .softOrbitPage()
+    }
+
+    private var effectiveVolume: Double {
+        Double(volumeDraft ?? Double(model.deviceSettings?.volume ?? 0))
     }
 
     private func toggleBinding(

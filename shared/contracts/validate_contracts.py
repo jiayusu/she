@@ -31,6 +31,8 @@ def read(path: Path) -> dict:
 def main() -> int:
     failures: list[str] = []
     schemas = {name: Draft202012Validator(read(ROOT / name)) for name in set(VALID.values()) | set(INVALID.values())}
+    learning_schema = read(ROOT / "learning-event.schema.json")
+    Draft202012Validator.check_schema(learning_schema)
 
     for fixture, schema in VALID.items():
         errors = list(schemas[schema].iter_errors(read(ROOT / "fixtures" / "valid" / fixture)))

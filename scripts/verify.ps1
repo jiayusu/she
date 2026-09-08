@@ -35,12 +35,13 @@ Invoke-Checked 'device gateway tests' (Join-Path $ProjectRoot 'backend/device_ga
 Invoke-Checked 'device gateway typecheck' (Join-Path $ProjectRoot 'backend/device_gateway') { npm run typecheck }
 Invoke-Checked 'RDK X5 runtime' (Join-Path $ProjectRoot 'clients/hardware-rx5') { python -m pytest (Join-Path $ProjectRoot 'clients/hardware-rx5/tests') -q }
 Invoke-Checked 'RDK X5 deterministic simulator' (Join-Path $ProjectRoot 'clients/hardware-rx5') { python -m she_device.cli simulate --once }
-Invoke-Checked 'engine' (Join-Path $ProjectRoot 'engine') { python -m pytest (Join-Path $ProjectRoot 'engine/tests') -q }
-Invoke-Checked 'store' (Join-Path $ProjectRoot 'store') { python -m pytest (Join-Path $ProjectRoot 'store/tests') -q }
-Invoke-Checked 'route tests' (Join-Path $ProjectRoot 'route') { npm test }
-Invoke-Checked 'route typecheck' (Join-Path $ProjectRoot 'route') { npm run typecheck }
-Invoke-Checked 'pointing' (Join-Path $ProjectRoot 'po') { npm test }
-Invoke-Checked 'intel/zhihu' (Join-Path $ProjectRoot 'zhihu') { python -m pytest (Join-Path $ProjectRoot 'zhihu/tests') -q }
+Invoke-Checked 'interaction engine' (Join-Path $ProjectRoot 'agents/interaction') { python -m pytest (Join-Path $ProjectRoot 'agents/interaction/tests') -q }
+Invoke-Checked 'shared memory store' (Join-Path $ProjectRoot 'backend/memory_store') { python -m pytest (Join-Path $ProjectRoot 'backend/memory_store/tests') -q }
+Invoke-Checked 'learning director' (Join-Path $ProjectRoot 'agents/director') { npm test }
+Invoke-Checked 'learning director typecheck' (Join-Path $ProjectRoot 'agents/director') { npm run typecheck }
+Invoke-Checked 'pointing' (Join-Path $ProjectRoot 'backend/pointing') { npm test }
+Invoke-Checked 'intel' (Join-Path $ProjectRoot 'backend/intel') { python -m pytest (Join-Path $ProjectRoot 'backend/intel/tests') -q }
+Invoke-Checked 'release readiness' $ProjectRoot { & (Join-Path $ProjectRoot 'scripts/release_readiness.ps1') }
 
 Invoke-Checked 'iOS source contract' (Join-Path $ProjectRoot 'clients/ios') {
     $appSources = Join-Path $ProjectRoot 'clients/ios/SHEParentApp'

@@ -12,7 +12,7 @@ export interface DeviceEvent {
   session_id: string;
   sequence: number;
   occurred_at: string;
-  type: "hello" | "wake" | "touch" | "pointing" | "device_state" | "command_ack" | "heartbeat";
+  type: "hello" | "wake" | "touch" | "pointing" | "device_state" | "capability_unavailable" | "command_ack" | "heartbeat";
   payload: JsonObject;
 }
 

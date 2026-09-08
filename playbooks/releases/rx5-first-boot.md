@@ -72,9 +72,10 @@ first, then create an incident with sanitized evidence.
 ## 5. Service activation
 
 The checked-in unit is guarded by `/etc/she-device.enabled` and remains disabled
-by default. The current first-stage unit only performs capability discovery; it
-does not claim a production hardware session. Do not enable it until a later,
-device-verified change replaces `ExecStart` with the approved live runtime.
+by default. It starts the gateway-connected `she-device run` runtime. The RDK
+path reports missing capabilities as degraded state and uses safe local
+fallbacks; it does not claim hardware success. Do not create
+`/etc/she-device.enabled` until the hardware gates above are complete.
 
 ## Rollback
 

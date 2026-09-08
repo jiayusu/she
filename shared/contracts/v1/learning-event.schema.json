@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/learning-event.schema.json",
+  "title": "LearningEvent",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "event_id", "session_id", "occurred_at", "event_kind", "learning_goal", "target_expression", "language_level", "scaffold_level", "assessment"],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "event_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "child_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "session_id": {"type": "string", "minLength": 1, "maxLength": 160},
+    "occurred_at": {"type": "string", "pattern": "Z$"},
+    "scene": {"type": "string", "maxLength": 160},
+    "learning_goal": {"type": "string", "minLength": 1, "maxLength": 240},
+    "target_expression": {"type": "string", "minLength": 1, "maxLength": 240},
+    "child_utterance": {"type": "string", "maxLength": 2000},
+    "event_kind": {"enum": ["raw_observation", "candidate_evidence", "confirmed_mastery"]},
+    "evidence_status": {"enum": ["OBSERVED_ONCE", "REPEATED", "CONFIRMED", "RESOLVED"]},
+    "language_level": {"type": "integer", "minimum": 0, "maximum": 5},
+    "scaffold_level": {"type": "integer", "minimum": 0, "maximum": 6},
+    "assessment": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["target_reached", "semantic_correctness", "spontaneous", "assessment_confidence"],
+      "properties": {
+        "target_reached": {"type": "boolean"},
+        "semantic_correctness": {"type": "number", "minimum": 0, "maximum": 1},
+        "spontaneous": {"type": "boolean"},
+        "pronunciation_intelligibility": {"type": "number", "minimum": 0, "maximum": 1},
+        "response_latency_ms": {"type": "integer", "minimum": 0},
+        "assessment_confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "error_type": {"type": ["string", "null"], "maxLength": 80}
+      }
+    },
+    "mastery_update": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["expression", "from", "to", "evidence_ids"],
+      "properties": {
+        "expression": {"type": "string", "minLength": 1},
+        "from": {"enum": ["UNSEEN", "HEARD", "COMPREHENDED", "IMITATED", "PROMPTED_OUTPUT", "SPONTANEOUS_OUTPUT", "TRANSFERRED"]},
+        "to": {"enum": ["HEARD", "COMPREHENDED", "IMITATED", "PROMPTED_OUTPUT", "SPONTANEOUS_OUTPUT", "TRANSFERRED"]},
+        "evidence_ids": {"type": "array", "minItems": 1, "uniqueItems": true, "items": {"type": "string", "minLength": 1}}
+      }
+    }
+  },
+  "allOf": [
+    {"if": {"properties": {"event_kind": {"const": "confirmed_mastery"}}}, "then": {"required": ["evidence_status", "mastery_update"]}},
+    {"if": {"properties": {"event_kind": {"const": "candidate_evidence"}}}, "then": {"required": ["evidence_status"]}}
+  ]
+}

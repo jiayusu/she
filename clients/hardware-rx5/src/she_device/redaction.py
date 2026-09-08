@@ -33,4 +33,9 @@ def redact_for_log(value: Mapping[str, Any]) -> dict[str, Any]:
     error_code = _find_error_code(value)
     if error_code:
         result["error_code"] = error_code
+    payload = value.get("payload")
+    if isinstance(payload, Mapping):
+        capability = payload.get("capability")
+        if isinstance(capability, str):
+            result["capability"] = capability
     return result

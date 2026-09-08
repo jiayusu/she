@@ -17,8 +17,9 @@ iOS 17 家长端 → Device Gateway → RDK X5 Python 运行时 / 模拟器
 - `A:\working\she\backend\device_gateway`：Node 20 + TypeScript；家长 HTTP API 与设备 WebSocket。
 - `A:\working\she\clients\hardware-rx5`：Python 3.10+；RDK X5 端口、模拟器、安全降级与硬件能力探测。
 - `A:\working\she\shared\contracts\v1`：JSON Schema 2020-12 与跨语言规范 fixtures。
-- `A:\working\she\engine`、`A:\working\she\store`、`A:\working\she\kb`：剧情执行、共享记忆、审核知识基础设施。
-- `A:\working\she\po`、`A:\working\she\route`、`A:\working\she\zhihu`：指向识别、旧路由迁移资产、隔离的数据情报。
+- `A:\working\she\agents\interaction`、`A:\working\she\agents\director`：儿童唯一语言出口与学习导演。
+- `A:\working\she\backend\knowledge_graph`、`A:\working\she\backend\memory_store`、`A:\working\she\backend\pointing`、`A:\working\she\backend\intel`：审核知识、共享记忆、指向识别与知乎数据情报基础设施。
+- `A:\working\she\backend\digital_twin`：服务器权威 Digital Twin 与硬件门户说明；`backend/device_gateway` 承担唯一设备传输边界。
 
 所有教学 Agent 规则与信任边界见 `A:\working\she\AGENTS.md`。儿童实时链路不得访问开放互联网，
 长期学习判断必须有 evidence，Agent 不得直接写 SQLite / FAISS。
