@@ -4,8 +4,9 @@
 
 ## Summary
 
-Removed the root cause of 271 stale `A:\working\she` references and the AGENTS.md
-self-contradiction about which backend components exist.
+Removed the root cause of 271 stale absolute-path references — a hard-coded Windows
+checkout directory that no longer exists — and the AGENTS.md self-contradiction about
+which backend components exist.
 
 Two defects were fixed at their source:
 
@@ -41,7 +42,7 @@ No test files: the enforcing check is mechanical and lands in
 
 Working directory `.` (repository root):
 
-- `grep -cF 'A:\working' AGENTS.md` → `0` (was 7).
+- `git grep -cE '[A-Za-z]:\\\\' -- AGENTS.md` → no matches (was 7 stale absolute paths).
 - `pwsh -NoProfile -Command "& './scripts/audit_repository.ps1'"` →
   `[audit] 371 tracked files checked; repository audit passed`, exit 0.
 - `pwsh -NoProfile -Command "& './scripts/release_readiness.ps1'"` →

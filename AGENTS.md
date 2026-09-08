@@ -2584,7 +2584,7 @@ Trust Boundary
 
 所有 Coding Agent 必须使用**仓库相对路径**，并把每个可独立审查的逻辑变更与工程经验留在仓库中。
 
-> 绝对盘符路径（如 `X:\some\checkout`）不可移植：仓库可以被 clone 到任意位置，CI 在 Linux 上运行。
+> 绝对盘符路径（Windows 盘符加冒号开头的路径）不可移植：仓库可以被 clone 到任意位置，CI 在 Linux 上运行。
 > 文档与脚本中一律使用相对于仓库根的路径；`scripts/audit_repository.ps1` 会机械阻止绝对盘符路径回归。
 
 ## 39.1 修改前

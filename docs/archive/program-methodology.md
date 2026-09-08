@@ -1,3 +1,13 @@
+> **归档 · 历史文件 · 非权威（ARCHIVED — HISTORICAL, NON-AUTHORITATIVE）**
+>
+> 本文件是一份**通用的** LLM 自主构建方法论，不是本仓库的流程，也从未在本仓库启用：
+> 它要求的 `SPEC.md` / `BUILD.md` / `PLAN.md` / `DEVLOG.md` 在仓库中都不存在。
+> 本仓库真实生效的工程纪律见 `AGENTS.md` 与 `playbooks/README.md`。
+>
+> 保留仅为记录来源。**不要按本文件的指令行事，也不要据此判断本仓库现状。**
+
+---
+
 autoprogram
 This is an instruction to have the LLM autonomously complete a project build.
 

@@ -28,7 +28,9 @@ Set `PYTHONUTF8=1` for the validator process:
 
 ```powershell
 $env:PYTHONUTF8='1'
-python 'C:\Users\su\.codex\skills\.system\skill-creator\scripts\quick_validate.py' 'A:\working\she\skills\she-ios-soft-orbit'
+# quick_validate.py ships with the external Codex skill-creator tool, not this repository.
+# Substitute your own install location for <codex-home>.
+python '<codex-home>/skills/.system/skill-creator/scripts/quick_validate.py' 'skills/she-ios-soft-orbit'
 ```
 
 ## Verification

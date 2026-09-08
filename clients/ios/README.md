@@ -21,15 +21,15 @@ The CI workflow dynamically selects an installed iOS 17+ simulator.
 ## Local Gateway
 
 Debug reads `http://127.0.0.1:8788` from
-`A:\working\she\clients\ios\Config\Debug.xcconfig`; the value is injected into
+`clients/ios/Config/Debug.xcconfig`; the value is injected into
 Info.plist and is not hard-coded in the API client. Release intentionally uses
 the inert `api.invalid` domain until a production endpoint is approved.
 
 ## Accessibility and privacy audit
 
 ```powershell
-rg -n 'accessibilityReduceMotion|accessibilityReduceTransparency|accessibilityLabel|dynamicTypeSize' 'A:\working\she\clients\ios\SHEParentApp'
-rg -n 'SceneKit|RealityKit|\.animation\([^,]+\)' 'A:\working\she\clients\ios\SHEParentApp'
+rg -n 'accessibilityReduceMotion|accessibilityReduceTransparency|accessibilityLabel|dynamicTypeSize' 'clients/ios/SHEParentApp'
+rg -n 'SceneKit|RealityKit|\.animation\([^,]+\)' 'clients/ios/SHEParentApp'
 ```
 
 The first command must find all four accessibility hooks. The second must return

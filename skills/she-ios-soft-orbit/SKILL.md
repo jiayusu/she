@@ -22,13 +22,13 @@ Make the parent app feel calm, precise, and relational: a light 3D 小P leads on
 
 ## Build Procedure
 
-1. Read `A:\working\she\clients\ios\SHEParentApp\Design\SoftOrbitTheme.swift` and reuse its semantic tokens.
+1. Read `clients/ios/SHEParentApp/Design/SoftOrbitTheme.swift` and reuse its semantic tokens.
 2. Bind copy to typed API evidence. Never invent mastery, praise, device state, or “live” status.
 3. Compose from existing `PetOrbView`, `GlassCard`, and `MetricTile` before adding a component.
 4. Keep motion state-driven and restrained. Read `accessibilityReduceMotion`; stop breathing/parallax when enabled.
 5. Use semantic fonts and flexible layout. Verify Dynamic Type, VoiceOver order, dark mode, reduced transparency, and 44-point controls.
-6. Run the iOS source audit and XCTest commands documented in `A:\working\she\clients\ios\README.md`.
-7. Record the logical change in `A:\working\she\playbooks\changes`.
+6. Run the iOS source audit and XCTest commands documented in `clients/ios/README.md`.
+7. Record the logical change in `playbooks/changes`.
 
 ## Stop Conditions
 

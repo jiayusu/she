@@ -24,7 +24,8 @@ if ($Oversized.Count -gt 0) {
     exit 3
 }
 
-# Match actual Git conflict markers only. Long `====` section rules in program.md/docs are valid.
+# Match actual Git conflict markers only. Long `====` section rules in
+# docs/archive/program-methodology.md and other docs are valid.
 $mergeMarkers = git -C $ProjectRoot grep -n -E '^(<<<<<<<|>>>>>>>|=======$)' -- .
 if ($LASTEXITCODE -eq 0) {
     $mergeMarkers | ForEach-Object { Write-Error "merge marker: $_" }

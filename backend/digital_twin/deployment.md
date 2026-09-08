@@ -1,15 +1,18 @@
 # Digital Twin and Hardware Portal Deployment
 
-The gateway is the only portal between hardware and software. Start it from `A:\working\she\backend\device_gateway` with Node 20+:
+The gateway is the only portal between hardware and software. Start it from `backend/device_gateway` with Node 20+:
+
+Paths below are relative to the repository root; run from there.
 
 ```powershell
-Set-Location -LiteralPath 'A:\working\she\backend\device_gateway'
+Push-Location -LiteralPath './backend/device_gateway'
 npm ci
 npm run typecheck
 npm start
+Pop-Location
 ```
 
-The mock device uses `A:\working\she\clients\hardware-rx5` and points `SHE_GATEWAY_WS` at `ws://<gateway-host>:8788/v1/device/session`. The simulator is the supported development path while physical SSH access is pending.
+The mock device uses `clients/hardware-rx5` and points `SHE_GATEWAY_WS` at `ws://<gateway-host>:8788/v1/device/session`. The simulator is the supported development path while physical SSH access is pending.
 
 Production requirements:
 

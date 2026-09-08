@@ -13,52 +13,55 @@ iOS 17 家长端 → Device Gateway → RDK X5 Python 运行时 / 模拟器
 
 ## 组件边界
 
-- `A:\working\she\clients\ios`：SwiftUI 家长端；Soft Orbit / Pet First，单演示家庭，无登录。
-- `A:\working\she\backend\device_gateway`：Node 20 + TypeScript；家长 HTTP API 与设备 WebSocket。
-- `A:\working\she\clients\hardware-rx5`：Python 3.10+；RDK X5 端口、模拟器、安全降级与硬件能力探测。
-- `A:\working\she\shared\contracts\v1`：JSON Schema 2020-12 与跨语言规范 fixtures。
-- `A:\working\she\agents\interaction`、`A:\working\she\agents\director`：儿童唯一语言出口与学习导演。
-- `A:\working\she\backend\knowledge_graph`、`A:\working\she\backend\memory_store`、`A:\working\she\backend\pointing`、`A:\working\she\backend\intel`：审核知识、共享记忆、指向识别与知乎数据情报基础设施。
-- `A:\working\she\backend\digital_twin`：服务器权威 Digital Twin 与硬件门户说明；`backend/device_gateway` 承担唯一设备传输边界。
+- `clients/ios`：SwiftUI 家长端；Soft Orbit / Pet First，单演示家庭，无登录。
+- `backend/device_gateway`：Node 20 + TypeScript；家长 HTTP API 与设备 WebSocket。
+- `clients/hardware-rx5`：Python 3.10+；RDK X5 端口、模拟器、安全降级与硬件能力探测。
+- `shared/contracts/v1`：JSON Schema 2020-12 与跨语言规范 fixtures。
+- `agents/interaction`、`agents/director`：儿童唯一语言出口与学习导演。
+- `backend/knowledge_graph`、`backend/memory_store`、`backend/pointing`、`backend/intel`：审核知识、共享记忆、指向识别与知乎数据情报基础设施。
+- `backend/digital_twin`：服务器权威 Digital Twin 与硬件门户说明；`backend/device_gateway` 承担唯一设备传输边界。
 
-所有教学 Agent 规则与信任边界见 `A:\working\she\AGENTS.md`。儿童实时链路不得访问开放互联网，
+所有教学 Agent 规则与信任边界见 `AGENTS.md`。儿童实时链路不得访问开放互联网，
 长期学习判断必须有 evidence，Agent 不得直接写 SQLite / FAISS。
 
 ## 本地快速验证（Windows）
 
+> 本文所有路径均相对于仓库根目录。请先 `cd` 到仓库根再执行以下命令。
+
 ```powershell
-& 'A:\working\she\scripts\verify.ps1'
-& 'A:\working\she\scripts\audit_repository.ps1'
+& './scripts/verify.ps1'
+& './scripts/audit_repository.ps1'
 ```
 
-启动 Gateway：
+启动 Gateway（用 `Push-Location`/`Pop-Location`，执行完自动回到仓库根）：
 
 ```powershell
-Set-Location -LiteralPath 'A:\working\she\backend\device_gateway'
+Push-Location -LiteralPath './backend/device_gateway'
 npm install
 npm start
+Pop-Location
 ```
 
 运行确定性设备模拟器：
 
 ```powershell
-python -m pip install -e 'A:\working\she\clients\hardware-rx5[dev]'
+python -m pip install -e './clients/hardware-rx5[dev]'
 python -m she_device.cli simulate --once
 ```
 
-iOS 项目生成与构建命令见 `A:\working\she\clients\ios\README.md`；iOS 需要 macOS、Xcode 与 XcodeGen。
+iOS 项目生成与构建命令见 `clients/ios/README.md`；iOS 需要 macOS、Xcode 与 XcodeGen。
 
 ## RDK X5 状态
 
 模拟器、契约、摄像头生命周期和降级逻辑已自动化验证。真实 RDK X5 上的 Ubuntu 22.04、
 `srcampy`、`hbm_runtime`、`Hobot.GPIO`、ALSA、摄像头和针脚仍须在设备可 SSH 后逐项验证。
-遵循 `A:\working\she\playbooks\releases\rx5-first-boot.md`，不得把“模块缺失”伪装成成功。
+遵循 `playbooks/releases/rx5-first-boot.md`，不得把“模块缺失”伪装成成功。
 
 ## Playbook 与 Skill 纪律
 
-每个逻辑变更都在 `A:\working\she\playbooks\changes` 留下同提交记录；故障先搜索
-`A:\working\she\playbooks\incidents` 与 `A:\working\she\skills`。只有跨场景重复验证、包含真实判断步骤的
-流程才提升为 skill。iOS 视觉改动先使用 `A:\working\she\skills\she-ios-soft-orbit\SKILL.md`。
+每个逻辑变更都在 `playbooks/changes` 留下同提交记录；故障先搜索
+`playbooks/incidents` 与 `skills`。只有跨场景重复验证、包含真实判断步骤的
+流程才提升为 skill。iOS 视觉改动先使用 `skills/she-ios-soft-orbit/SKILL.md`。
 
 ## 隐私红线
 

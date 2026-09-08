@@ -20,8 +20,8 @@ privacy responses at contract version `1.0`. Schemas remain unchanged.
 
 ## Files
 
-- `A:\working\she\clients\ios`
-- `A:\working\she\playbooks\changes\2026-09-07-006-ios-data-layer.md`
+- `clients/ios`
+- `playbooks/changes/2026-09-07-006-ios-data-layer.md`
 
 ## Verification
 

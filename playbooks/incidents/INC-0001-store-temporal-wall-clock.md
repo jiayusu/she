@@ -8,12 +8,13 @@
 
 - Windows, Asia/Shanghai, system date 2026-09-07
 - Python 3.12 pytest
-- Component: `A:\working\she\store`
-- Command: `python -m pytest A:\working\she\store\tests -q`
+- Component: `store` — **retired directory, historical path**; succeeded by `backend/memory_store`
+- Command at the time: `python -m pytest store/tests -q`
+  (today's equivalent: `python -m pytest backend/memory_store/tests -q`)
 
 ## Symptoms
 
-Sixty store tests passed and one temporal-window test failed. Re-running from the correct absolute working directory reproduced the same failure.
+Sixty store tests passed and one temporal-window test failed. Re-running from the correct working directory reproduced the same failure.
 
 ## Root cause
 
@@ -32,7 +33,7 @@ Add an optional `now` parameter to `MemoryService.recall()` and pass it to `temp
 
 - Before implementation, the focused test failed with `unexpected keyword argument 'now'`.
 - After implementation, the focused test passed.
-- `python -m pytest A:\working\she\store\tests -q` passed all 61 tests.
+- `python -m pytest store/tests -q` passed all 61 tests (historical path; now `backend/memory_store/tests`).
 
 ## Prevention
 

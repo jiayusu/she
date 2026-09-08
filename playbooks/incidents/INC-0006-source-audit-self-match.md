@@ -8,9 +8,9 @@ heavyweight 3D import or unscoped animation.
 
 ## Environment
 
-- `A:\working\she\scripts\verify.ps1`
+- `scripts/verify.ps1`
 - Windows PowerShell 7
-- Ripgrep audit covering the entire `A:\working\she\clients\ios` tree
+- Ripgrep audit covering the entire `clients/ios` tree
 
 ## Symptoms
 
@@ -31,13 +31,13 @@ configuration, tests, and instructional prose into one policy domain.
 ## Resolution
 
 Restrict forbidden source patterns to
-`A:\working\she\clients\ios\SHEParentApp`. Check the deployment target directly
-in `A:\working\she\clients\ios\project.yml`. Use thrown errors with explicit
+`clients/ios/SHEParentApp`. Check the deployment target directly
+in `clients/ios/project.yml`. Use thrown errors with explicit
 messages for missing required patterns or present forbidden patterns.
 
 ## Verification
 
-Run `A:\working\she\scripts\verify.ps1` from any working directory. The iOS
+Run `scripts/verify.ps1` from any working directory. The iOS
 source contract must pass while the script still fails if a forbidden import is
 placed in application source.
 

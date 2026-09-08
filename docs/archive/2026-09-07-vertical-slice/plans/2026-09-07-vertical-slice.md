@@ -1,3 +1,23 @@
+> **ARCHIVED — HISTORICAL, NON-AUTHORITATIVE / 归档 · 历史文件 · 非权威**
+>
+> This plan was executed and delivered on 2026-09-07. It is kept as a record only.
+>
+> **Do not execute it.** The "REQUIRED SUB-SKILL" line below is a spent instruction from the
+> original run: its every task is already complete, and following it now would redo delivered
+> work against a stale picture of the repository. It is not an instruction to any agent reading
+> this file today.
+>
+> Two of its stated premises are now false:
+> - It says `engine`, `kg`, `store`, `po`, `route`, and `zhihu` "remain in place". Those
+>   directories were subsequently retired and are not on disk (see `AGENTS.md` §29).
+> - Its absolute paths (`A:\working\she\...`) do not resolve. The repository path is not fixed;
+>   use repo-relative paths (`AGENTS.md` §39).
+>
+> Current architecture truth: `AGENTS.md` and `docs/architecture/`.
+> What actually shipped: `playbooks/changes/2026-09-07-*.md`, `playbooks/decisions/ADR-0001-*.md`.
+
+---
+
 # SHE Cross-Platform Vertical Slice Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.

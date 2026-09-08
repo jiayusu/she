@@ -7,7 +7,7 @@
 
 ## Context
 
-- Component: `A:\working\she\backend\device_gateway`
+- Component: `backend/device_gateway`
 - Compiler: TypeScript with `module` and `moduleResolution` set to `NodeNext`
 - Dependency entry point: `ajv/dist/2020.js`
 
@@ -30,7 +30,7 @@ Do not suppress the error with `any`, `skipLibCheck`, or a constructor cast.
 
 ## Verification
 
-Run from `A:\working\she\backend\device_gateway`:
+Run from `backend/device_gateway`:
 
 ```powershell
 npm test

@@ -8,7 +8,7 @@
 
 - Windows, Python 3.12
 - JSON Schema draft 2020-12 contract authoring
-- Command: `python -m pytest A:\working\she\shared\contracts\tests -q`
+- Command: `python -m pytest shared/contracts/tests -q`
 
 ## Symptoms
 
@@ -28,7 +28,7 @@ Expand the `allOf` conditional branches into indented JSON so every object bound
 
 ## Verification
 
-- `python -m json.tool A:\working\she\shared\contracts\v1\device-event.schema.json` passed.
+- `python -m json.tool shared/contracts/v1/device-event.schema.json` passed.
 - Contract suite: 12 passed.
 - Standalone validator: 6 valid accepted and 5 invalid rejected.
 

@@ -1,8 +1,20 @@
+> **归档 · 历史文件 · 非权威（ARCHIVED — HISTORICAL, NON-AUTHORITATIVE）**
+>
+> 本文件描述 2026-09-07 纵向切片的**设计时状态**，该切片已交付完成。
+> 文中"在不搬迁现有 `engine`/`kg`/`store`/`po`/`route`/`zhihu` 组件的前提下"已不成立：
+> 这些目录随后已退役且不在磁盘上（见 `AGENTS.md` §29）。
+> 文中的绝对路径（`A:\working\she\...`）同样失效——仓库路径不固定，请使用仓库相对路径。
+>
+> 当前架构真源：`AGENTS.md` 与 `docs/architecture/`。
+> 实际交付记录：`playbooks/changes/2026-09-07-*.md` 与 `playbooks/decisions/ADR-0001-*.md`。
+
+---
+
 # SHE 跨端纵向切片设计
 
 **日期：** 2026-09-07
 
-**状态：** 已完成对话评审，待仓库文件复核
+**状态：** 已交付并归档（原文记载："已完成对话评审，待仓库文件复核"）
 
 **范围：** iOS 17 家长端、Device Gateway、RDK X5 Ubuntu 22 设备运行时、共享契约、工程 playbooks 与项目 skills
 
