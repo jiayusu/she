@@ -16,6 +16,8 @@ export interface GatewayOptions {
   contractRoot?: string;
   learningReportUrl?: string;
   deviceToken?: string;
+  /** Browser origins allowed to call the parent HTTP API cross-origin. Empty/omitted disables CORS entirely. */
+  allowedOrigins?: string[];
 }
 
 export interface GatewayHandle {
@@ -54,6 +56,28 @@ async function readJson(request: IncomingMessage): Promise<JsonObject> {
   return parsed as JsonObject;
 }
 
+const CORS_METHODS = "GET, PATCH, PUT, POST, OPTIONS";
+const CORS_HEADERS = "content-type, authorization";
+
+/**
+ * CORS stays opt-in: without an explicit allowlist the gateway behaves exactly as
+ * before (no CORS headers, browsers blocked). Allowed browser origins get their
+ * own Origin echoed back; every other response carries `Vary: Origin` so caches
+ * never mix allowlisted and non-allowlisted variants.
+ */
+function corsHeadersFor(origin: string | undefined, allowedOrigins: Set<string>): Record<string, string> {
+  if (allowedOrigins.size === 0) return {};
+  if (origin && allowedOrigins.has(origin)) {
+    return {
+      "access-control-allow-origin": origin,
+      "access-control-allow-methods": CORS_METHODS,
+      "access-control-allow-headers": CORS_HEADERS,
+      "access-control-max-age": "600",
+    };
+  }
+  return { vary: "Origin" };
+}
+
 export async function createGateway(options: GatewayOptions = {}): Promise<GatewayHandle> {
   const host = options.host ?? "127.0.0.1";
   const deviceToken = options.deviceToken ?? process.env.SHE_DEVICE_TOKEN;
@@ -68,12 +92,20 @@ export async function createGateway(options: GatewayOptions = {}): Promise<Gatew
   });
   const webSockets = new WebSocketServer({ noServer: true });
   sessions.attach(webSockets);
+  const allowedOrigins = new Set(options.allowedOrigins ?? []);
 
   const server = createServer(async (request, response) => {
     const url = new URL(request.url ?? "/", `http://${request.headers.host ?? "localhost"}`);
     const deviceMatch = url.pathname.match(/^\/v1\/devices\/([^/]+)$/);
+    const corsHeaders = corsHeadersFor(request.headers.origin, allowedOrigins);
+    for (const [name, value] of Object.entries(corsHeaders)) response.setHeader(name, value);
 
     try {
+      if (request.method === "OPTIONS") {
+        response.writeHead(204, { "content-length": 0 });
+        response.end();
+        return;
+      }
       if (request.method === "GET" && url.pathname === "/health") {
         reply(response, 200, { status: "ok", contract_version: CONTRACT_VERSION });
       } else if (request.method === "GET" && url.pathname === "/v1/dashboard") {
