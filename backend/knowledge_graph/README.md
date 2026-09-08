@@ -6,8 +6,7 @@
 ## 目录结构
 
 ```
-kb/
-├── READMD.md                  原始操作手册(需求来源)
+backend/knowledge_graph/
 ├── README.md                  本文档
 ├── kg.py                      公共库: 建表/facts()/next_words()/GraphML/版本
 ├── cleaning.py                规则清洗层(被建库与热更链共用)
@@ -21,12 +20,41 @@ kb/
 │   ├── make_seed.py           W1: YLE + CEFR-J → seed.csv
 │   ├── fetch_conceptnet.py    W1: dump 下载(断点续传)
 │   ├── filter_conceptnet.py   W1-2: 断言流式过滤 + 覆盖率报告
+│   ├── turbo_clean.py         W2: LLM 批量审边(高吞吐)
+│   ├── repair_coverage.py     W2: 覆盖不足词补边
+│   ├── finish_pipeline.py     W2-3: 终跑链(报告刷新 → RotatE 训练 → FAISS 索引 → 抽样)
 │   ├── sample_edges.py        W2 人工层: 抽样 50 条
 │   ├── acceptance.py          验收红线总检查
-│   └── _speed_test.py         LLM 批处理速度测试(开发用)
+│   └── _status.py             管线状态速查(开发用)
 ├── raw/                       原始文件(dump/词表, 不入库)
 └── data/                      产物: seed.csv / kg.db / kg.graphml / embeddings/ / snapshots/ / reports/
 ```
+
+> **产物目录只有 `data/`。** 代码中一律 `DATA = ROOT / "data"`(见 `kg.py`、`build_kg.py`、
+> `server.py`),没有任何脚本读写 `kg/data/`。仓库里若存在 `kg/` 子目录,那是早期在错误工作目录
+> 下运行管线留下的孤立副本,已不再跟踪(见下节)。
+
+### 生成产物不入库
+
+`data/` 下的 `kg.db`、`kg.graphml`、`embeddings/`、`snapshots/`、`reports/`、
+`edges_candidates.csv.gz` 全部是**管线产物**,由 `.gitignore` 排除,不提交。
+只有输入数据入库:`data/seed.csv`、`data/word_variants.csv` 与 `raw/` 下的词表。
+
+重新生成全部产物(顺序即下方"复现步骤"W1 → W4):
+
+```bash
+python scripts/fetch_conceptnet.py     # W1   下载 ConceptNet dump(~475MB)
+python scripts/make_seed.py            # W1   → data/seed.csv
+python scripts/filter_conceptnet.py    # W1-2 候选边 + 覆盖率报告
+python build_kg.py --seed data/seed.csv --out data/kg.db   # W2 规则层 + 建库
+python build_kg.py --llm-clean         # W2   LLM 审边(需 API key; finish_pipeline 的前置)
+python scripts/repair_coverage.py      # W2   覆盖不足词补边(每词 ≥2 边红线)
+python scripts/finish_pipeline.py      # W2-3 终跑链: 报告 + 训练 + 索引 + 抽样
+python server.py &                     # W4   起服务
+python scripts/acceptance.py           # 验收红线实测
+```
+
+各步的参数与产物细节见下方"复现步骤"分节;LLM 层需要的环境变量见 W2 小节。
 
 ## 复现步骤
 
