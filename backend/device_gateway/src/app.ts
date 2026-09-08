@@ -166,6 +166,8 @@ export async function createGateway(options: GatewayOptions = {}): Promise<Gatew
           return;
         }
         reply(response, 200, repository.saveDevice(candidate));
+      } else if (request.method === "GET" && url.pathname === "/v1/parent-constraints") {
+        reply(response, 200, repository.constraints());
       } else if (request.method === "PUT" && url.pathname === "/v1/parent-constraints") {
         const value = await readJson(request);
         const candidate = repository.candidateConstraints(value, new Date().toISOString());

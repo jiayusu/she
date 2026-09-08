@@ -2,117 +2,123 @@ import { MetricTile } from "@/components/MetricTile";
 import { PetOrb } from "@/components/PetOrb";
 import type { AppState } from "@/state/appModel";
 
-const METRIC_LABELS = ["主动开口", "无提示输出", "新词"] as const;
-
 export function TodayView({
   state,
   onRefresh,
+  onPreview,
+  onDevice,
 }: {
   state: AppState;
   onRefresh: () => void;
+  onPreview: () => void;
+  onDevice: () => void;
 }) {
-  if (state.phase === "idle" || state.phase === "loading") return <LoadingView />;
-  if (state.phase === "offline") return <OfflineView onRefresh={onRefresh} />;
-  if (!state.dashboard) return <EmptyView />;
-
+  if (state.phase === "idle" || state.phase === "loading")
+    return (
+      <div className="status-placeholder" role="status">
+        <PetOrb statusLabel="正在加载" />
+        <h1>正在准备你的家庭空间…</h1>
+      </div>
+    );
+  if (state.phase === "offline")
+    return (
+      <div className="status-placeholder" role="alert">
+        <h1>暂时连不上家庭服务</h1>
+        <p>请检查网络，然后重新加载。此时无法读取或保存设置。</p>
+        <button className="primary-button" onClick={onRefresh}>
+          重新加载
+        </button>
+      </div>
+    );
+  if (!state.dashboard)
+    return (
+      <div className="status-placeholder">
+        <h1>还没有学习记录</h1>
+        <p>等有新的互动记录后，再来看看。</p>
+        <button className="secondary-button" onClick={onRefresh}>
+          刷新记录
+        </button>
+      </div>
+    );
   const { dashboard } = state;
   return (
     <>
-      {state.refreshError ? (
-        <div className="stale-banner" role="status">
-          ⚠ 刚刚没有刷新成功，现在显示的是已保存的内容
+      <header className="page-heading">
+        <div>
+          <p className="eyebrow">每天一点点，一起慢慢来</p>
+          <h1>今天，陪孩子轻松开口</h1>
+          <p className="secondary-text">看看小发现，再一起预览下一次探险。</p>
         </div>
-      ) : null}
-
-      <header>
-        <p className="card-caption">家庭学习台</p>
-        <h1 className="hero-greeting">{dashboard.greeting}</h1>
-        <span className={`device-status ${dashboard.device.online ? "online" : "offline"}`}>
-          {dashboard.device.online ? "✓ 小P设备在线" : "💤 小P设备暂时离线"}
-        </span>
+        <button className="text-button" onClick={onRefresh}>
+          刷新记录 ↻
+        </button>
       </header>
-
-      <section className="glass-card" aria-label="小P的观察">
-        <div className="pet-row">
-          <PetOrb statusLabel={dashboard.pet.accessibility_label} />
+      <div className="home-grid">
+        <section className="welcome-card">
           <div>
-            <p className="card-caption">小P的观察</p>
-            <p className="pet-observation">★ {dashboard.highlight.text}</p>
+            <p className="eyebrow">小P带回的小发现</p>
+            <h2>{dashboard.highlight.text}</h2>
+            <p>记录一次尝试，不给孩子打分。</p>
           </div>
+          <PetOrb statusLabel={dashboard.pet.accessibility_label} />
+        </section>
+        <section className="glass-card next-task">
+          <p className="eyebrow">接下来 · 亲子共看</p>
+          <h2>{dashboard.task.subtitle}</h2>
+          <p className="secondary-text">{dashboard.task.title}</p>
+          <button className="primary-button" onClick={onPreview}>
+            和孩子一起看 <span aria-hidden="true">→</span>
+          </button>
+          <p className="helper-text">
+            打开简单的任务预览，不会开启摄像头或录音。
+          </p>
+        </section>
+      </div>
+      <section aria-label="学习记录">
+        <div className="section-heading">
+          <h2>{dashboard.mock ? "示例中的小进步" : "这次记录的小进步"}</h2>
+          <span className="helper-text">
+            记录日期 {dashboard.generated_at.slice(0, 10)}
+          </span>
         </div>
-      </section>
-
-      <section className="glass-card" aria-label="下一步">
-        <p className="card-caption">下一步</p>
-        <h2 className="card-title">{dashboard.task.title}</h2>
-        <p className="secondary-text">{dashboard.task.subtitle}</p>
-        <div
-          className="task-progress-track"
-          role="progressbar"
-          aria-valuenow={Math.round(dashboard.task.progress * 100)}
-          aria-valuemin={0}
-          aria-valuemax={100}
-          aria-label="任务进度"
-        >
-          <div
-            className="task-progress-fill"
-            style={{ width: `${Math.round(dashboard.task.progress * 100)}%` }}
+        <div className="metric-grid">
+          <MetricTile
+            label="自己主动说"
+            value={`${dashboard.metrics.spontaneous_speaking_count} 次`}
+            detail="孩子自己发起的表达"
+          />
+          <MetricTile
+            label="不用提示也能说"
+            value={`${dashboard.metrics.unprompted_output_count} 次`}
+            detail="没有额外提示的表达"
+          />
+          <MetricTile
+            label="新出现的词"
+            value={`${dashboard.metrics.new_words.length} 个`}
+            detail={
+              dashboard.metrics.new_words.join(" · ") || "还在积累，不着急"
+            }
           />
         </div>
-        <button type="button" className="primary-button">
-          {dashboard.task.action_label}
+        <p className="helper-text">
+          不同记录可能重叠，不需要把次数相加，也不必和其他孩子比较。
+        </p>
+      </section>
+      <aside className="device-note">
+        <div>
+          <strong>
+            {dashboard.device.online ? "设备已连接" : "设备尚未连接"}
+          </strong>
+          <p>
+            {dashboard.mock
+              ? "体验版无需连接设备，也能查看所有示例页面。"
+              : "你仍可查看记录；设备连接后才能开始设备互动。"}
+          </p>
+        </div>
+        <button className="secondary-button" onClick={onDevice}>
+          查看设备
         </button>
-      </section>
-
-      <section aria-label="今日三个学习指标" className="metric-grid">
-        <MetricTile
-          label={METRIC_LABELS[0]}
-          value={String(dashboard.metrics.spontaneous_speaking_count)}
-          detail="今天"
-        />
-        <MetricTile
-          label={METRIC_LABELS[1]}
-          value={String(dashboard.metrics.unprompted_output_count)}
-          detail="无需提示"
-        />
-        <MetricTile
-          label={METRIC_LABELS[2]}
-          value={String(dashboard.metrics.new_words.length)}
-          detail={dashboard.metrics.new_words.join(" · ") || "—"}
-        />
-      </section>
+      </aside>
     </>
-  );
-}
-
-function LoadingView() {
-  return (
-    <div className="skeleton-stack" aria-label="正在准备今天的家庭摘要" role="status">
-      <div style={{ width: "100%", height: 58 }} className="skeleton-card" />
-      <div className="skeleton-hero" />
-      <div className="skeleton-card" style={{ width: "100%" }} />
-      <div className="skeleton-card" style={{ width: "100%" }} />
-    </div>
-  );
-}
-
-function OfflineView({ onRefresh }: { onRefresh: () => void }) {
-  return (
-    <div className="status-placeholder">
-      <h2>小P正在休息</h2>
-      <p>暂时没连上家庭服务。已有内容不会丢失，可以稍后再试。</p>
-      <button type="button" className="primary-button" onClick={onRefresh}>
-        重新连接
-      </button>
-    </div>
-  );
-}
-
-function EmptyView() {
-  return (
-    <div className="status-placeholder">
-      <h2>今天还没有新记录</h2>
-      <p>小P会在下一次真实互动后带回新的发现。</p>
-    </div>
   );
 }

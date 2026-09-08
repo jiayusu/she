@@ -18,6 +18,7 @@ import {
 
 export interface AppApi {
   dashboard(): Promise<DashboardSnapshot>;
+  parentConstraints(): Promise<ParentConstraints>;
   weeklyReport(): Promise<WeeklyReport>;
   deviceSettings(deviceId: string): Promise<DeviceSettings>;
   updateDeviceSettings(deviceId: string, patch: DeviceSettingsPatch): Promise<DeviceSettings>;
@@ -43,6 +44,10 @@ export class LiveAppApi implements AppApi {
     this.baseUrl = options.baseUrl ?? "";
     this.fetchImpl = options.fetchImpl ?? globalThis.fetch.bind(globalThis);
     this.timeoutMs = options.timeoutMs ?? 8000;
+  }
+
+  parentConstraints(): Promise<ParentConstraints> {
+    return this.request("v1/parent-constraints", decodeParentConstraints);
   }
 
   dashboard(): Promise<DashboardSnapshot> {

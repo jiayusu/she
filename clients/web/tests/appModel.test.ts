@@ -71,6 +71,7 @@ function constraintsFixture(): ParentConstraints {
 }
 
 class MockApi {
+  async parentConstraints() { return constraintsFixture(); }
   failure: AppApiError | null = null;
   patchFailure: AppApiError | null = null;
   dashboardPayload = dashboardFixture();

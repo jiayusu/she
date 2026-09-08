@@ -26,6 +26,12 @@ describe("LiveAppApi against the real Device Gateway", () => {
     await gateway.close();
   });
 
+  test("saved family plan can be read back", async () => {
+    const response = await fetch(`${gateway.url}/v1/parent-constraints`);
+    assert.equal(response.status, 200);
+    assert.equal((await response.json()).contract_version, "1.0");
+  });
+
   test("dashboard, weekly report, and device settings decode from live responses", async () => {
     const api = new LiveAppApi({ baseUrl: gateway.url });
     const dashboard = await api.dashboard();

@@ -67,7 +67,8 @@ export class AppModel {
       const dashboard = await this.api.dashboard();
       const weeklyReport = await this.api.weeklyReport();
       const deviceSettings = await this.api.deviceSettings(dashboard.device.device_id);
-      this.setState({ dashboard, weeklyReport, deviceSettings, phase: "ready" });
+      const parentConstraints = await this.api.parentConstraints();
+      this.setState({ dashboard, weeklyReport, deviceSettings, parentConstraints, phase: "ready" });
     } catch (error) {
       const appError = error instanceof AppApiError ? error : new AppApiError("invalid_response");
       if (hasEvidence) {
