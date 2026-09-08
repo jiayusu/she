@@ -1814,16 +1814,23 @@ SPONTANEOUS_OUTPUT → TRANSFERRED 转化率
 
 # 29. 当前后台组件一览
 
-| 组件 | 做什么 | 在新架构中的位置 |
-|---|---|---|
-| `engine` | LLM 输出、Recast、语言等级、剧情状态、模板、降级 | Interaction + Story 的执行底座 |
-| `kb` | 儿童英语通用知识、词汇关系、检索、热更新 | Curriculum / Story 的知识底座 |
-| `store` | 工作/情景/显著性/程序性记忆、快照、删除 | Shared State 持久化底座 |
-| `pointing` | 手势 + 物体指向识别 | 感知层 |
-| `intel` | 外部内容采集、运营情报、人工审核入 KG | 离线内容生产层 |
-| ASR / 发音评估 | 语音识别与语言评估 | Assessment 上游；具体实现不在本批文档 |
-| Safety | 儿童内容安全硬钩子 | Trust Boundary；具体实现不在本批文档 |
-| TTS / 设备灯效 | 输出执行 | Interaction 下游 |
+> 本表是**磁盘真实状态**，与开头 Canonical Ownership Map 一致。
+> 历史目录 `engine`、`kb`、`store`、`route`、`po`、`zhihu` 已退役且不在磁盘上；
+> 它们的职责归属见下表"取代者"一列，迁移说明见 `docs/archive/migration-legacy-ministers.md`。
+
+| 组件 | 做什么 | 在新架构中的位置 | 取代的历史目录 |
+|---|---|---|---|
+| `agents/interaction` | LLM 输出、Recast、语言等级、剧情状态、模板、降级 | Interaction + Story 的执行底座 | `engine` |
+| `agents/director` | 学习优先调度；Curriculum / Scaffold / Story / Assessment / Learner Model | Agent 教学层入口 | `route` |
+| `backend/knowledge_graph` | 儿童英语通用知识、词汇关系、检索、热更新 | Curriculum / Story 的知识底座 | `kb`、`kg` |
+| `backend/memory_store` | 工作/情景/显著性/程序性记忆、快照、删除 | Shared State 持久化底座 | `store` |
+| `backend/pointing` | 手势 + 物体指向识别 | 感知层 | `po` |
+| `backend/intel` | 外部内容采集、运营情报、人工审核入 KG | 离线内容生产层 | `zhihu` |
+| `backend/device_gateway` | 唯一硬件/软件传输边界；并**拥有 Digital Twin 实现** (`src/digital-twin.ts`) | 设备边界 | — |
+| `backend/digital_twin` | **仅文档目录，无代码**；实现在 `backend/device_gateway/src/digital-twin.ts` | 文档边界 | — |
+| ASR / 发音评估 | 语音识别与语言评估 | Assessment 上游；具体实现不在本批文档 | — |
+| Safety | 儿童内容安全硬钩子 | Trust Boundary；具体实现不在本批文档 | — |
+| TTS / 设备灯效 | 输出执行 | Interaction 下游 | — |
 
 ---
 
@@ -2575,15 +2582,18 @@ Trust Boundary
 
 # 39. 工程记忆与可复用技能纪律
 
-所有 Coding Agent 在 `A:\working\she` 工作时必须使用绝对路径，并把每个可独立审查的逻辑变更与工程经验留在仓库中。
+所有 Coding Agent 必须使用**仓库相对路径**，并把每个可独立审查的逻辑变更与工程经验留在仓库中。
+
+> 绝对盘符路径（如 `X:\some\checkout`）不可移植：仓库可以被 clone 到任意位置，CI 在 Linux 上运行。
+> 文档与脚本中一律使用相对于仓库根的路径；`scripts/audit_repository.ps1` 会机械阻止绝对盘符路径回归。
 
 ## 39.1 修改前
 
 1. 先标记所属层：Hardware、Web、App、Agent、Backend Service、Shared State、Trust Boundary 或 Repository。
-2. 搜索 `A:\working\she\skills` 与 `A:\working\she\playbooks\incidents` 是否已有同类情境。
+2. 搜索 `skills/` 与 `playbooks/incidents/` 是否已有同类情境。
 3. 命中 skill 时必须先完整读取并按其验证步骤执行；不得凭记忆复述旧步骤。
 4. 命中 incident 但没有 skill 时，先复现 fingerprint，再采用已验证 resolution。
-5. 跨端字段变化必须先改 `A:\working\she\shared\contracts`，不得先在某一个客户端私加字段。
+5. 跨端字段变化必须先改 `shared/contracts/`，不得先在某一个客户端私加字段。
 
 ## 39.2 修改中
 
@@ -2594,8 +2604,8 @@ Trust Boundary
 
 ## 39.3 修改后
 
-1. 每个逻辑变更必须在 `A:\working\she\playbooks\changes` 留下一条记录，并与代码放在同一 commit。
-2. 错误解决记录使用 `A:\working\she\playbooks\templates\incident.md`，必须包含复现与通过证据。
+1. 每个逻辑变更必须在 `playbooks/changes/` 留下一条记录，并与代码放在同一 commit。
+2. 错误解决记录使用 `playbooks/templates/incident.md`，必须包含复现与通过证据。
 3. 只有可重复、步骤稳定、输入输出明确且有验证命令的流程才能升级为 skill。
 4. 同一错误或情境再次出现时，优先运行已有 skill；skill 与现实不符时先记录新证据，再修订 skill。
 5. 可由脚本或测试机械执行的规则优先自动化，不用冗长 skill 替代检查器。
@@ -2603,7 +2613,7 @@ Trust Boundary
 ## 39.4 首批项目 skills
 
 ```text
-A:\working\she\skills\she-ios-soft-orbit\SKILL.md
+skills/she-ios-soft-orbit/SKILL.md
 ```
 
 跨端契约顺序与 incident recovery 已由本文件、Schema validator 和 playbook 模板约束。无 skill 压力测试表明通用 Agent 能正确处理这两类问题，因此不重复建立文档 skill；机械约束优先自动化。
@@ -2612,7 +2622,7 @@ RDK X5 首次连接流程当前保存在 release playbook。只有完成一次�
 
 ## 39.5 当前实现状态（2026-09-07）
 
-新的学习优先调度入口已在 `A:\working\she\agents\director` 提供：
+新的学习优先调度入口已在 `agents/director/` 提供：
 
 ```text
 POST /agent/direct
