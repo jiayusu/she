@@ -23,6 +23,7 @@ from .snapshot import Snapshots
 from .temporal import is_temporal, parse
 from .vector import HashingEmbedder, VectorIndex
 from .working import WorkingMemory
+from .learning import LearningStore
 
 
 class MemoryService:
@@ -39,6 +40,7 @@ class MemoryService:
         self.procedural = ProceduralStore(self.db, cap=self.cfg.procedural_cap)
         self.audit = Audit(self.db, self.cfg.audit_dir(),
                            retention_days=self.cfg.audit_retention_days)
+        self.learning = LearningStore(self.db, self.audit)
         self.lifecycle = Lifecycle(
             self.db, self.episodic, self.salience, self.audit, self.metrics,
             decay_lambda=self.cfg.decay_lambda_per_day, floor=self.cfg.prune_floor,

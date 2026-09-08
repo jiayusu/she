@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Learning delivery request",
+  "type": "object", "additionalProperties": false,
+  "required": ["child_id", "session_id", "turn_id"],
+  "properties": {
+    "child_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,80}$"},
+    "session_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,80}$"},
+    "turn_id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,80}$"}
+  }
+}

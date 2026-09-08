@@ -8,6 +8,7 @@ import { DemoRepository } from "./demo-repository.js";
 import { DeviceSessionRegistry } from "./device-sessions.js";
 import { DigitalTwinRegistry } from "./digital-twin.js";
 import { CONTRACT_VERSION, type JsonObject } from "./types.js";
+import { LearningDelivery, service, ServiceError } from './learning.js';
 
 
 export interface GatewayOptions {
@@ -16,6 +17,9 @@ export interface GatewayOptions {
   contractRoot?: string;
   learningReportUrl?: string;
   deviceToken?: string;
+  memoryUrl?: string;
+  directorUrl?: string;
+  interactionUrl?: string;
   /** Browser origins allowed to call the parent HTTP API cross-origin. Empty/omitted disables CORS entirely. */
   allowedOrigins?: string[];
 }
@@ -85,11 +89,16 @@ export async function createGateway(options: GatewayOptions = {}): Promise<Gatew
   const validators = await ContractValidators.load(contractRoot);
   const repository = await DemoRepository.load(contractRoot, options.learningReportUrl ?? process.env.SHE_LEARNING_REPORT_URL);
   const twins = new DigitalTwinRegistry();
+  let learning: LearningDelivery | undefined;
   const sessions = new DeviceSessionRegistry(validators, undefined, {
-    onEvent: (event, snapshot) => twins.onEvent(event, snapshot),
+    onEvent: (event, snapshot) => { twins.onEvent(event, snapshot); void learning?.acknowledge(event); },
     onCommand: (command) => twins.onCommand(command),
     onClose: (deviceId) => twins.onClosed(deviceId),
   });
+  const memoryUrl = options.memoryUrl ?? process.env.SHE_MEMORY_URL;
+  const directorUrl = options.directorUrl ?? process.env.SHE_DIRECTOR_URL;
+  const interactionUrl = options.interactionUrl ?? process.env.SHE_INTERACTION_URL;
+  if(memoryUrl && interactionUrl) learning = new LearningDelivery(memoryUrl,interactionUrl,sessions);
   const webSockets = new WebSocketServer({ noServer: true });
   sessions.attach(webSockets);
   const allowedOrigins = new Set(options.allowedOrigins ?? []);
@@ -108,6 +117,12 @@ export async function createGateway(options: GatewayOptions = {}): Promise<Gatew
       }
       if (request.method === "GET" && url.pathname === "/health") {
         reply(response, 200, { status: "ok", contract_version: CONTRACT_VERSION });
+      } else if (request.method === 'POST' && url.pathname === '/v1/learning/direct' && directorUrl) {
+        reply(response,200,await service(`${directorUrl}/agent/direct`,await readJson(request)));
+      } else if (request.method === 'POST' && url.pathname === '/v1/learning/execute' && learning) {
+        reply(response,202,await learning.deliver(await readJson(request)));
+      } else if (request.method === 'GET' && url.pathname === '/v1/learning/state' && memoryUrl) {
+        reply(response,200,await service(`${memoryUrl}/memory/learning/state?${url.searchParams}`));
       } else if (request.method === "GET" && url.pathname === "/v1/dashboard") {
         reply(response, 200, repository.dashboard());
       } else if (request.method === "GET" && url.pathname === "/v1/reports/weekly") {
@@ -188,6 +203,10 @@ export async function createGateway(options: GatewayOptions = {}): Promise<Gatew
         fail(response, 404, "not_found", "Route not found.");
       }
     } catch (caught) {
+      if(caught instanceof ServiceError) {
+        fail(response,caught.status,caught.message,'Learning operation could not complete. Retry using the same turn ID.');
+        return;
+      }
       const code = caught instanceof Error && caught.message === "payload_too_large" ? "payload_too_large" : "invalid_json";
       fail(response, code === "payload_too_large" ? 413 : 400, code, "Request body could not be accepted.");
     }

@@ -10,7 +10,7 @@ import { ScaffoldAgent } from "./scaffold.ts";
 import { StoryWorldAgent } from "./story.ts";
 import { LearningLoopHooks, type LoopReason } from "./learning-loop.ts";
 
-interface SessionTurn {
+export interface SessionTurn {
   action: TeachingAction;
   failures: number;
   touched: number;
@@ -70,12 +70,16 @@ export class LearningDirector {
   }
 
   direct(req: DirectRequest): DirectResponse {
+    return this.plan(req, this.turns.get(req.session_id), true);
+  }
+
+  plan(req: DirectRequest, previous: SessionTurn | undefined, executionConfirmed: boolean): DirectResponse {
     const hooks = new LearningLoopHooks();
     const now = this.now();
     const prior = hooks.run("input", () => {
       for (const [id, turn] of this.turns)
         if (now - turn.touched >= this.ttl) this.turns.delete(id);
-      return this.turns.get(req.session_id);
+      return previous && now - previous.touched < this.ttl ? previous : undefined;
     });
     const distressed = emotionValue(req.emotion) < -0.45;
     const uncertain = confidence(req) < 0.8;
@@ -83,7 +87,7 @@ export class LearningDirector {
     const voluntaryResume =
       wasPaused && req.utterance.trim().length > 0 && !uncertain && !distressed;
     const listening = wasPaused && !voluntaryResume;
-    const canAssess = !!prior && !wasPaused && !uncertain && !distressed;
+    const canAssess = !!prior && executionConfirmed && !wasPaused && !uncertain && !distressed;
     const assessment = hooks.run("assessment", () =>
       canAssess
         ? this.assessmentAgent.assess({
