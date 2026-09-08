@@ -19,10 +19,19 @@ iOS 17 家长端 → Device Gateway → RDK X5 Python 运行时 / 模拟器
 - `shared/contracts/v1`：JSON Schema 2020-12 与跨语言规范 fixtures。
 - `agents/interaction`、`agents/director`：儿童唯一语言出口与学习导演。
 - `backend/knowledge_graph`、`backend/memory_store`、`backend/pointing`、`backend/intel`：审核知识、共享记忆、指向识别与知乎数据情报基础设施。
-- `backend/digital_twin`：服务器权威 Digital Twin 与硬件门户说明；`backend/device_gateway` 承担唯一设备传输边界。
+- `backend/digital_twin`：**仅文档目录**，说明服务器权威 Digital Twin 与硬件门户；
+  实现在 `backend/device_gateway/src/digital-twin.ts`，该组件同时承担唯一设备传输边界。
 
-所有教学 Agent 规则与信任边界见 `AGENTS.md`。儿童实时链路不得访问开放互联网，
-长期学习判断必须有 evidence，Agent 不得直接写 SQLite / FAISS。
+## 文档入口
+
+- `AGENTS.md`：硬规则、组件归属、工作纪律，以及架构文档导航。**改代码前先读这里。**
+- `docs/architecture/`：按主题拆分的详细架构说明（Agent、共享状态、硬件、Web、App、契约）。
+- `docs/architecture/99-target-state.md`：目标状态，**不是现状**。
+- `playbooks/`：变更、事故、决策与发布记录。`docs/archive/`：历史文件，非权威。
+- 组件文档约定（见 AGENTS.md「组件文档约定」）：`<component>/README.md` 写职责 / 运行 / 测试，
+  `<component>/docs/design.md` 写设计细节。**尚未全部组件对齐，正在收敛中。**
+
+儿童实时链路不得访问开放互联网，长期学习判断必须有 evidence，Agent 不得直接写 SQLite / FAISS。
 
 ## 本地快速验证（Windows）
 
