@@ -177,6 +177,7 @@ export interface DirectRequest {
 }
 
 export interface DirectResponse {
+  learning_loop: import("./learning-loop.ts").LearningLoopTrace;
   contract_version: '1.0';
   session_id: string;
   learning_goal: string;

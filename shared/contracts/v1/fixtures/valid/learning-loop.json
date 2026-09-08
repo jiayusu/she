@@ -1,0 +1,17 @@
+{
+  "version": "1.0",
+  "trace_id": "synthetic-trace",
+  "assessed_target": null,
+  "failed_attempts": 0,
+  "reason": "first_contact",
+  "stages": [
+    "input",
+    "assessment",
+    "curriculum",
+    "scaffold",
+    "story",
+    "decision"
+  ],
+  "state_scope": "session_only",
+  "memory_write": "not_performed"
+}

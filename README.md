@@ -31,6 +31,7 @@ iOS 17 家长端 → Device Gateway → RDK X5 Python 运行时 / 模拟器
 ## 文档入口
 
 - `AGENTS.md`：硬规则、组件归属、工作纪律，以及架构文档导航。**改代码前先读这里。**
+- [MAS / Agentic Loop 设计参考（提案，非实现）](docs/architecture/11-agentic-loop-design-reference.md)：Claude Code、Codex、Hermes 的对比与 SHE 设计。
 - `docs/architecture/`：按主题拆分的详细架构说明（Agent、共享状态、硬件、Web、App、契约）。
 - `docs/architecture/99-target-state.md`：目标状态，**不是现状**。
 - `playbooks/`：变更、事故、决策与发布记录。`docs/archive/`：历史文件，非权威。

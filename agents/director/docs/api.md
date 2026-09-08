@@ -109,3 +109,8 @@ assessment/shared-state service before any confirmed learner write.
 `route_done(intent, minister, conf)` / `ctx_built(tokens)` /
 `memory_write(store, ok)` / `consolidate_batch(count)`,
 另含 `route_latency_ms` / `ctx_build_ms` 分位数。快照:`GET /admin/metrics`。
+
+## POST /agent/direct 学习循环
+
+新入口原请求字段不变，新增 `learning_loop` 响应，见 `agents/director/docs/learning-loop.md`（仓库根相对路径）。
+该入口不生成 `learning_event_id`，不通过旧 JSONL fallback 持久化回答；`memory_policy` 只是候选策略。

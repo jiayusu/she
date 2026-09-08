@@ -8,6 +8,7 @@ from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parent / "v1"
 VALID = {
+    "learning-loop.json": "learning-loop.schema.json",
     "device-event.json": "device-event.schema.json",
     "device-command.json": "device-command.schema.json",
     "dashboard-snapshot.json": "dashboard-snapshot.schema.json",
@@ -16,6 +17,7 @@ VALID = {
     "device-settings.json": "device-settings.schema.json",
 }
 INVALID = {
+    "learning-loop-unbounded.json": "learning-loop.schema.json",
     "device-event-missing-version.json": "device-event.schema.json",
     "device-event-unknown-type.json": "device-event.schema.json",
     "device-command-extra-property.json": "device-command.schema.json",

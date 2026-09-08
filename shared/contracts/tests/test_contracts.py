@@ -10,6 +10,7 @@ from jsonschema import Draft202012Validator
 ROOT = Path(__file__).resolve().parents[1] / "v1"
 
 VALID_CASES = (
+    ("learning-loop.schema.json", "learning-loop.json"),
     ("device-event.schema.json", "device-event.json"),
     ("device-command.schema.json", "device-command.json"),
     ("dashboard-snapshot.schema.json", "dashboard-snapshot.json"),
@@ -19,6 +20,7 @@ VALID_CASES = (
 )
 
 INVALID_CASES = (
+    ("learning-loop.schema.json", "learning-loop-unbounded.json"),
     ("device-event.schema.json", "device-event-missing-version.json"),
     ("device-event.schema.json", "device-event-unknown-type.json"),
     ("device-command.schema.json", "device-command-extra-property.json"),

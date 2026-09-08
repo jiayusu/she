@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/learning-loop.schema.json",
+  "title": "LearningLoopTrace",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "version",
+    "trace_id",
+    "assessed_target",
+    "failed_attempts",
+    "reason",
+    "stages",
+    "state_scope",
+    "memory_write"
+  ],
+  "properties": {
+    "version": {
+      "const": "1.0"
+    },
+    "trace_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "assessed_target": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "failed_attempts": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 2
+    },
+    "reason": {
+      "enum": [
+        "first_contact",
+        "reply_observed",
+        "uncertain_input",
+        "attempt_limit",
+        "emotion_pause",
+        "listening",
+        "voluntary_resume"
+      ]
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 6,
+      "uniqueItems": true,
+      "items": {
+        "enum": [
+          "input",
+          "assessment",
+          "curriculum",
+          "scaffold",
+          "story",
+          "decision"
+        ]
+      }
+    },
+    "state_scope": {
+      "const": "session_only"
+    },
+    "memory_write": {
+      "const": "not_performed"
+    }
+  }
+}

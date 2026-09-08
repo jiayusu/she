@@ -324,10 +324,12 @@ export class App {
     if (typeof req.utterance !== 'string') throw new DispatchError('缺少 utterance');
     const hook = this.tools.runInputHooks(req.utterance, normalizeEmotion(req.emotion));
     const response = this.learningDirector.direct({ ...req, utterance: hook.text });
-    const event = this.learningEvents.record({ ...req, utterance: hook.text }, response);
-    response.learning_event_id = event.event_id;
-    response.evidence_status = event.evidence_status;
-    response.teaching_action.memory_policy = event.event_kind === 'confirmed_mastery' ? 'confirmed' : event.event_kind === 'candidate_evidence' ? 'candidate' : 'no_write';
+    // The direct learning loop returns candidate evidence only. Do not send raw
+    // replies into the legacy JSONL fallback or treat that file as Shared State.
+    this.audit.append({ ts: Date.now(), type: 'learning_loop', session_id: req.session_id,
+      detail: { operation: 'learning_loop', trace_id: response.learning_loop.trace_id,
+        stages: response.learning_loop.stages, reason: response.learning_loop.reason,
+        failed_attempts: response.learning_loop.failed_attempts, memory_write: 'not_performed' } });
     response.safety.input_filtered = hook.filtered;
     response.safety.injection_suspected = hook.injection_suspected;
     return response;

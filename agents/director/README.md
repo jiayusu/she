@@ -9,6 +9,11 @@
   注入规范：[`docs/context-injection.md`](docs/context-injection.md) ·
   工具边界：[`docs/tool-boundary.md`](docs/tool-boundary.md)
 
+## 学习循环
+
+[第一阶段实现与限制](docs/learning-loop.md)：评估上一轮目标、有限追问、低置信确认、暂停恢复与六阶段 trace。
+新入口只返回 candidate/no_write，不再将原话写入旧 JSONL fallback；Shared State 写回尚未接入。
+
 ## 运行
 
 ```bash
@@ -29,7 +34,7 @@ curl -s http://127.0.0.1:8790/agent/direct \
 ## 测试
 
 ```bash
-npm test            # 66 用例：FR 验收 + 非功能 + HTTP/WS e2e
+npm test            # 76 用例：FR 验收 + 非功能 + HTTP/WS e2e
 npm run typecheck   # tsc --noEmit
 ```
 
