@@ -6,12 +6,7 @@ from urllib.parse import urlparse
 
 import pytest
 
-import sys
-from pathlib import Path
-
-sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
-
-from memstore import Config, MemoryService  # noqa: E402
+from memstore import Config, MemoryService
 
 
 @pytest.fixture()

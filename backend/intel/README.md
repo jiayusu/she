@@ -27,8 +27,14 @@ python scheduler.py       # 定时管线（另开终端，与 server 共享 SQLi
 ## 测试
 
 ```bash
-python -m pytest tests -q     # 27 用例，全离线，不打真实网络
+python -m pip install -r requirements-dev.txt   # 运行依赖 + pytest
+python -m pytest tests -q                      # 27 用例，全离线，不打真实网络
 ```
+
+本组件是扁平模块布局，顶层模块名很通用（`config` / `db` / `server` / `llm_client`），
+因此 `pyproject.toml` **只提供工具配置，不声明可安装包**——发布这些名字会与
+`backend/knowledge_graph` 的同名模块冲突。测试的导入路径由
+`[tool.pytest.ini_options] pythonpath` 提供，不再改 `sys.path`。
 
 ## 涉及契约
 

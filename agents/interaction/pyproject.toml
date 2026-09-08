@@ -18,3 +18,5 @@ where = ["src"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+# 让 `python -m pytest tests` 无需先安装本包、也无需 conftest 改 sys.path 即可导入 she_engine。
+pythonpath = ["src"]

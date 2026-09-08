@@ -22,7 +22,7 @@ learning_events.py              Python 侧 evidence 辅助（手写，见下）
 ## 测试
 
 ```bash
-python -m pip install -r requirements-dev.txt
+python -m pip install -r requirements-dev.txt   # jsonschema + pytest
 python -m pytest tests -q          # 12 用例：valid 必过 / invalid 必拒
 python validate_contracts.py       # 同等校验的独立 CLI
 ```

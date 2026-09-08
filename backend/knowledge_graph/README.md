@@ -56,6 +56,21 @@ python scripts/acceptance.py           # 验收红线实测
 
 各步的参数与产物细节见下方"复现步骤"分节;LLM 层需要的环境变量见 W2 小节。
 
+## 环境准备
+
+```bash
+python -m pip install -r requirements.txt   # numpy/scipy/torch/faiss-cpu/networkx/flask/requests
+python server.py                            # 默认 127.0.0.1:8787，KG_PORT 可覆盖
+```
+
+本组件是扁平模块布局，顶层模块名很通用（`kg` / `server` / `cleaning` / `llm_client`），
+因此 `pyproject.toml` **只提供工具配置，不声明可安装包**——发布这些名字会与
+`backend/intel` 的同名模块冲突。
+
+> **本组件目前没有自动化测试。** 只有手工验收脚本 `scripts/acceptance.py`（需先起
+> `server.py`），也未纳入 `scripts/verify.ps1` 与 CI。补测试属独立工作，
+> 见 `docs/IMPLEMENTATION_BACKLOG.md`。
+
 ## 复现步骤
 
 ### W1 收集

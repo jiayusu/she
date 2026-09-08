@@ -1,5 +1,6 @@
+# 仅运行依赖。测试依赖见 pyproject.toml 的 [project.optional-dependencies] dev，
+# 用 `python -m pip install -e '.[dev]'` 安装。
 flask>=3.0
 numpy>=1.26
 faiss-cpu>=1.8
 requests>=2.31
-pytest>=8.0        # dev

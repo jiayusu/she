@@ -12,7 +12,7 @@ Shared State Layer 的持久化底座：工作记忆、情景记忆、显著性�
 ## 运行
 
 ```bash
-python -m pip install -r requirements.txt
+python -m pip install -r requirements.txt     # 只装运行依赖
 python server.py          # 默认 127.0.0.1:8789
 ```
 
@@ -34,8 +34,12 @@ POST /memory/procedural         程序性任务  GET /memory/procedural/due
 ## 测试
 
 ```bash
-python -m pytest tests -q     # 61 用例
+python -m pip install -e '.[dev]'    # 运行依赖 + pytest
+python -m pytest tests -q            # 61 用例
 ```
+
+`pyproject.toml` 只发布 `memstore/` 包（不发布 `server.py` 等顶层脚本），并通过
+`[tool.pytest.ini_options] pythonpath` 让测试无需改 `sys.path` 即可导入。
 
 ## 涉及契约
 

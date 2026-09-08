@@ -1,14 +1,14 @@
 """conftest — 测试环境: 临时库/归档目录, Fake Provider/LLM, KG 桩服务。"""
 import json
-import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 from pathlib import Path
 
 import pytest
 
+# 组件根目录。模块导入路径由 pyproject.toml 的 [tool.pytest.ini_options] pythonpath 提供，
+# 这里只用它定位测试数据目录。
 ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(ROOT))
 
 TEST_DATA = ROOT / ".tmp" / "test_data"
 

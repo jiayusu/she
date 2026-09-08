@@ -28,6 +28,13 @@ represented as complete by the simulator.
   candidate updates and confirmed mastery promotion.
 - [done] Keep Zhihu/data intelligence off the child real-time path and behind
   fetch → structure → sensitive filter → human approval → KG update → rollback.
+- [open] Give `backend/knowledge_graph` automated tests. It is the only Python
+  component with none: `scripts/acceptance.py` is a manual script requiring a
+  running `server.py`, so the component appears in neither `scripts/verify.ps1`
+  nor `.github/workflows/ci.yml`. Its rule-cleaning layer (`cleaning.py`), query
+  layer (`kg_query.py`), and hot-update endpoints (`server.py`) can all break
+  without any gate noticing. A `pytest` config is already in place
+  (`pyproject.toml`), so a `tests/` directory is all that is missing.
 - [open] Close the cross-language contract drift gap. `backend/device_gateway`
   (Ajv) and `clients/hardware-rx5` (`jsonschema`) validate
   `shared/contracts/v1/*.schema.json` at runtime, but three representations are
