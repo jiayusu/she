@@ -42,6 +42,10 @@ Invoke-Checked 'learning director typecheck' (Join-Path $ProjectRoot 'agents/dir
 Invoke-Checked 'pointing' (Join-Path $ProjectRoot 'backend/pointing') { npm test }
 Invoke-Checked 'intel' (Join-Path $ProjectRoot 'backend/intel') { python -m pytest (Join-Path $ProjectRoot 'backend/intel/tests') -q }
 Invoke-Checked 'release readiness' $ProjectRoot { & (Join-Path $ProjectRoot 'scripts/release_readiness.ps1') }
+# Negative tests for audit_repository.ps1. Without these, a check that silently matches
+# nothing is indistinguishable from a check that passes — four such defects were found
+# this way. Each case runs in a throwaway git worktree.
+Invoke-Checked 'audit self-test' $ProjectRoot { & (Join-Path $ProjectRoot 'scripts/test_audit_repository.ps1') }
 
 Invoke-Checked 'iOS source contract' (Join-Path $ProjectRoot 'clients/ios') {
     $appSources = Join-Path $ProjectRoot 'clients/ios/SHEParentApp'

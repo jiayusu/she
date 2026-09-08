@@ -44,6 +44,9 @@ jobs:
       - name: Audit repository
         shell: pwsh
         run: "& '$env:GITHUB_WORKSPACE/scripts/audit_repository.ps1'"
+      - name: Audit self-test
+        shell: pwsh
+        run: "& '$env:GITHUB_WORKSPACE/scripts/test_audit_repository.ps1'"
 
   ios:
     runs-on: macos-15
