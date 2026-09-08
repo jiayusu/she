@@ -37,3 +37,6 @@ Revert changes and reinstall dependencies using component lockfiles.
 ## Reusable knowledge
 
 `playbooks/incidents/INC-0007-deployment-verification.md`; use automated checks.
+
+Follow-up: use Select-String for the quoted iOS deployment-target check to avoid
+Windows native argument quote stripping; preserve the required 17.0 target.

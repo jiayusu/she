@@ -55,8 +55,8 @@ Invoke-Checked 'iOS source contract' (Join-Path $ProjectRoot 'clients/ios') {
     $appSources = Join-Path $ProjectRoot 'clients/ios/SHEParentApp'
     $required = rg -n 'accessibilityReduceMotion|accessibilityReduceTransparency|accessibilityLabel|dynamicTypeSize|protocol AppAPI|@Observable' $appSources
     if ($LASTEXITCODE -ne 0) { throw 'required iOS source patterns missing' }
-    $deployment = rg -n 'IPHONEOS_DEPLOYMENT_TARGET: "17\.0"' (Join-Path $ProjectRoot 'clients/ios/project.yml')
-    if ($LASTEXITCODE -ne 0) { throw 'iOS 17 deployment target missing' }
+    $deployment = Select-String -LiteralPath (Join-Path $ProjectRoot 'clients/ios/project.yml') -Pattern 'IPHONEOS_DEPLOYMENT_TARGET: "17\.0"'
+    if (-not $deployment) { throw 'iOS 17 deployment target missing' }
     $forbidden = rg -n 'SceneKit|RealityKit|UserDefaults.*mastery|print\(.*response|T[O]DO|T[B]D|\.animation\([^,]+\)' $appSources
     if ($LASTEXITCODE -eq 0) { $forbidden; throw 'forbidden iOS source pattern found' }
     $global:LASTEXITCODE = 0

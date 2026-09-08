@@ -51,3 +51,8 @@ CI now builds and tests the parent web and runs the Compose deployment smoke che
 ## Skill decision
 
 Keep as incident: mechanical test/build checks are more appropriate than a new skill.
+
+The final iOS source check also falsely rejected the present quoted 17.0 target:
+PowerShell native argument passing removed regex quotes. Using Select-String keeps
+the exact pattern in PowerShell, consistent with the native quoting issue already
+documented in `scripts/audit_repository.ps1`. No iOS source changed.
