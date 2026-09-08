@@ -30,7 +30,8 @@ const MIME = {
   '.map': 'application/json',
 };
 
-export function createServer({ port = 8787, env = process.env } = {}) {
+// 8792: 8787 归 backend/knowledge_graph, 8790 归 agents/director。
+export function createServer({ port = 8792, env = process.env } = {}) {
   const wsClients = new Set();
   const DATA_DIR = env.PO_DATA_DIR || process.env.PO_DATA_DIR || path.resolve(__dirname, '../data');
   const STATS_FILE = path.join(DATA_DIR, 'pointing-stats.jsonl');
@@ -305,7 +306,7 @@ function sendJson(res, code, obj) {
 
 // 直接运行：node server/server.js
 if (process.argv[1] && fileURLToPath(import.meta.url) === path.resolve(process.argv[1])) {
-  const port = Number(process.env.PORT || 8787);
+  const port = Number(process.env.PORT || 8792);
   const { server } = createServer({ port });
   server.listen(port);
   server.on('listening', () => {

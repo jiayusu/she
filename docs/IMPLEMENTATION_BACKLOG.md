@@ -28,6 +28,14 @@ represented as complete by the simulator.
   candidate updates and confirmed mastery promotion.
 - [done] Keep Zhihu/data intelligence off the child real-time path and behind
   fetch → structure → sensitive filter → human approval → KG update → rollback.
+- [open] Close the cross-language contract drift gap. `backend/device_gateway`
+  (Ajv) and `clients/hardware-rx5` (`jsonschema`) validate
+  `shared/contracts/v1/*.schema.json` at runtime, but three representations are
+  hand-written and checked by nothing: `clients/ios/SHEParentApp/Domain/Models.swift`,
+  `agents/director/src/learning-events.ts`, and `shared/contracts/learning_events.py`.
+  A field rename in `learning-event.schema.json` would be caught only where a
+  fixture happens to cover it. Add codegen, or a test that decodes every
+  `v1/fixtures/valid/*.json` through each hand-written model.
 
 ## Device and operational path
 

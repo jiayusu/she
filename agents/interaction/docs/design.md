@@ -7,7 +7,7 @@
 ```
 engine/
 ├── README.md                  # PRD（原文，未改动）
-├── DESIGN.md                  # 本文
+├── docs/design.md             # 本文
 ├── pyproject.toml
 ├── src/she_engine/
 │   ├── types.py               # PRD §6 接口契约：TurnRequest/TurnResponse/MemoryWrite/六意图/五大臣常量

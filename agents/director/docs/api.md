@@ -1,6 +1,6 @@
 # API 手册
 
-Base URL:`http://127.0.0.1:8787`(端口 `PORT` 环境变量,默认 8787)。
+Base URL:`http://127.0.0.1:8790`(端口 `PORT` 环境变量,默认 8790)。
 
 ## 对外接口(PRD §6)
 
@@ -68,7 +68,7 @@ assessment/shared-state service before any confirmed learner write.
 
 ### WS /agent/session
 
-连接 `ws://127.0.0.1:8787/agent/session?session_id=child-001`(可选过滤会话)。
+连接 `ws://127.0.0.1:8790/agent/session?session_id=child-001`(可选过滤会话)。
 
 - 服务端即推 `hello`(全部会话的值守大臣,灯效同步)。
 - 订阅事件:`minister_change` / `dispatch_done` / `dlq_alert` / `whitelist_added` /

@@ -1,42 +1,68 @@
-03 五大臣 Agent 调度 PRD · V1.0
-1. 背景与目标
-BMAM 论文架构的产品化翻译层：决定"这句话归谁管、带多少上下文、往哪里写记忆"。
-防止出现"阿海和老颞各记各的"式的记忆碎片化——论文称之为 soul erosion（灵魂侵蚀）。
-北极星指标：路由准确率 ≥90%；大臣切换时剧情上下文保持率 100%（不串台）。
-2. 范围
-In：意图路由、上下文注入规范、记忆读写调度、与 MCP 工具的边界、运行时自生长触发。
-Out：记忆存储的 Schema 与实现（见 04）、剧情引擎内部逻辑（见 01）、各大臣能力实现。
-3. 用户故事
-孩子说"我昨天教会小熊什么来着" → 小P 判为记忆询问 → 路由阿海，阿海带最近剧情上下文作答。
-孩子指着冰箱 → 万物意图 → 老颞接管，但小P 先注入"当前在朝会剧情中"以免冰箱说串场。
-系统每周自动把高频情景记忆巩固成语义边（孩子无感知）。
-4. 功能需求
-表格
-编号	需求	优先级	验收
-FR-G01	意图分类器：输入 ASR 文本+声学情绪分 → 输出六类意图（朝会/记忆/学词/安抚/万物/闲聊）+ 置信度	P0	六类意图准确率 ≥90%，低置信度走"小P 反问澄清"
-FR-G02	大臣映射表：意图→主大臣→备选大臣（安抚可由任何大臣降级执行），映射表配置化非硬编码	P0	运营可改映射，无需发版
-FR-G03	上下文注入包：切换大臣时按规范拼装 {剧本状态, 最近10轮, 今日已学词, 孩子情绪分}，token 预算分级（闲聊500/任务1500）	P0	注入包生成延迟 ≤50ms
-FR-G04	记忆写调度：接收剧情引擎 memory_write[]，按大臣归属分发到五库（见 04 的写入接口），写失败重试 1 次后入死信队列告警	P0	写入成功率 ≥99.9%，死信当日清零
-FR-G05	显著性打标：杏杏规则（里程碑事件/孩子首次行为/情绪高峰）自动给记忆打 salience 分，≥阈值进"永不遗忘"白名单	P0	白名单只增不删，人工可增不可减
-FR-G06	巩固触发器：每周批量任务，将阿海情景记忆中"出现≥3 次且评估通过"的词→老颞语义层（KG 热更新接口）	P1	每周自动产出 diff 报告，人工一键确认后生效
-FR-G07	元认知三 agent：复盘（每周剧情质量报告）、遗忘剪枝（低显著性记忆按 EMA 置信度衰减）、巩固触发（FR-G06 的调度壳）	P1	三任务可观测、可手动触发
-FR-G08	工具边界：KG 查询/日程提醒等走 MCP tool-call（LLM 自主调）；情绪检测/内容过滤走系统钩子（LLM 不可绕过）	P0	边界清单文档化，安全类钩子不可被提示词注入绕过
-5. 非功能
-路由+注入全流程 ≤100ms（不含 LLM 推理）
-单会话状态内存常驻，崩溃恢复后从记忆存储重建（≤2s）
-全部调度决策留审计日志（路由理由/注入内容摘要/写库结果）
-6. 接口
-plain
-POST /agent/direct    { utterance, asr, emotion, session_id } → { teaching_action, scaffold, story }
-POST /agent/dispatch  { utterance, asr, emotion, session_id } → legacy minister route
-WS   /agent/session   会话状态订阅（App 端看"当前哪位大臣值守"灯效同步）
-依赖: ASR(02) / 剧情引擎(01) / 记忆存储(04) / 内容安全钩子(05)
+# Learning Director（学习导演）
 
-7. 风险
-表格
-风险	对策
-意图路由错导致"冰箱用阿海的语气说话"	映射表带备选大臣+FR-G01 低置信反问；盲测集每月扩
-记忆写入放大 LLM 幻觉（错误记忆固化）	FR-G04 写入前过事实校验（与 KG 冲突则标待审，走 04 冲突接口）
-提示词注入让孩子绕过安全钩子	FR-G08 系统钩子层不可绕，注入检测进 05 模块
-8. 埋点
-route_done(intent, minister, conf) / ctx_built(tokens) / memory_write(store, ok) / consolidate_batch(count)
+学习优先的总调度器：接收 Interaction Agent 的一轮输入，产出 `curriculum`、`scaffold`、
+`story` 与唯一 `teaching_action`。不直接对儿童说话，不直接写 Learner Profile / KG / SQLite。
+
+- 架构定位：`AGENTS.md` §29 与 [`docs/architecture/02-agents.md`](../../docs/architecture/02-agents.md) §4
+- 设计与决策：[`docs/design.md`](docs/design.md)
+- 接口手册：[`docs/api.md`](docs/api.md) ·
+  注入规范：[`docs/context-injection.md`](docs/context-injection.md) ·
+  工具边界：[`docs/tool-boundary.md`](docs/tool-boundary.md)
+
+## 运行
+
+```bash
+npm ci
+npm start           # 默认 127.0.0.1:8790，PORT 可覆盖
+```
+
+端点：`POST /agent/direct`（新客户端用这个）、`POST /agent/dispatch`（迁移期兼容）、
+`WS /agent/session`、`GET /healthz`、`/admin/*`。
+
+```bash
+# 冒烟：孩子问记忆 → 带剧情上下文作答
+curl -s http://127.0.0.1:8790/agent/direct \
+  -H 'content-type: application/json' \
+  -d '{"session_id":"child-001","utterance":"我昨天教会小熊什么来着","emotion":0.1,"asr":{"conf":0.95}}'
+```
+
+## 测试
+
+```bash
+npm test            # 66 用例：FR 验收 + 非功能 + HTTP/WS e2e
+npm run typecheck   # tsc --noEmit
+```
+
+## 涉及契约
+
+`shared/contracts/v1/learning-event.schema.json`（学习证据事件）。
+`src/learning-events.ts` 目前手写该形状，未在运行时校验 schema——改字段时先改
+`shared/contracts/`，再改本组件（`AGENTS.md` §38.12）。
+
+## 验收对照
+
+| PRD 验收 | 实现 | 测试 |
+| --- | --- | --- |
+| FR-G01 六类意图 ≥90%，低置信反问澄清 | `src/intent.ts`（词法+情绪+softmax） | `test/intent.test.ts`（48 句盲测 100%，澄清分支） |
+| FR-G02 映射配置化，运营改无需发版 | `config/minister-map.json` + 热加载 + 备选链 | `test/mapping.test.ts` |
+| FR-G03 注入包四要素，预算 500/1500，延迟 ≤50ms | `src/context.ts` | `test/context.test.ts`（预算+裁剪+p95） |
+| FR-G04 写入成功率 ≥99.9%，重试 1 次，死信当日清零 | `src/memory-write.ts` | `test/memory-write.test.ts`（确定性故障注入 1000 连写） |
+| FR-G05 显著性 ≥阈值入白名单，只增不删 | `src/salience.ts` + `NeverForgetWhitelist` | `test/salience.test.ts` |
+| FR-G06 周 batch，diff 报告，人工确认生效 | `src/consolidation.ts` | `test/consolidation.test.ts` |
+| FR-G07 三 agent 可观测、可手动触发 | `src/metacognition.ts` | `test/metacognition.test.ts` |
+| FR-G08 边界清单文档化，安全钩子不可绕过 | `src/hooks.ts` + `docs/tool-boundary.md` | `test/hooks.test.ts`（403/注入/强制过滤） |
+| 路由+注入 ≤100ms | dispatch 管线全内存 | `test/e2e.test.ts`（HTTP p95） |
+| 崩溃恢复重建 ≤2s | 快照 50ms 防抖 + `recover()` | `test/session.test.ts`（实测 ~5ms） |
+| 调度决策全留审计 | `src/audit.ts`（JSONL 按天） | `test/session.test.ts` |
+
+## 运行时数据目录
+
+`data/`（已 gitignore）：`snapshots/` 会话快照、`stores/` 五库 JSONL、`kg.json` 语义层、
+`whitelist.json` 永不遗忘、`dlq.jsonl` 死信、`audit/` 审计、`reports/` 复盘报告。
+
+## 历史
+
+`package.json` 的包名仍是 `five-ministers-dispatch`，源码里保留 minister 相关类型：
+本组件由旧 `route/` 目录演进而来。旧「五大臣 = 五后台 Agent」PRD 已归档在
+[`docs/archive/prd/director-prd-v1.md`](../../docs/archive/prd/director-prd-v1.md)，
+**不要据此恢复旧架构**（`AGENTS.md` §28.3）。

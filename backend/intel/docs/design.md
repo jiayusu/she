@@ -1,6 +1,7 @@
 # 06 数据情报 · 实现说明 (IMPL)
 
-依据 [README.md](./README.md)《06 数据情报 PRD V1.0》实现。本文档描述落地结构与运行方式；PRD 本身保持原样。
+本文档描述落地结构与运行方式。运行与测试见 [`../README.md`](../README.md)；
+历史 PRD（已归档，非权威）：[`docs/archive/prd/intel-prd-v1.md`](../../../docs/archive/prd/intel-prd-v1.md)
 
 ## 运行
 
@@ -8,7 +9,7 @@
 pip install -r requirements.txt          # flask + requests
 cp .env.example .env                     # 填 ZHIHU_API (Access Secret)、LLM_API_KEY、WECOM_WEBHOOK
 
-python server.py                         # API + 审核工作台  http://127.0.0.1:8788
+python server.py                         # API + 审核工作台  http://127.0.0.1:8791
 python scheduler.py                      # 定时管线 (另开终端; 与 server 共享 SQLite)
 python -m pytest tests/ -q               # 测试 (全离线, 不打真实网络)
 ```

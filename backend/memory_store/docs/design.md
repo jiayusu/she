@@ -1,6 +1,7 @@
 # 04 记忆存储 · 实现说明
 
-PRD 见 [README.md](README.md)。五库 ER 图见 [docs/er.md](docs/er.md)。
+运行与测试见 [`../README.md`](../README.md)。五库 ER 图见 [`er.md`](er.md)。
+历史 PRD（已归档，非权威）：[`docs/archive/prd/memory_store-prd-v1.md`](../../../docs/archive/prd/memory_store-prd-v1.md)
 
 ## 快速开始
 
@@ -30,7 +31,7 @@ curl -s "http://127.0.0.1:8789/memory/recall?query=上周第一次说的apple&k=
 ```
 store/
 ├── README.md                PRD(需求来源, 未改动)
-├── IMPLEMENTATION.md        本文档
+├── docs/design.md           本文档
 ├── requirements.txt
 ├── server.py                Flask HTTP(§6 接口冻结 + 管理/合规端点)
 ├── memstore/

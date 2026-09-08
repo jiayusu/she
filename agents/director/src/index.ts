@@ -4,7 +4,8 @@ import { join } from 'node:path';
 import { App } from './app.ts';
 import { listen } from './server.ts';
 
-const PORT = Number(process.env.PORT ?? 8787);
+// 8790: 本仓端口分配见 AGENTS.md 导航所指组件文档;8787 归 backend/knowledge_graph。
+const PORT = Number(process.env.PORT ?? 8790);
 const DATA_DIR = process.env.DATA_DIR ?? join(process.cwd(), 'data');
 const CONFIG_DIR = process.env.CONFIG_DIR ?? join(process.cwd(), 'config');
 

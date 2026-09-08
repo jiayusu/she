@@ -1,16 +1,17 @@
 # 指向识别模块（浏览器端）· 实现说明
 
-对应 `README.md`（PRD V1.0）的完整实现。零 npm 依赖，Node ≥18 直接运行。
+零 npm 依赖，Node ≥18 直接运行。运行与测试见 [`../README.md`](../README.md)；
+历史 PRD（已归档，非权威）：[`docs/archive/prd/pointing-prd-v1.md`](../../../docs/archive/prd/pointing-prd-v1.md)
 
 ## 快速开始
 
 ```bash
-npm start            # node server/server.js，默认 http://localhost:8787
+npm start            # node server/server.js，默认 http://localhost:8792
 npm test             # 42 个单元/集成测试（node:test）
 ```
 
-- 主页面 `http://localhost:8787/` —— 王冠 · 万物模式
-- 家长报表 `http://localhost:8787/admin.html` —— 指向准确率趋势 + 今日万物记录 + 蛇首模拟按钮
+- 主页面 `http://localhost:8792/` —— 王冠 · 万物模式
+- 家长报表 `http://localhost:8792/admin.html` —— 指向准确率趋势 + 今日万物记录 + 蛇首模拟按钮
 
 页面默认进入**演示场景**（无需摄像头/模型即可体验全链路：移动鼠标指向物件 → 点"指它" → 确认 → 王冠回答）。
 真实摄像头模式：设置里把"画面来源"切到"摄像头"（授权后走 MediaPipe Hands + 物件检测）。
@@ -76,7 +77,7 @@ WS   /ws/crown               浏览器监听通道
 GET  /healthz
 ```
 
-环境变量：`PORT`（默认 8787）、`PO_DATA_DIR`（埋点目录，测试用）、上述 LLM 三项。
+环境变量：`PORT`（默认 8792）、`PO_DATA_DIR`（埋点目录，测试用）、上述 LLM 三项。
 
 ## 与真实视觉模块对接
 

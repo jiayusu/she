@@ -1,54 +1,62 @@
-# 01 LLM 剧情引擎 PRD · V1.0
+# Interaction Agent（LLM 剧情引擎）
 
-## 1. 背景与目标
-"开口是唯一货币"的执行层：把孩子的开口转化为剧情推进，把大臣人格转化为语言。
-所有其他模块（ASR/视觉/记忆/内容安全）都向本模块供数或受它调度。
+**儿童唯一的语言出口。** 把孩子的开口转化为剧情推进，把人格转化为语言。所有后台 Agent 都隐藏在
+它之后——儿童前台只面对一个稳定角色「小P」（`AGENTS.md` §0.2 / §28.4）。
 
-北极星指标：剧情推进开口率（完成任务所需开口次数 ÷ 实际开口次数）≥0.9；
-大臣回应中 Recast（吸收式纠错）占比 ≥95%，打断式纠错 ≤1 次/日。
+纠错一律走 Recast（吸收式），不打断孩子（[`docs/architecture/02-agents.md`](../../docs/architecture/02-agents.md) §19）。
 
-## 2. 范围
-In：五大人格提示词路由、剧本状态机、Recast 改写、输出 Schema、兜底模板库、降级链。
-Out：ASR 本身（见 02）、记忆读写实现（见 04）、安全过滤实现（见 05，本模块只调用）。
+- 架构定位：`AGENTS.md` §29 与 [`docs/architecture/02-agents.md`](../../docs/architecture/02-agents.md) §3
+- 设计与实现：[`docs/design.md`](docs/design.md)
 
-## 3. 用户故事
-- 孩子说了 "I like apple"，杏杏回 "I like apples too! Apples are sweet."（Recast，不指出错误）。
-- 孩子 10 秒没说话，小P 用更低一级的句式重邀："跟着我说——apple。"
-- LLM 服务商挂了，孩子依然听到模板回应，无任何空响应。
+## 运行
 
-## 4. 功能需求
-
-| 编号 | 需求 | 优先级 | 验收 |
-|---|---|---|---|
-| FR-E01 | 五大人格提示词系统：每大臣独立 system prompt（人格/语气/口头禅/禁则），版本化冻结，改动需走评审 | P0 | 同一输入路由到不同大臣，输出风格盲测可区分 ≥80% |
-| FR-E02 | 查询路由：小P 分类器（规则+轻量模型）将输入意图映射到大臣，路由错误率 ≤10% | P0 | 映射表覆盖：朝会任务/记忆询问/学词/情绪安抚/万物/闲聊六类 |
-| FR-E03 | 剧本状态机：朝会→探险→睡前三态，开口是唯一推进条件；状态持久化到记忆存储（跨天续剧情） | P0 | 关机重开后老颞能接续"昨天讲到哪" |
-| FR-E04 | Recast 改写：ASR 返回的"发音评估结果+原句"注入提示词，LLM 以正确形式重述并自然扩展，**不直接指出错误** | P0 | 盲评：100 条回应中打断式纠错 ≤5 条 |
-| FR-E05 | 分级句式：按 L0-L5 注入不同的句长上限、词汇池、是否给中文脚手架 | P0 | L1≤5词/L2≤10词/L3+≤16词，抽检达标 |
-| FR-E06 | 输出 JSON Schema 强约束：{speaker, text, emotion_tag, memory_write[]}，解析失败自动重试 1 次，再失败走模板 | P0 | 无效 JSON 率 <2% |
-| FR-E07 | 兜底模板库：每大臣 ≥50 条人工写的模板（LLM 全挂时按场景命中），含万物/朝会/安抚三类场景 | P0 | 拔网线测试，回应率 100% |
-| FR-E08 | 上下文注入：从记忆存储拉取"最近 10 轮工作记忆 + 今日已学词 + 当前剧本状态"拼入 prompt，token 预算 ≤1500 | P1 | 注入后首 token 延迟增幅 ≤200ms |
-| FR-E09 | 降 L 鼓励机制：孩子连续 2 次卡壳，自动降一级句式并在 parent_note 中说明 | P1 | 卡壳检测→降级的链路可观测 |
-| FR-E10 | 新大臣 DLC 接入：新增人格只需"提示词文件+音色 ID+灯色"三件套注册，不改代码 | P2 | 内容运营独立上线一个新大臣 |
-
-## 5. 非功能
-- 首 token 延迟 ≤800ms（P95），完整回应 ≤2.5s
-- LLM 成本 ≤0.02 元/会话（缓存与本地 KG 优先策略后）
-- 提示词与模板全部进版本库，线上可回滚到任意历史版本
-
-## 6. 接口
-```
-in:  { child_utterance, asr_result, assess_result, level, route_intent, ctx_bundle }
-out: { speaker, text, emotion_tag, memory_write[] }   # FR-E06 Schema
-依赖: 记忆存储(读ctx/写memory_write) / 内容安全(输出过滤) / TTS(消费speaker+text)
+```bash
+python -m pip install -e '.[dev]'      # 包名 she-engine
+python examples/demo.py                # 最小对话演示（MockProvider，不打真实 LLM）
 ```
 
-## 7. 风险
-| 风险 | 对策 |
-|---|---|
-| 大模型儿童内容幻觉 | KG 事实注入（万物类必须引用 kg.facts 返回）+ 输出过滤（05 模块） |
-| 人格漂移（用久了语气趋同） | 每周抽样盲测，漂移则回滚提示词版本 |
-| API 成本失控 | FR-E07 缓存 + 模板兜底比例监控（模板占比 >30% 时报警） |
+本组件是**库，不是服务**，没有端口。公开 API：
 
-## 8. 埋点
-`engine_routed`(intent, minister) / `engine_recast`(assess_used) / `engine_fallback`(template_hit) / `engine_latency`(ttft, total)
+```python
+from she_engine import Engine, EngineConfig, TurnRequest, TurnResponse
+from she_engine.llm import MockProvider
+
+engine = Engine(EngineConfig(provider=MockProvider(), session_level=1))
+```
+
+其余导出：`MemoryWrite`、`AsrResult`、`AssessResult`、`CtxBundle`。
+
+## 测试
+
+```bash
+python -m pytest tests -q              # 103 用例
+python scripts/validate_assets.py      # 资产校验：提示词冻结 + 模板库 + 路由评测
+```
+
+> 测试与资产校验都读**相对路径** `assets/`，必须在本组件目录下运行
+> （`scripts/verify.ps1` 即如此做）。在仓库根跑 `pytest agents/interaction/tests` 会因
+> 加载不到资产而报错。
+
+## 资产
+
+```text
+assets/ministers/<name>/v1.yaml   人格提示词，版本冻结
+assets/templates/<name>.yaml      兜底模板库（LLM 不可用时仍有话说）
+```
+
+`ahai` / `laonie` / `wangguan` / `xiaop` / `xingxing` 是**人格资产**，不是后台 Agent；
+不要据此恢复「五大臣 = 五后台 Agent」架构（`AGENTS.md` §28.3）。
+
+## 涉及契约
+
+不直接消费 `shared/contracts/v1`。产出的 `MemoryWrite` 由 `agents/director` 汇总后写入
+Shared State，且必须携带 evidence 状态——本组件不得让写入暗示已确认掌握（`AGENTS.md` §18）。
+
+## 降级
+
+LLM 不可用时走模板库，任何路径都不返回空响应。
+
+## 历史
+
+旧的「01 LLM 剧情引擎 PRD」（含 FR-E01…验收项）已归档在
+[`docs/archive/prd/interaction-prd-v1.md`](../../docs/archive/prd/interaction-prd-v1.md)。

@@ -10,7 +10,7 @@ PRD §6 接口:
   GET  /intel/health | /intel/metrics (§9 埋点) | /intel/archive (FR-I08 检索)
   POST /intel/question-pool/{id}/discard | /intel/sentiment/poll | /intel/jobs/run
   POST /intel/import (manual provider 人工导入降级入口)
-启动: python server.py   (INTEL_PORT 默认 8788)
+启动: python server.py   (INTEL_PORT 默认 8791)
 
 架构红线 (§7): zhihu_search 不注册为任何 Agent/MCP 工具; 唯一入产品路径
 人工审核 → KG 热更新 → 王冠本地检索; 本服务只产出结构化提炼结果。
