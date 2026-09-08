@@ -4,11 +4,11 @@ import { resolve } from "node:path";
 import { afterAll, beforeAll, describe, test } from "vitest";
 import assert from "node:assert/strict";
 
-import { createGateway, type GatewayHandle } from "../../backend/device_gateway/src/app.js";
+import { createGateway, type GatewayHandle } from "../../../backend/device_gateway/src/app.js";
 import { LiveAppApi } from "@/api/appApi";
 import { AppApiError } from "@/api/contracts";
 
-const repoRoot = resolve(fileURLToPath(import.meta.url), "../../..");
+const repoRoot = resolve(fileURLToPath(import.meta.url), "../../../..");
 
 describe("LiveAppApi against the real Device Gateway", () => {
   let gateway: GatewayHandle;

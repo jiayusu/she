@@ -363,12 +363,12 @@ export function decodeDeviceSettingsPatch(value: unknown): DeviceSettingsPatch {
   if (volume !== undefined && (typeof volume !== "number" || !Number.isFinite(volume))) {
     throw new AppApiError("invalid_response");
   }
-  return {
-    ...(volume === undefined ? {} : { volume }),
-    led_enabled: optionalBooleanPatch(value, "led_enabled"),
-    camera_enabled: optionalBooleanPatch(value, "camera_enabled"),
-    raw_audio_upload_enabled: optionalBooleanPatch(value, "raw_audio_upload_enabled"),
-  };
+  const patch: DeviceSettingsPatch = volume === undefined ? {} : { volume };
+  for (const key of ["led_enabled", "camera_enabled", "raw_audio_upload_enabled"] as const) {
+    const setting = optionalBooleanPatch(value, key);
+    if (setting !== undefined) patch[key] = setting;
+  }
+  return patch;
 }
 
 export function encodeParentConstraintsUpdate(update: ParentConstraintsUpdate): string {

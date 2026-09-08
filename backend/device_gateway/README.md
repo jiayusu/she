@@ -33,7 +33,7 @@ GET  /v1/devices/{id}           GET /v1/devices/{id}/twin
 GET  /v1/devices/{id}/timeline  POST /v1/devices/{id}/commands
 ```
 
-环境变量：`PORT`(8788)、`SHE_DEVICE_TOKEN`（设备鉴权；未配置时拒绝未鉴权的 WS upgrade）、
+环境变量：`PORT`(8788)、`SHE_DEVICE_TOKEN`（配置后要求 Bearer token；未配置时不启用设备鉴权）、
 `SHE_LEARNING_REPORT_URL`（未配置则用 `DemoRepository` 演示数据）。
 
 > **安全边界**：WebSocket upgrade 在进入会话注册表之前完成鉴权。生产部署必须置于 TLS 终止之后
@@ -58,3 +58,6 @@ npm run typecheck   # tsc --noEmit
 
 幂等与去重：事件按 `sequence` 去重，命令按 `command_id` 幂等；`HTTP 202` 不等于送达，
 Twin 记录 pending / acknowledged / timed-out。
+
+生产构建命令：`npm run build`，运行：`npm run start:production`。
+`HOST` 默认 `127.0.0.1`；容器显式设置 `0.0.0.0`。本地演示部署见 `deploy/README.md`（仓库根相对路径）。

@@ -53,3 +53,5 @@ backend/intel/.tmp/
 backend/intel/.env
 
 clients/hardware-rx5/.state/
+
+**/dist/

@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import react from "@vitejs/plugin-react";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 
 
 // The dev server proxies /v1 and /health to the Device Gateway so the browser
@@ -24,10 +24,6 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": fileURLToPath(new URL("./src", import.meta.url)),
-    },
-    // The gateway sources use NodeNext-style `.js` specifiers for `.ts` files.
-    extensionAlias: {
-      ".js": [".ts", ".js"],
     },
   },
 });

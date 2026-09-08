@@ -2,6 +2,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { once } from 'node:events';
+import WebSocket from 'ws';
 import { tmpdir } from 'node:os';
 import { createServer } from '../server/server.js';
 
@@ -21,11 +22,11 @@ test('静态服务：/ 返回主页面，/js/app.js 可加载', async () => {
   const { stop, base } = await start();
   try {
     const html = await (await fetch(`${base}/`)).text();
-    assert.ok(html.includes('万物模式'));
+    assert.ok(html.includes('指向实验室'));
     const js = await fetch(`${base}/js/app.js`);
     assert.equal(js.status, 200);
     const admin = await (await fetch(`${base}/admin.html`)).text();
-    assert.ok(admin.includes('家长报表'));
+    assert.ok(admin.includes('家庭观察'));
     assert.equal((await fetch(`${base}/%2e%2e%2fserver.js`)).status, 403); // 目录穿越防护
   } finally {
     stop();

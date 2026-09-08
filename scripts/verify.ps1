@@ -33,6 +33,10 @@ Invoke-Checked 'shared contracts' (Join-Path $ProjectRoot 'shared/contracts') {
 }
 Invoke-Checked 'device gateway tests' (Join-Path $ProjectRoot 'backend/device_gateway') { npm test }
 Invoke-Checked 'device gateway typecheck' (Join-Path $ProjectRoot 'backend/device_gateway') { npm run typecheck }
+Invoke-Checked 'device gateway build' (Join-Path $ProjectRoot 'backend/device_gateway') { npm run build }
+Invoke-Checked 'parent web tests' (Join-Path $ProjectRoot 'clients/web') { npm test }
+Invoke-Checked 'parent web typecheck' (Join-Path $ProjectRoot 'clients/web') { npm run typecheck }
+Invoke-Checked 'parent web build' (Join-Path $ProjectRoot 'clients/web') { npm run build }
 Invoke-Checked 'RDK X5 runtime' (Join-Path $ProjectRoot 'clients/hardware-rx5') { python -m pytest (Join-Path $ProjectRoot 'clients/hardware-rx5/tests') -q }
 Invoke-Checked 'RDK X5 deterministic simulator' (Join-Path $ProjectRoot 'clients/hardware-rx5') { python -m she_device.cli simulate --once }
 Invoke-Checked 'interaction engine' (Join-Path $ProjectRoot 'agents/interaction') { python -m pytest (Join-Path $ProjectRoot 'agents/interaction/tests') -q }

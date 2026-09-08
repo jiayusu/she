@@ -13,7 +13,7 @@ import {
   decodeWeeklyReport,
 } from "@/api/contracts";
 
-const fixturesRoot = resolve(fileURLToPath(import.meta.url), "../../../shared/contracts/v1/fixtures");
+const fixturesRoot = resolve(fileURLToPath(import.meta.url), "../../../../shared/contracts/v1/fixtures");
 
 function fixture(path: string): unknown {
   return JSON.parse(readFileSync(resolve(fixturesRoot, path), "utf8")) as unknown;

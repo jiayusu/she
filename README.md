@@ -11,6 +11,12 @@ iOS 17 家长端 → Device Gateway → RDK X5 Python 运行时 / 模拟器
                shared/contracts/v1
 ```
 
+## 无硬件本地部署
+
+运行 `docker compose up --build --wait`，打开 http://localhost:8080。
+这是明确标记 mock 的单家庭演示部署；完整启动、验证、限制与回滚见
+[部署说明](deploy/README.md)。不需要连接 RDK X5。
+
 ## 组件边界
 
 - `clients/ios`：SwiftUI 家长端；Soft Orbit / Pet First，单演示家庭，无登录。

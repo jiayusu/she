@@ -6,7 +6,7 @@ const allowedOrigins = (process.env.SHE_ALLOWED_ORIGINS ?? "")
   .split(",")
   .map((origin) => origin.trim())
   .filter(Boolean);
-const gateway = await createGateway({ host: "127.0.0.1", port, allowedOrigins });
+const gateway = await createGateway({ host: process.env.HOST ?? "127.0.0.1", port, allowedOrigins });
 console.log(`SHE Device Gateway listening at ${gateway.url}`);
 if (allowedOrigins.length > 0) {
   console.log(`CORS allowlist: ${allowedOrigins.join(", ")}`);
