@@ -6,7 +6,7 @@ Layer: Web; one backward-compatible Gateway read route using the existing v1 sch
 
 | Part | Problem found | Change |
 | --- | --- | --- |
-| Colors | Swift 0–1 color values were interpreted as CSS 0–255, nearly black | Explicit CSS colors, warm light default, optional dark appearance |
+| Colors | Swift 0–1 color values were interpreted as CSS 0–255, nearly black | Explicit CSS colors; final user-directed geometric candy palette on washed cyan |
 | Layout | Phone-width column wasted desktop space | Responsive home/report grids and compact mobile cards |
 | Navigation | Tiny labels and incomplete tab semantics | Named navigation buttons, active-page indication, mobile bottom navigation |
 | Keyboard | Weak focus visibility; no skip link or focus movement | Focus rings, skip link, focused main content after navigation |
@@ -43,3 +43,8 @@ screen is a parent-supervised task preview, not a live lesson or parental lock.
 No new Agent dialogue, assessment, microphone/camera access, mastery writes or privacy
 implementation is introduced. Real authentication, persistent storage and lesson
 integration remain separate product work. Physical RDK X5 is excluded.
+
+Final visual direction supersedes the initial warm-card iteration: handcrafted vector
+scene, mint/sunflower/violet palette, 3% grain, dark outlines and hard paper shadows.
+Browser verification of this final revision is blocked by usage-limit auto-review;
+no final visual acceptance is claimed.

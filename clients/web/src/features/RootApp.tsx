@@ -19,13 +19,6 @@ export function RootApp({ model }: { model: AppModel }) {
   const state = useAppModel(model);
   const [tab, setTab] = useState<TabKey>("today");
   const [childPreview, setChildPreview] = useState(false);
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    document.documentElement.dataset.theme = dark ? "dark" : "light";
-    return () => {
-      delete document.documentElement.dataset.theme;
-    };
-  }, [dark]);
   const main = useRef<HTMLElement>(null);
   const firstRender = useRef(true);
   useEffect(() => {
@@ -49,13 +42,6 @@ export function RootApp({ model }: { model: AppModel }) {
           <span aria-hidden="true">✦</span> 小P{" "}
           <small>陪伴每一次小小的开口</small>
         </div>
-        <button
-          className="text-button"
-          aria-pressed={dark}
-          onClick={() => setDark(!dark)}
-        >
-          {dark ? "切换浅色" : "切换深色"}
-        </button>
         <span className="audience-badge">
           {childPreview ? "亲子共看" : "家长空间"}
         </span>
