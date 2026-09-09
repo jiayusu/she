@@ -1,0 +1,100 @@
+{
+  "seed_id": "milk_picnic",
+  "version": 1,
+  "language_levels": [0, 1, 2],
+  "start_node_id": "collect_milk",
+  "completion_node_id": "picnic_ready",
+  "allowed_world_events": ["virtual_item_granted", "quest_completed"],
+  "allowed_items": ["milk_token", "red_cup_token"],
+  "nodes": [
+    {
+      "node_id": "collect_milk",
+      "terminal": false,
+      "required_objects": ["fridge"],
+      "world_role": "饮品保管员",
+      "motivation": "帮虚拟野餐队准备牛奶，不需要打开真实冰箱。",
+      "learning_goal": "Request milk for the pretend picnic.",
+      "target_expression": "I want milk.",
+      "criterion": {
+        "criterion_id": "request_milk.v1",
+        "act": "request_item",
+        "slots": {"item": "milk"},
+        "accepted_forms": [
+          {"text": "milk", "requires_prompt_id": "collect_milk_s2"},
+          {"text": "milk please", "requires_prompt_id": null},
+          {"text": "I want milk", "requires_prompt_id": null},
+          {"text": "I would like milk", "requires_prompt_id": null}
+        ]
+      },
+      "prompts": [
+        {"prompt_id": "collect_milk_s0", "scaffold_level": 0},
+        {"prompt_id": "collect_milk_s1", "scaffold_level": 1},
+        {"prompt_id": "collect_milk_s2", "scaffold_level": 2},
+        {"prompt_id": "collect_milk_s3", "scaffold_level": 3},
+        {"prompt_id": "collect_milk_s4", "scaffold_level": 4},
+        {"prompt_id": "collect_milk_s5", "scaffold_level": 5},
+        {"prompt_id": "collect_milk_s6", "scaffold_level": 6}
+      ],
+      "success_feedback_id": "milk_ready",
+      "failure_feedback_id": "milk_help",
+      "success_event": {"kind": "virtual_item_granted", "item_id": "milk_token"},
+      "next_node_id": "find_red_cup"
+    },
+    {
+      "node_id": "find_red_cup",
+      "terminal": false,
+      "required_objects": ["table", "red_cup", "blue_cup"],
+      "world_role": "杯子管理员",
+      "motivation": "给虚拟野餐的牛奶选一个红杯，不需要搬动物品。",
+      "learning_goal": "Select the red cup for the pretend picnic.",
+      "target_expression": "I choose the red cup.",
+      "criterion": {
+        "criterion_id": "select_red_cup.v1",
+        "act": "select_item",
+        "slots": {"item": "cup", "color": "red"},
+        "accepted_forms": [
+          {"text": "red", "requires_prompt_id": "find_red_cup_s2"},
+          {"text": "red cup", "requires_prompt_id": null},
+          {"text": "the red cup", "requires_prompt_id": null},
+          {"text": "I choose the red cup", "requires_prompt_id": null}
+        ]
+      },
+      "prompts": [
+        {"prompt_id": "find_red_cup_s0", "scaffold_level": 0},
+        {"prompt_id": "find_red_cup_s1", "scaffold_level": 1},
+        {"prompt_id": "find_red_cup_s2", "scaffold_level": 2},
+        {"prompt_id": "find_red_cup_s3", "scaffold_level": 3},
+        {"prompt_id": "find_red_cup_s4", "scaffold_level": 4},
+        {"prompt_id": "find_red_cup_s5", "scaffold_level": 5},
+        {"prompt_id": "find_red_cup_s6", "scaffold_level": 6}
+      ],
+      "success_feedback_id": "red_cup_ready",
+      "failure_feedback_id": "red_cup_help",
+      "success_event": {"kind": "virtual_item_granted", "item_id": "red_cup_token"},
+      "next_node_id": "picnic_ready"
+    },
+    {
+      "node_id": "picnic_ready",
+      "terminal": true,
+      "required_objects": [],
+      "world_role": "野餐向导",
+      "motivation": "一起庆祝虚拟野餐准备完成。",
+      "learning_goal": "Hear the story ending without another output demand.",
+      "target_expression": "Our picnic is ready.",
+      "criterion": null,
+      "prompts": [
+        {"prompt_id": "picnic_ready_s0", "scaffold_level": 0},
+        {"prompt_id": "picnic_ready_s1", "scaffold_level": 1},
+        {"prompt_id": "picnic_ready_s2", "scaffold_level": 2},
+        {"prompt_id": "picnic_ready_s3", "scaffold_level": 3},
+        {"prompt_id": "picnic_ready_s4", "scaffold_level": 4},
+        {"prompt_id": "picnic_ready_s5", "scaffold_level": 5},
+        {"prompt_id": "picnic_ready_s6", "scaffold_level": 6}
+      ],
+      "success_feedback_id": "picnic_complete",
+      "failure_feedback_id": "picnic_pause",
+      "success_event": {"kind": "quest_completed", "quest_id": "milk_picnic"},
+      "next_node_id": null
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/rpg-turn.schema.json",
+  "title": "RpgTurn",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "child_id",
+    "session_id",
+    "turn_id",
+    "previous_turn_id",
+    "device_id",
+    "input_kind",
+    "utterance",
+    "asr",
+    "emotion",
+    "detected_object",
+    "perception_event_id"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "child_id": {"$ref": "#/$defs/id"},
+    "session_id": {"$ref": "#/$defs/id"},
+    "turn_id": {"$ref": "#/$defs/id"},
+    "previous_turn_id": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "device_id": {"$ref": "#/$defs/id"},
+    "input_kind": {"enum": ["object_observed", "speech", "resume"]},
+    "utterance": {"type": "string", "maxLength": 280},
+    "asr": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
+    "emotion": {"type": ["number", "null"], "minimum": -1, "maximum": 1},
+    "detected_object": {"enum": ["fridge", "table", "red_cup", "blue_cup", null]},
+    "perception_event_id": {"$ref": "#/$defs/id"}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"input_kind": {"const": "object_observed"}}},
+      "then": {
+        "properties": {
+          "utterance": {"maxLength": 0},
+          "asr": {"const": null},
+          "detected_object": {"enum": ["fridge", "table", "red_cup", "blue_cup"]}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"input_kind": {"const": "speech"}}},
+      "then": {
+        "properties": {
+          "utterance": {"type": "string", "minLength": 1, "maxLength": 280},
+          "asr": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"input_kind": {"const": "resume"}}},
+      "then": {
+        "properties": {
+          "utterance": {"maxLength": 0},
+          "asr": {"const": null},
+          "detected_object": {"const": null}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,80}$"}
+  }
+}

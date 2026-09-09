@@ -45,10 +45,14 @@ Agent 之间优先传结构化数据，不传自由长文本。
 }
 ```
 
+`state_patch` 只为旧 learning response 兼容保留；RPG 主路径必须为空对象，世界变化只能出现在
+`rpg-decision.world_events` 并由 Shared State 校验。
+
 ## TeachingAction
 
 ```json
 {
+  "action_id": "action-turn-001",
   "learning_goal": "",
   "target_expression": "",
   "language_level": 0,
@@ -56,6 +60,11 @@ Agent 之间优先传结构化数据，不传自由长文本。
   "teaching_action": "",
   "correction_policy": "",
   "story_action": "",
+  "prompt_id": "collect_milk_s2",
+  "feedback_id": "collect_milk_s2",
+  "node_id": "collect_milk",
+  "phase": "presenting",
+  "world_role": "饮品保管员",
   "success_condition": {},
   "memory_policy": ""
 }
@@ -69,10 +78,56 @@ Agent 之间优先传结构化数据，不传自由长文本。
   "semantic_correctness": 0.0,
   "spontaneous": false,
   "prompt_level_used": 0,
-  "pronunciation_intelligibility": 0.0,
+  "pronunciation_intelligibility": null,
   "assessment_confidence": 0.0,
   "learning_evidence": []
 }
+```
+
+`pronunciation_intelligibility=null` 表示尚无专用发音 evaluator 结果；不得用 ASR transcript
+置信度代填。只有 evaluator 真实产出时才写入 `0..1`。
+
+## RpgTurn
+
+客户端/设备只能提交身份、输入种类与结构化感知引用：
+
+```json
+{
+  "contract_version": "1.0",
+  "child_id": "child-demo",
+  "session_id": "session-demo",
+  "turn_id": "turn-001",
+  "previous_turn_id": null,
+  "device_id": "rx5-demo",
+  "input_kind": "object_observed",
+  "utterance": "",
+  "asr": null,
+  "emotion": null,
+  "detected_object": "fridge",
+  "perception_event_id": "perception-001"
+}
+```
+
+该对象 `additionalProperties=false`，不接受 world state、state patch、mastery 或客户端自报成功。
+
+## RpgDecision
+
+Director 返回当前有限状态、Speech Act evidence 和本次 world events。JSON Schema 约束形状；
+Memory 事务另外核对上一节点、连续 revision、canonical inventory、上一 `action_id`/scaffold 及
+event-evidence 引用。同一合法回合最多产生两个事件（红杯奖励 `2→3`、任务完成 `3→4`）。
+
+## RpgQuestSummary
+
+Gateway 的 `GET /v1/rpg/state` 返回只读投影：节点、有效 phase、虚拟 inventory、内容引用和
+delivery 状态。它不返回儿童原话、Speech Act evidence、request hash、完整学习响应或 profile，
+也不存在对应的客户端写接口。
+
+权威 schema：
+
+```text
+shared/contracts/v1/rpg-turn.schema.json
+shared/contracts/v1/rpg-decision.schema.json
+shared/contracts/v1/rpg-quest-summary.schema.json
 ```
 
 ---

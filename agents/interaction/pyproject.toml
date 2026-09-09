@@ -3,7 +3,7 @@ name = "she-engine"
 version = "1.0.0"
 description = "LLM 剧情引擎 · 「开口是唯一货币」的执行层（PRD 01, V1.0）"
 requires-python = ">=3.10"
-dependencies = ["PyYAML>=6.0"]
+dependencies = ["Flask>=3.0,<4", "PyYAML>=6.0"]
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0"]

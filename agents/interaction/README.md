@@ -1,7 +1,8 @@
 # Interaction Agent（LLM 剧情引擎）
 
-**儿童唯一的语言出口。** 把孩子的开口转化为剧情推进，把人格转化为语言。所有后台 Agent 都隐藏在
-它之后——儿童前台只面对一个稳定角色「小P」（`AGENTS.md` §0.2 / §28.4）。
+**儿童唯一的语言出口。** 它只把 Director 已决定、Shared State 已提交的动作渲染成小P的话，
+不判断孩子是否成功，也不推进剧情。所有后台职责都隐藏在它之后——儿童前台只面对一个稳定
+角色「小P」（`AGENTS.md` §0.2 / §28.4）。
 
 纠错一律走 Recast（吸收式），不打断孩子（[`docs/architecture/02-agents.md`](../../docs/architecture/02-agents.md) §19）。
 
@@ -15,7 +16,7 @@ python -m pip install -e '.[dev]'      # 包名 she-engine
 python examples/demo.py                # 最小对话演示（MockProvider，不打真实 LLM）
 ```
 
-本组件是**库，不是服务**，没有端口。公开 API：
+本组件同时提供 Python 库与仅供内部调用的审核模板服务。库公开 API：
 
 ```python
 from she_engine import Engine, EngineConfig, TurnRequest, TurnResponse
@@ -26,10 +27,26 @@ engine = Engine(EngineConfig(provider=MockProvider(), session_level=1))
 
 其余导出：`MemoryWrite`、`AsrResult`、`AssessResult`、`CtxBundle`。
 
+内部服务由 Device Gateway 调用：
+
+```bash
+python -m flask --app server run --port 8791
+```
+
+```text
+POST /interaction/render
+```
+
+请求兼容 Learning Director 现有 `TeachingAction`，并接受 `action_id`、`prompt_id`、
+`feedback_id`、`node_id`、`phase`、`world_role` 六个可选 RPG 字段。顶层字段、动作、目标句、
+节点、角色、提示与反馈均走有限白名单；未知字段、错误类型或未审核枚举返回
+`400 {"error":"invalid_action"}`。`ask`、`prompt`、`reinvite`、`advance_story`、`pause`、
+`explore` 分别使用审核文案，所有出口（含降级）最终经过 `LocalSafetyFilter`。
+
 ## 测试
 
 ```bash
-python -m pytest tests -q              # 103 用例
+python -m pytest tests -q
 python scripts/validate_assets.py      # 资产校验：提示词冻结 + 模板库 + 路由评测
 ```
 
@@ -49,8 +66,10 @@ assets/templates/<name>.yaml      兜底模板库（LLM 不可用时仍有话说
 
 ## 涉及契约
 
-不直接消费 `shared/contracts/v1`。产出的 `MemoryWrite` 由 `agents/director` 汇总后写入
-Shared State，且必须携带 evidence 状态——本组件不得让写入暗示已确认掌握（`AGENTS.md` §18）。
+不直接消费 `shared/contracts/v1`。内部渲染服务只消费 Director 已决定的 TeachingAction，
+不判断任务是否完成，也不修改 world state。`MemoryWrite` 属于旧 Engine 库兼容类型；现实语言
+RPG 主路径不由 Interaction 生成记忆写请求，长期 evidence 只通过 Director → Shared State
+规则提交（`AGENTS.md` §18）。
 
 ## 降级
 

@@ -1,0 +1,10 @@
+{
+  "contract_version": "1.0",
+  "learning_revision": 2,
+  "turn_id": "rpg-turn-002",
+  "delivery_status": "planned",
+  "quest": null,
+  "response": {
+    "utterance": "child raw text must not cross this boundary"
+  }
+}

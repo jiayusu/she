@@ -154,6 +154,8 @@ export interface StoryProposal {
 }
 
 export interface TeachingAction {
+  /** Stable within a durable turn; retries reuse the persisted action. */
+  action_id?: string;
   learning_goal: string;
   target_expression: string;
   language_level: LanguageLevel;
@@ -161,15 +163,28 @@ export interface TeachingAction {
   teaching_action: 'ask' | 'reinvite' | 'prompt' | 'recast' | 'advance_story' | 'explore' | 'pause';
   correction_policy: 'recast' | 'ignore' | 'explicit_later';
   story_action: string;
+  /** Reviewed RPG content references. Unknown runtime text must never be placed here. */
+  prompt_id?: string;
+  feedback_id?: string;
+  node_id?: string;
+  phase?: RpgPhase;
+  world_role?: string;
   success_condition: Record<string, unknown>;
   memory_policy: 'no_write' | 'candidate' | 'confirmed';
 }
 
 export interface DirectRequest {
+  contract_version?: '1.0';
+  child_id?: string;
   session_id: string;
+  turn_id?: string;
+  previous_turn_id?: string | null;
+  device_id?: string;
+  input_kind?: RpgInputKind;
+  perception_event_id?: string;
   utterance: string;
-  asr?: AsrMeta | number;
-  emotion?: number | Partial<Emotion>;
+  asr?: AsrMeta | number | null;
+  emotion?: number | Partial<Emotion> | null;
   detected_object?: string | null;
   story_state?: Record<string, unknown>;
   learner_state?: Record<string, unknown>;
@@ -195,7 +210,7 @@ export interface DirectResponse {
     semantic_correctness: number;
     spontaneous: boolean;
     prompt_level_used: ScaffoldLevel;
-    pronunciation_intelligibility: number;
+    pronunciation_intelligibility: number | null;
     response_latency_ms: number;
     error_type: string | null;
     assessment_confidence: number;
@@ -203,12 +218,67 @@ export interface DirectResponse {
   };
   evidence_status: 'OBSERVED_ONCE' | 'REPEATED' | 'CONFIRMED';
   learning_event_id?: string;
+  /** Present only for the reviewed embodied-language RPG path. */
+  rpg?: RpgDecision;
   ctx_bundle: { session_state: Record<string, unknown>; story_state: Record<string, unknown>; learner_state: Record<string, unknown> };
   safety: { emotion_priority: boolean; input_filtered: boolean; injection_suspected: boolean };
 }
 
 export type LanguageLevel = 0 | 1 | 2 | 3 | 4 | 5;
 export type ScaffoldLevel = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+
+export type RpgInputKind = 'object_observed' | 'speech' | 'resume';
+export type RpgObject = 'fridge' | 'table' | 'red_cup' | 'blue_cup';
+export type RpgPhase =
+  | 'seeking_object'
+  | 'confirming_object'
+  | 'presenting'
+  | 'awaiting_speech'
+  | 'resolving'
+  | 'paused'
+  | 'delivery_failed'
+  | 'completed';
+export type SpeechAct = 'request_item' | 'select_item' | 'none';
+export interface SpeechActEvidence {
+  evidence_id: string;
+  source_turn_id: string;
+  eliciting_action_id: string;
+  criterion_id: string;
+  act: SpeechAct;
+  slots: { item?: 'milk' | 'water' | 'cup'; color?: 'red' | 'blue' };
+  confidence: number;
+  context_supported: boolean;
+  scaffold_level_used: ScaffoldLevel;
+  quest_satisfied: boolean;
+  error_type: 'low_confidence' | 'wrong_slot' | 'unmatched' | 'no_completed_prompt' | null;
+}
+export interface RpgWorldEvent {
+  event_id: string;
+  kind: 'virtual_item_granted' | 'quest_completed';
+  base_revision: number;
+  resulting_revision: number;
+  source_evidence_id: string;
+  from_node_id: string;
+  to_node_id: string;
+  item_id?: 'milk_token' | 'red_cup_token';
+  quest_id?: 'milk_picnic';
+}
+export interface RpgDecision {
+  contract_version: '1.0';
+  seed_id: 'milk_picnic';
+  seed_version: 1;
+  node_id: 'collect_milk' | 'find_red_cup' | 'picnic_ready';
+  phase: RpgPhase;
+  world_revision: number;
+  inventory: Array<'milk_token' | 'red_cup_token'>;
+  completed_nodes: Array<'collect_milk' | 'find_red_cup' | 'picnic_ready'>;
+  confirmed_object: RpgObject | null;
+  world_role: string;
+  feedback_id: string;
+  next_quest_id: 'collect_milk' | 'find_red_cup' | null;
+  speech_act_evidence: SpeechActEvidence;
+  world_events: RpgWorldEvent[];
+}
 
 export interface IntentResult {
   intent: Intent;

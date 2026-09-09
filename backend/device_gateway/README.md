@@ -25,6 +25,19 @@ GET/PUT /v1/parent-constraints
 POST /v1/privacy/export         POST /v1/privacy/erase
 ```
 
+现实语言 RPG 与学习执行：
+
+```text
+POST /v1/rpg/direct             校验 rpg-turn，调用 Director，并校验 rpg-decision
+GET  /v1/rpg/state              当前任务的脱敏只读投影
+POST /v1/learning/execute       将已提交动作渲染并发送到设备
+```
+
+`GET /v1/rpg/state` 只返回审核内容引用、任务节点、虚拟 inventory、revision 与 delivery 状态，
+不返回儿童原话、Speech Act evidence、内部学习响应或原始感知数据。持久状态仍由 Memory Store
+拥有；Gateway 只做读取投影。持久 `presenting` 状态在 TTS ACK 完成后投影成
+`awaiting_speech`，失败或过期则投影成 `delivery_failed`，不会伪造世界 transition。
+
 设备与 Twin：
 
 ```text
@@ -34,6 +47,7 @@ GET  /v1/devices/{id}/timeline  POST /v1/devices/{id}/commands
 ```
 
 环境变量：`PORT`(8788)、`SHE_DEVICE_TOKEN`（配置后要求 Bearer token；未配置时不启用设备鉴权）、
+`SHE_MEMORY_URL`、`SHE_DIRECTOR_URL`、`SHE_INTERACTION_URL`（学习/RPG 主链）以及
 `SHE_LEARNING_REPORT_URL`（未配置则用 `DemoRepository` 演示数据）。
 
 > **安全边界**：WebSocket upgrade 在进入会话注册表之前完成鉴权。生产部署必须置于 TLS 终止之后
@@ -42,7 +56,7 @@ GET  /v1/devices/{id}/timeline  POST /v1/devices/{id}/commands
 ## 测试
 
 ```bash
-npm test            # 10 用例，含与 Python RX5 模拟器的端到端流程
+npm test            # 含与 Python RX5 模拟器的端到端流程
 npm run typecheck   # tsc --noEmit
 ```
 
@@ -52,8 +66,8 @@ npm run typecheck   # tsc --noEmit
 ## 涉及契约
 
 **本组件在运行时直接校验 schema**，不手写副本：`src/contracts.ts` 用 Ajv 编译
-`shared/contracts/v1/*.schema.json`（`device-event`、`device-command`、`dashboard-snapshot`、
-`weekly-report`、`parent-constraints`、`device-settings`）。改契约先改
+`shared/contracts/v1/*.schema.json`（设备、家长端以及 `rpg-turn`、`rpg-decision`、
+`rpg-quest-summary`）。改契约先改
 `shared/contracts/`（`AGENTS.md` §38.12）。
 
 幂等与去重：事件按 `sequence` 去重，命令按 `command_id` 幂等；`HTTP 202` 不等于送达，

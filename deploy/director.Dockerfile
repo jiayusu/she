@@ -4,6 +4,7 @@ COPY agents/director/package*.json ./
 RUN npm ci
 COPY agents/director/src ./src
 COPY agents/director/config ./config
+COPY agents/director/content ./content
 RUN mkdir data && chown node:node data
 ENV PORT=8790 DATA_DIR=/app/agents/director/data
 USER node

@@ -60,6 +60,100 @@ async function readJson(request: IncomingMessage): Promise<JsonObject> {
   return parsed as JsonObject;
 }
 
+function isObject(value: unknown): value is JsonObject {
+  return Boolean(value) && typeof value === "object" && !Array.isArray(value);
+}
+
+function readRpgStateQuery(searchParams: URLSearchParams): {
+  child_id: string;
+  session_id: string;
+  turn_id?: string;
+} {
+  const allowed = new Set(["child_id", "session_id", "turn_id"]);
+  if ([...searchParams.keys()].some((key) => !allowed.has(key))) {
+    throw new ServiceError("invalid_rpg_state_query", 400);
+  }
+  const readIdentity = (key: "child_id" | "session_id" | "turn_id", required: boolean) => {
+    const values = searchParams.getAll(key);
+    if ((required && values.length !== 1) || (!required && values.length > 1)) {
+      throw new ServiceError("invalid_rpg_state_query", 400);
+    }
+    const value = values[0];
+    if (value === undefined && !required) return undefined;
+    if (typeof value !== "string" || !/^[A-Za-z0-9_-]{1,80}$/.test(value)) {
+      throw new ServiceError("invalid_rpg_state_query", 400);
+    }
+    return value;
+  };
+  const child_id = readIdentity("child_id", true)!;
+  const session_id = readIdentity("session_id", true)!;
+  const turn_id = readIdentity("turn_id", false);
+  return turn_id === undefined ? { child_id, session_id } : { child_id, session_id, turn_id };
+}
+
+function rpgQuestSummary(state: unknown, requestedTurnId?: string): JsonObject {
+  if (!isObject(state) || !Number.isInteger(state.revision) || (state.revision as number) < 0) {
+    throw new ServiceError("invalid_rpg_state", 502);
+  }
+  const selected = requestedTurnId === undefined ? state.latest : state.replay;
+  if (requestedTurnId !== undefined && !isObject(selected)) {
+    throw new ServiceError("rpg_turn_not_found", 404);
+  }
+  if (!isObject(selected)) {
+    return {
+      contract_version: CONTRACT_VERSION,
+      learning_revision: state.revision,
+      turn_id: null,
+      delivery_status: null,
+      quest: null,
+    };
+  }
+  const response = selected.response;
+  const delivery = selected.delivery;
+  if (!isObject(response) || !isObject(delivery) || typeof selected.turn_id !== "string") {
+    throw new ServiceError("invalid_rpg_state", 502);
+  }
+  if (!isObject(response.rpg)) {
+    return {
+      contract_version: CONTRACT_VERSION,
+      learning_revision: state.revision,
+      turn_id: selected.turn_id,
+      delivery_status: typeof delivery.status === "string" ? delivery.status : null,
+      quest: null,
+    };
+  }
+  const action = response.teaching_action;
+  if (!isObject(action)) throw new ServiceError("invalid_rpg_state", 502);
+  let effectivePhase = response.rpg.phase;
+  if (effectivePhase === "presenting" && delivery.status === "completed") {
+    effectivePhase = "awaiting_speech";
+  } else if (effectivePhase === "presenting"
+    && (delivery.status === "failed" || delivery.status === "expired")) {
+    effectivePhase = "delivery_failed";
+  }
+  return {
+    contract_version: CONTRACT_VERSION,
+    learning_revision: state.revision,
+    turn_id: selected.turn_id,
+    delivery_status: typeof delivery.status === "string" ? delivery.status : null,
+    quest: {
+      seed_id: response.rpg.seed_id,
+      seed_version: response.rpg.seed_version,
+      node_id: response.rpg.node_id,
+      phase: effectivePhase,
+      world_revision: response.rpg.world_revision,
+      inventory: response.rpg.inventory,
+      completed_nodes: response.rpg.completed_nodes,
+      world_role: response.rpg.world_role,
+      action_kind: action.teaching_action,
+      target_expression: action.target_expression,
+      prompt_id: typeof action.prompt_id === "string" ? action.prompt_id : null,
+      feedback_id: response.rpg.feedback_id,
+      next_quest_id: response.rpg.next_quest_id,
+    },
+  };
+}
+
 const CORS_METHODS = "GET, PATCH, PUT, POST, OPTIONS";
 const CORS_HEADERS = "content-type, authorization";
 
@@ -117,6 +211,48 @@ export async function createGateway(options: GatewayOptions = {}): Promise<Gatew
       }
       if (request.method === "GET" && url.pathname === "/health") {
         reply(response, 200, { status: "ok", contract_version: CONTRACT_VERSION });
+      } else if (request.method === "POST" && url.pathname === "/v1/rpg/direct") {
+        if (!directorUrl) {
+          fail(response, 503, "rpg_director_unavailable", "The RPG Director is not configured.");
+          return;
+        }
+        const value = await readJson(request);
+        if (!validators.rpgTurn(value).ok) {
+          fail(response, 400, "invalid_rpg_turn", "RPG turn does not match contract v1.");
+          return;
+        }
+        const result = await service(`${directorUrl}/agent/direct`, value);
+        if (!isObject(result) || !validators.rpgDecision(result.rpg).ok) {
+          fail(response, 502, "invalid_rpg_decision", "Director returned an invalid RPG decision.");
+          return;
+        }
+        reply(response, 200, result);
+      } else if (request.method === "GET" && url.pathname === "/v1/rpg/state") {
+        if (!memoryUrl) {
+          fail(response, 503, "rpg_memory_unavailable", "The RPG state service is not configured.");
+          return;
+        }
+        const query = readRpgStateQuery(url.searchParams);
+        const memoryQuery = new URLSearchParams({
+          child_id: query.child_id,
+          session_id: query.session_id,
+        });
+        if (query.turn_id !== undefined) memoryQuery.set("turn_id", query.turn_id);
+        const state = await service(`${memoryUrl}/memory/learning/state?${memoryQuery}`);
+        if (isObject(state) && isObject((query.turn_id === undefined ? state.latest : state.replay))) {
+          const selected = query.turn_id === undefined ? state.latest : state.replay;
+          if (isObject(selected) && isObject(selected.response) && selected.response.rpg !== undefined
+            && !validators.rpgDecision(selected.response.rpg).ok) {
+            fail(response, 502, "invalid_rpg_state", "Stored RPG state does not match contract v1.");
+            return;
+          }
+        }
+        const summary = rpgQuestSummary(state, query.turn_id);
+        if (!validators.rpgQuestSummary(summary).ok) {
+          fail(response, 502, "invalid_rpg_summary", "RPG quest projection does not match contract v1.");
+          return;
+        }
+        reply(response, 200, summary);
       } else if (request.method === 'POST' && url.pathname === '/v1/learning/direct' && directorUrl) {
         reply(response,200,await service(`${directorUrl}/agent/direct`,await readJson(request)));
       } else if (request.method === 'POST' && url.pathname === '/v1/learning/execute' && learning) {

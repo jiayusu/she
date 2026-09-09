@@ -31,6 +31,9 @@ export class ContractValidators {
     readonly weeklyReport: NamedValidator,
     readonly parentConstraints: NamedValidator,
     readonly deviceSettings: NamedValidator,
+    readonly rpgTurn: NamedValidator,
+    readonly rpgDecision: NamedValidator,
+    readonly rpgQuestSummary: NamedValidator,
   ) {}
 
   static async load(contractRoot: string): Promise<ContractValidators> {
@@ -43,6 +46,9 @@ export class ContractValidators {
       wrap(await compile("weekly-report.schema.json")),
       wrap(await compile("parent-constraints.schema.json")),
       wrap(await compile("device-settings.schema.json")),
+      wrap(await compile("rpg-turn.schema.json")),
+      wrap(await compile("rpg-decision.schema.json")),
+      wrap(await compile("rpg-quest-summary.schema.json")),
     );
   }
 }

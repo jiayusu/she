@@ -1,7 +1,13 @@
 # SHE — 小P儿童英语陪伴系统
 
-SHE 面向 4–8 岁英语启蒙儿童，用一个稳定的前台角色“小P”把现实物件、
-小剧情和最小提示连起来，让孩子愿意从听懂、跟读走到主动开口。
+SHE 面向 4–8 岁英语启蒙儿童，用一个稳定的前台角色“小P”把现实物件变成有目标的语言任务：
+孩子说出的英语先被识别为 Speech Act，再改变服务端虚拟世界状态并开启下一段剧情。
+
+```text
+Object → Role → Speech → Action → World State → Next Quest
+```
+
+这里不是“让物体聊天”，而是让语言成为推动现实探索与虚拟剧情的工具。
 
 当前第一阶段是一条可重复验证的端到端纵向切片：
 
@@ -9,6 +15,8 @@ SHE 面向 4–8 岁英语启蒙儿童，用一个稳定的前台角色“小P�
 iOS 17 家长端 → Device Gateway → RDK X5 Python 运行时 / 模拟器
                          ↕
                shared/contracts/v1
+                         ↕
+       Director → Shared State → Interaction
 ```
 
 ## 无硬件本地部署
@@ -32,6 +40,9 @@ iOS 17 家长端 → Device Gateway → RDK X5 Python 运行时 / 模拟器
 
 - `AGENTS.md`：硬规则、组件归属、工作纪律，以及架构文档导航。**改代码前先读这里。**
 - [MAS / Agentic Loop 设计参考（提案，非实现）](docs/architecture/11-agentic-loop-design-reference.md)：Claude Code、Codex、Hermes 的对比与 SHE 设计。
+- [现实语言 RPG 开发基线](docs/architecture/12-embodied-language-rpg.md)：Object → Role → Speech → Action → World State → Next Quest。
+- [现实语言 RPG MVP 实施计划](docs/plans/2026-09-08-embodied-language-rpg.md)：按 Trust Boundary、契约、Agent、状态、Gateway 和客户端分阶段执行。
+- [代码实现审计](docs/CODE_IMPLEMENTATION_AUDIT.md)：代码、测试、Mock 与待验证能力的现状证据。
 - `docs/architecture/`：按主题拆分的详细架构说明（Agent、共享状态、硬件、Web、App、契约）。
 - `docs/architecture/99-target-state.md`：目标状态，**不是现状**。
 - `playbooks/`：变更、事故、决策与发布记录。`docs/archive/`：历史文件，非权威。

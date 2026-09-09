@@ -42,6 +42,8 @@ The RX5 runtime is mocked until physical SSH validation. See `backend/digital_tw
 | [`docs/architecture/08-contracts.md`](docs/architecture/08-contracts.md) | Agent 间契约、四端通信关系 | §25, §34 |
 | [`docs/architecture/09-runtime-flows.md`](docs/architecture/09-runtime-flows.md) | 单轮执行、决策优先级、故障降级、端到端交互 | §16, §17, §21, §35 |
 | [`docs/architecture/10-testing.md`](docs/architecture/10-testing.md) | 各 Agent 测试要求 | §26 |
+| [`docs/architecture/11-agentic-loop-design-reference.md`](docs/architecture/11-agentic-loop-design-reference.md) | Agentic Loop / Hook 设计参考（扩展提案） | — |
+| [`docs/architecture/12-embodied-language-rpg.md`](docs/architecture/12-embodied-language-rpg.md) | **当前产品主循环**：现实物体、Speech Act、世界状态与下一任务 | — |
 | [`docs/architecture/99-target-state.md`](docs/architecture/99-target-state.md) | **目标状态，非现状**：建议目录与完整组件地图 | §24, §37 |
 | [`docs/archive/migration-legacy-ministers.md`](docs/archive/migration-legacy-ministers.md) | **历史归档**：旧五大臣架构与迁移原则 | §22, §23 |
 
@@ -211,7 +213,7 @@ skills/she-ios-soft-orbit/SKILL.md
 
 RDK X5 首次连接流程当前保存在 release playbook。只有完成一次真实板端执行、修正和复验后，才允许建立 `she-rx5-preflight` skill。
 
-## 39.5 当前实现状态（2026-09-07）
+## 39.5 当前实现状态（2026-09-09）
 
 新的学习优先调度入口已在 `agents/director/` 提供：
 
@@ -220,6 +222,20 @@ POST /agent/direct
 ```
 
 该入口返回 `curriculum`、`scaffold`、`story` 和唯一 `teaching_action`，不返回 minister，
-并严格区分 `language_level` 与 `scaffold_level`。旧的 `POST /agent/dispatch` 保留为兼容接口，
-仅用于迁移期客户端；新客户端必须使用 `/agent/direct`。导演只产生保守的 candidate memory
-策略，不直接写 Learner Profile、KG 或 SQLite。
+并严格区分 `language_level` 与 `scaffold_level`。持久模式经 Memory API 读写，不直接访问
+Learner Profile、KG 或 SQLite。
+
+现实语言 RPG MVP 已加入代码，当前只允许审核种子 `milk_picnic.v1`：
+
+```text
+Gateway POST /v1/rpg/direct
+  → Director: StorySeed + SpeechActResolver + 唯一 TeachingAction
+  → Memory: 原子校验 world revision / evidence / event
+  → Interaction: 审核话术 + 最终 Safety
+  → Gateway POST /v1/learning/execute → 设备 ACK
+```
+
+`GET /v1/rpg/state` 只返回 `rpg-quest-summary` 脱敏投影，客户端没有 world/mastery 写接口。
+旧 `POST /agent/dispatch` 与 `/v1/learning/*` 仅用于迁移兼容；新产品调用使用 Gateway 的
+`/v1/rpg/*`。最新 RPG runtime 改动尚未执行完整验证，详见对应 change records；真实 ASR、
+发音 evaluator、自动设备事件编排、生产认证和 RDK X5 真机仍未完成。

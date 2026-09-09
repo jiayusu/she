@@ -676,12 +676,14 @@ Assessment Agent 是 **隐藏式学习评估器**。
   "semantic_correctness": 0.0,
   "spontaneous": false,
   "prompt_level_used": 0,
-  "pronunciation_intelligibility": 0.0,
+  "pronunciation_intelligibility": null,
   "error_type": null,
   "assessment_confidence": 0.0,
   "learning_evidence": []
 }
 ```
+
+没有专用发音 evaluator 时该字段必须为 `null`；ASR 置信度不能冒充发音可理解度。
 
 ## 9.5 评估写入规则
 

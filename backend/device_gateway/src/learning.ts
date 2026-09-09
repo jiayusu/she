@@ -6,8 +6,13 @@ export class ServiceError extends Error {
 }
 export async function service(url: string, body?: unknown): Promise<any> {
   let response: Response;
-  try { response = await fetch(url, {method:body===undefined?'GET':'POST',headers:{'content-type':'application/json'},
-    body:body===undefined?undefined:JSON.stringify(body),signal:AbortSignal.timeout(3000)}); }
+  const init: RequestInit = {
+    method: body === undefined ? 'GET' : 'POST',
+    headers: { 'content-type': 'application/json' },
+    signal: AbortSignal.timeout(3000),
+  };
+  if (body !== undefined) init.body = JSON.stringify(body);
+  try { response = await fetch(url, init); }
   catch { throw new ServiceError('learning_service_unavailable'); }
   const value = await response.json() as any;
   if (!response.ok) throw new ServiceError(typeof value.error==='string'?value.error:value.error?.code ?? 'learning_service_error',response.status);

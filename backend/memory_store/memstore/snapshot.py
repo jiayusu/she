@@ -64,6 +64,16 @@ class Snapshots:
             "SELECT version, created_at, path, note, counts FROM snapshots "
             "ORDER BY version DESC")]
 
+    def purge_all(self) -> int:
+        """Delete every restore point because each SQLite backup spans all children."""
+        count = len(self.list())
+        if self.dir.exists():
+            shutil.rmtree(self.dir)
+        self.dir.mkdir(parents=True, exist_ok=True)
+        with self.db.tx() as conn:
+            conn.execute("DELETE FROM snapshots")
+        return count
+
     # ------------------------------------------------------------ 回滚
     def rollback(self, v: int) -> dict:
         snap = self.dir / f"v{v}"

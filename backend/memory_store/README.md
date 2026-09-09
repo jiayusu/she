@@ -31,11 +31,26 @@ GET  /memory/salience  /whitelist  /audit  /metrics  /conflicts  /healthz
 POST /memory/procedural         程序性任务  GET /memory/procedural/due
 ```
 
+学习与 RPG 权威状态：
+
+```text
+GET  /memory/learning/state
+POST /memory/learning/commit
+POST /memory/learning/claim
+POST /memory/learning/ack
+```
+
+`learning/commit` 在同一 SQLite 事务中校验并保存 `milk_picnic.v1` 的有限状态：上一节点、
+连续 `world_revision`、canonical inventory、Speech Act evidence、上一 `action_id`/scaffold 和
+world-event 引用。客户端不能直接写该接口；产品入口由 Gateway/Director 编排。同 turn 重放
+返回原响应，不会重复发放虚拟道具。RPG 状态位于 `learning_turns.response`，沿用 session/child
+删除根级联清除。
+
 ## 测试
 
 ```bash
 python -m pip install -e '.[dev]'    # 运行依赖 + pytest
-python -m pytest tests -q            # 61 用例
+python -m pytest tests -q
 ```
 
 `pyproject.toml` 只发布 `memstore/` 包（不发布 `server.py` 等顶层脚本），并通过
@@ -43,7 +58,8 @@ python -m pytest tests -q            # 61 用例
 
 ## 涉及契约
 
-`shared/contracts/v1/learning-event.schema.json`。写入必须携带 evidence 状态：
+`shared/contracts/v1/learning-event.schema.json` 与
+`shared/contracts/v1/rpg-decision.schema.json`。写入必须携带 evidence 状态：
 candidate 与 confirmed 语义不可混淆（`AGENTS.md` §18）。
 
 ## 运行时数据目录

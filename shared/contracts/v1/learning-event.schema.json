@@ -27,7 +27,7 @@
         "target_reached": {"type": "boolean"},
         "semantic_correctness": {"type": "number", "minimum": 0, "maximum": 1},
         "spontaneous": {"type": "boolean"},
-        "pronunciation_intelligibility": {"type": "number", "minimum": 0, "maximum": 1},
+        "pronunciation_intelligibility": {"type": ["number", "null"], "minimum": 0, "maximum": 1},
         "response_latency_ms": {"type": "integer", "minimum": 0},
         "assessment_confidence": {"type": "number", "minimum": 0, "maximum": 1},
         "error_type": {"type": ["string", "null"], "maxLength": 80}

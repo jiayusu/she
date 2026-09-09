@@ -1,0 +1,182 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/rpg-decision.schema.json",
+  "title": "RpgDecision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "seed_id",
+    "seed_version",
+    "node_id",
+    "phase",
+    "world_revision",
+    "inventory",
+    "completed_nodes",
+    "confirmed_object",
+    "world_role",
+    "feedback_id",
+    "next_quest_id",
+    "speech_act_evidence",
+    "world_events"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "seed_id": {"$ref": "#/$defs/id"},
+    "seed_version": {"type": "integer", "minimum": 1},
+    "node_id": {"$ref": "#/$defs/id"},
+    "phase": {
+      "enum": [
+        "seeking_object",
+        "confirming_object",
+        "presenting",
+        "awaiting_speech",
+        "resolving",
+        "paused",
+        "delivery_failed",
+        "completed"
+      ]
+    },
+    "world_revision": {"type": "integer", "minimum": 0},
+    "inventory": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/id"}
+    },
+    "completed_nodes": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {"$ref": "#/$defs/id"}
+    },
+    "confirmed_object": {"enum": ["fridge", "table", "red_cup", "blue_cup", null]},
+    "world_role": {"type": "string", "minLength": 1, "maxLength": 120},
+    "feedback_id": {"$ref": "#/$defs/id"},
+    "next_quest_id": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "speech_act_evidence": {"$ref": "#/$defs/speech_act_evidence"},
+    "world_events": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {"$ref": "#/$defs/world_event"}
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "phase": {"enum": ["presenting", "awaiting_speech", "resolving", "delivery_failed"]}
+        }
+      },
+      "then": {
+        "properties": {
+          "confirmed_object": {"enum": ["fridge", "table", "red_cup", "blue_cup"]}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {"enum": ["seeking_object", "confirming_object", "completed"]}
+        }
+      },
+      "then": {"properties": {"confirmed_object": {"const": null}}}
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]{1,120}$"},
+    "speech_act_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "source_turn_id",
+        "eliciting_action_id",
+        "criterion_id",
+        "act",
+        "slots",
+        "confidence",
+        "context_supported",
+        "scaffold_level_used",
+        "quest_satisfied",
+        "error_type"
+      ],
+      "properties": {
+        "evidence_id": {"$ref": "#/$defs/id"},
+        "source_turn_id": {"$ref": "#/$defs/id"},
+        "eliciting_action_id": {"$ref": "#/$defs/id"},
+        "criterion_id": {"$ref": "#/$defs/id"},
+        "act": {"enum": ["request_item", "select_item", "none"]},
+        "slots": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "item": {"enum": ["milk", "water", "cup"]},
+            "color": {"enum": ["red", "blue"]}
+          }
+        },
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "context_supported": {"type": "boolean"},
+        "scaffold_level_used": {"type": "integer", "minimum": 0, "maximum": 6},
+        "quest_satisfied": {"type": "boolean"},
+        "error_type": {
+          "enum": [null, "low_confidence", "wrong_slot", "unmatched", "no_completed_prompt"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"act": {"const": "request_item"}}},
+          "then": {"properties": {"slots": {"required": ["item"], "maxProperties": 1}}}
+        },
+        {
+          "if": {"properties": {"act": {"const": "select_item"}}},
+          "then": {"properties": {"slots": {"required": ["item", "color"], "minProperties": 2}}}
+        },
+        {
+          "if": {"properties": {"act": {"const": "none"}}},
+          "then": {"properties": {"slots": {"maxProperties": 0}, "quest_satisfied": {"const": false}}}
+        }
+      ]
+    },
+    "world_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "kind",
+        "base_revision",
+        "resulting_revision",
+        "source_evidence_id",
+        "from_node_id",
+        "to_node_id"
+      ],
+      "properties": {
+        "event_id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["virtual_item_granted", "quest_completed"]},
+        "base_revision": {"type": "integer", "minimum": 0},
+        "resulting_revision": {"type": "integer", "minimum": 1},
+        "source_evidence_id": {"$ref": "#/$defs/id"},
+        "from_node_id": {"$ref": "#/$defs/id"},
+        "to_node_id": {"$ref": "#/$defs/id"},
+        "item_id": {"$ref": "#/$defs/id"},
+        "quest_id": {"$ref": "#/$defs/id"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "virtual_item_granted"}}},
+          "then": {
+            "required": ["item_id"],
+            "not": {"required": ["quest_id"]}
+          }
+        },
+        {
+          "if": {"properties": {"kind": {"const": "quest_completed"}}},
+          "then": {
+            "required": ["quest_id"],
+            "not": {"required": ["item_id"]}
+          }
+        }
+      ]
+    }
+  }
+}

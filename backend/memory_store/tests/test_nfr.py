@@ -10,7 +10,7 @@ NOW0 = time.mktime(time.strptime("2026-09-01 10:00:00", "%Y-%m-%d %H:%M:%S"))
 
 # ---------------------------------------------------------------- 审计
 def test_audit_covers_all_stores(svc):
-    """谁写入/何时/内容摘要: 写入/召回/剪枝/快照全留痕。"""
+    """谁写入/何时/不含原话的元数据摘要: 各操作全留痕。"""
     svc.write_episode(utterance="hello world", actor="agent:route",
                       session_id="s1")
     svc.recall("hello", actor="agent:ahai")
@@ -22,7 +22,8 @@ def test_audit_covers_all_stores(svc):
     assert {"agent:route", "agent:ahai", "parent", "agent:engine"} <= actors
     assert {"ep_write", "recall", "snapshot", "working_push"} <= actions
     write = next(e for e in entries if e["action"] == "ep_write")
-    assert "hello world" in write["summary"]
+    assert "hello world" not in write["summary"]
+    assert "episode:1" == write["target"]
 
 
 def test_audit_jsonl_daily_file(svc):
@@ -43,7 +44,7 @@ def test_audit_retention_3_years(svc):
     removed = svc.audit.enforce_retention()
     assert removed >= 1
     assert all("old" not in e["summary"] for e in svc.audit.query(limit=200))
-    assert any("recent row" in e["summary"] for e in svc.audit.query(limit=200))
+    assert any(e["action"] == "ep_write" for e in svc.audit.query(limit=200))
 
 
 # ---------------------------------------------------------------- 崩溃恢复 ≤2s

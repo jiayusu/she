@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/rpg-quest-summary.schema.json",
+  "title": "RpgQuestSummary",
+  "description": "Child-safe, read-only projection of the current embodied-language quest.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "learning_revision",
+    "turn_id",
+    "delivery_status",
+    "quest"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "learning_revision": {"type": "integer", "minimum": 0},
+    "turn_id": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "delivery_status": {
+      "enum": ["planned", "issuing", "completed", "failed", "expired", null]
+    },
+    "quest": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/quest"}
+      ]
+    }
+  },
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]{1,120}$"},
+    "quest": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "seed_id",
+        "seed_version",
+        "node_id",
+        "phase",
+        "world_revision",
+        "inventory",
+        "completed_nodes",
+        "confirmed_object",
+        "world_role",
+        "action_kind",
+        "target_expression",
+        "prompt_id",
+        "feedback_id",
+        "next_quest_id"
+      ],
+      "properties": {
+        "seed_id": {"$ref": "#/$defs/id"},
+        "seed_version": {"type": "integer", "minimum": 1},
+        "node_id": {"$ref": "#/$defs/id"},
+        "phase": {
+          "enum": [
+            "seeking_object",
+            "confirming_object",
+            "presenting",
+            "awaiting_speech",
+            "resolving",
+            "paused",
+            "delivery_failed",
+            "completed"
+          ]
+        },
+        "world_revision": {"type": "integer", "minimum": 0},
+        "inventory": {
+          "type": "array",
+          "maxItems": 16,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "completed_nodes": {
+          "type": "array",
+          "maxItems": 64,
+          "uniqueItems": true,
+          "items": {"$ref": "#/$defs/id"}
+        },
+        "confirmed_object": {"enum": ["fridge", "table", "red_cup", "blue_cup", null]},
+        "world_role": {"type": "string", "minLength": 1, "maxLength": 120},
+        "action_kind": {
+          "enum": ["ask", "reinvite", "prompt", "recast", "advance_story", "explore", "pause"]
+        },
+        "target_expression": {"type": "string", "minLength": 1, "maxLength": 120},
+        "prompt_id": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+        "feedback_id": {"$ref": "#/$defs/id"},
+        "next_quest_id": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]}
+      }
+    }
+  }
+}

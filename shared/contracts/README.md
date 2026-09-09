@@ -14,6 +14,10 @@ v1/dashboard-snapshot.schema.json  家长端首页
 v1/weekly-report.schema.json    学习周报（claim 必须带 evidence）
 v1/parent-constraints.schema.json  家长约束
 v1/learning-event.schema.json   学习证据事件（raw / candidate / confirmed）
+v1/rpg-turn.schema.json         现实 RPG 输入（仅感知与身份引用）
+v1/rpg-decision.schema.json     Director 有限 RPG 决策（无任意 state patch）
+v1/rpg-quest-summary.schema.json  Gateway 脱敏只读任务投影（无儿童原话/evidence）
+v1/rpg-quest-summary.schema.json  客户端只读、脱敏的当前任务投影
 v1/fixtures/valid/*.json        必须被接受的样例
 v1/fixtures/invalid/*.json      必须被拒绝的样例
 learning_events.py              Python 侧 evidence 辅助（手写，见下）
@@ -23,7 +27,7 @@ learning_events.py              Python 侧 evidence 辅助（手写，见下）
 
 ```bash
 python -m pip install -r requirements-dev.txt   # jsonschema + pytest
-python -m pytest tests -q          # 12 用例：valid 必过 / invalid 必拒
+python -m pytest tests -q          # valid 必过 / invalid 必拒
 python validate_contracts.py       # 同等校验的独立 CLI
 ```
 
@@ -33,7 +37,7 @@ python validate_contracts.py       # 同等校验的独立 CLI
 
 | 端 | 方式 | 漂移风险 |
 |---|---|---|
-| `backend/device_gateway` | Ajv 运行时编译 `v1/*.schema.json` | 低：结构由 schema 强制 |
+| `backend/device_gateway` | Ajv 运行时编译所消费的 `v1/*.schema.json`，包括 RPG 输入/决策/投影 | 低：结构由 schema 强制 |
 | `clients/hardware-rx5` | `jsonschema` 运行时校验（`SHE_CONTRACT_ROOT` 可覆盖根目录） | 低：同上 |
 | `clients/ios` | `Domain/Models.swift` **手写 Codable**，仅用 `fixtures/valid/` 做解码测试 | **中**：字段改名只有被 fixture 覆盖时才会被发现 |
 | `agents/director` | `src/learning-events.ts` **手写 TS 类型** | **中**：不校验 schema |
