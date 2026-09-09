@@ -5,6 +5,7 @@ import {
   type DashboardSnapshot,
   type DeviceSettings,
   type ParentConstraints,
+  type RpgQuestSummary,
   type WeeklyReport,
 } from "@/api/contracts";
 import { AppModel } from "@/state/appModel";
@@ -70,10 +71,37 @@ function constraintsFixture(): ParentConstraints {
   };
 }
 
+function questFixture(): RpgQuestSummary {
+  return {
+    contract_version: "1.0",
+    learning_revision: 2,
+    turn_id: "rpg-turn-002",
+    delivery_status: "planned",
+    quest: {
+      seed_id: "milk_picnic",
+      seed_version: 1,
+      node_id: "find_red_cup",
+      phase: "seeking_object",
+      world_revision: 2,
+      inventory: ["milk_token"],
+      completed_nodes: ["collect_milk"],
+      confirmed_object: null,
+      world_role: "杯子管理员",
+      action_kind: "advance_story",
+      target_expression: "I choose the red cup.",
+      prompt_id: null,
+      feedback_id: "milk_ready",
+      next_quest_id: "find_red_cup",
+    },
+  };
+}
+
 class MockApi {
   async parentConstraints() { return constraintsFixture(); }
   failure: AppApiError | null = null;
   patchFailure: AppApiError | null = null;
+  questFailure: AppApiError | null = null;
+  questCalls: Array<{ childId: string; sessionId: string }> = [];
   dashboardPayload = dashboardFixture();
   device = deviceFixture();
 
@@ -85,6 +113,12 @@ class MockApi {
   async weeklyReport() {
     if (this.failure) throw this.failure;
     return reportFixture();
+  }
+
+  async questState(childId: string, sessionId: string) {
+    this.questCalls.push({ childId, sessionId });
+    if (this.questFailure) throw this.questFailure;
+    return questFixture();
   }
 
   async deviceSettings() {
@@ -136,7 +170,8 @@ class MockApi {
 
 describe("AppModel behavior parity with the iOS view-model", () => {
   test("load moves from loading to ready with dashboard evidence", async () => {
-    const model = new AppModel(new MockApi() as never);
+    const api = new MockApi();
+    const model = new AppModel(api as never);
     assert.equal(model.getState().phase, "idle");
 
     const load = model.load();
@@ -148,6 +183,48 @@ describe("AppModel behavior parity with the iOS view-model", () => {
     assert.equal(state.dashboard?.pet.name, "小P");
     assert.equal(state.dashboard?.mock, true);
     assert.equal(state.deviceSettings?.device_id, "rx5-demo-001");
+    assert.equal(state.questSummary, null);
+    assert.equal(api.questCalls.length, 0);
+  });
+
+  test("RPG summary loads only with an explicit complete demo identity", async () => {
+    const api = new MockApi();
+    const model = new AppModel(api as never, {
+      rpgDemoIdentity: { childId: "child-demo", sessionId: "session-demo" },
+    });
+
+    await model.load();
+
+    assert.deepEqual(api.questCalls, [{ childId: "child-demo", sessionId: "session-demo" }]);
+    assert.equal(model.getState().questSummary?.quest?.node_id, "find_red_cup");
+    assert.equal(model.getState().questError, null);
+  });
+
+  test("a partial demo identity does not trigger an RPG request", async () => {
+    const api = new MockApi();
+    const model = new AppModel(api as never, {
+      rpgDemoIdentity: { childId: "child-demo", sessionId: "" },
+    });
+
+    await model.load();
+
+    assert.equal(api.questCalls.length, 0);
+    assert.equal(model.getState().questSummary, null);
+  });
+
+  test("RPG summary failure leaves the parent dashboard ready", async () => {
+    const api = new MockApi();
+    api.questFailure = new AppApiError("offline");
+    const model = new AppModel(api as never, {
+      rpgDemoIdentity: { childId: "child-demo", sessionId: "session-demo" },
+    });
+
+    await model.load();
+
+    assert.equal(model.getState().phase, "ready");
+    assert.equal(model.getState().dashboard?.pet.name, "小P");
+    assert.equal(model.getState().questSummary, null);
+    assert.equal(model.getState().questError?.kind, "offline");
   });
 
   test("first-load failure lands in the calm offline state", async () => {

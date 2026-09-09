@@ -10,7 +10,14 @@ import "@/design/theme.css";
 // SHE_WEB_API_BASE at deploy time and fall back to same-origin /v1.
 const embeddedBase = (globalThis as { __SHE_WEB_API_BASE__?: string }).__SHE_WEB_API_BASE__;
 const api = new LiveAppApi({ baseUrl: embeddedBase ?? "" });
-const model = new AppModel(api);
+const rpgChildId = import.meta.env.VITE_SHE_RPG_CHILD_ID?.trim();
+const rpgSessionId = import.meta.env.VITE_SHE_RPG_SESSION_ID?.trim();
+const model = new AppModel(
+  api,
+  rpgChildId && rpgSessionId
+    ? { rpgDemoIdentity: { childId: rpgChildId, sessionId: rpgSessionId } }
+    : {},
+);
 
 createRoot(document.getElementById("root")!).render(
   <StrictMode>

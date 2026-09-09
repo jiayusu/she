@@ -12,17 +12,23 @@ enum AppPhase: Equatable {
 @MainActor
 final class AppModel: NSObject {
     private let api: AppAPI
+    private let rpgIdentity: RpgReadIdentity?
 
     private(set) var phase: AppPhase = .idle
     private(set) var dashboard: DashboardSnapshot?
+    private(set) var questSummary: RpgQuestSummary?
     private(set) var weeklyReport: WeeklyReport?
     private(set) var deviceSettings: DeviceSettings?
     private(set) var parentConstraints: ParentConstraints?
     private(set) var transientError: AppAPIError?
     private(set) var refreshError: AppAPIError?
+    private(set) var questRefreshError: AppAPIError?
 
-    init(api: AppAPI) {
+    var isQuestStateConfigured: Bool { rpgIdentity != nil }
+
+    init(api: AppAPI, rpgIdentity: RpgReadIdentity? = nil) {
         self.api = api
+        self.rpgIdentity = rpgIdentity
         super.init()
     }
 
@@ -34,6 +40,7 @@ final class AppModel: NSObject {
             phase = .loading
         }
         refreshError = nil
+        questRefreshError = nil
         do {
             let dashboard = try await api.dashboard()
             let report = try await api.weeklyReport()
@@ -42,11 +49,24 @@ final class AppModel: NSObject {
             self.weeklyReport = report
             self.deviceSettings = settings
             phase = .ready
+
+            if let rpgIdentity {
+                do {
+                    questSummary = try await api.questState(identity: rpgIdentity)
+                } catch let error as AppAPIError {
+                    questRefreshError = error
+                } catch {
+                    questRefreshError = .invalidResponse
+                }
+            } else {
+                questSummary = nil
+            }
         } catch let error as AppAPIError {
             if hasEvidence {
                 refreshError = error
             } else {
                 dashboard = nil
+                questSummary = nil
                 weeklyReport = nil
                 deviceSettings = nil
                 transientError = error
@@ -58,6 +78,7 @@ final class AppModel: NSObject {
                 refreshError = .invalidResponse
             } else {
                 dashboard = nil
+                questSummary = nil
                 weeklyReport = nil
                 deviceSettings = nil
                 transientError = .invalidResponse

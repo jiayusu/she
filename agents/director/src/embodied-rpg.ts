@@ -32,6 +32,8 @@ export interface RpgInspection {
   failures: number;
   objectMatched: boolean;
   observedObject: RpgObject | null;
+  executionConfirmed: boolean;
+  priorAction: TeachingAction | null;
 }
 
 export interface RpgResolution {
@@ -146,11 +148,13 @@ export class EmbodiedRpg {
       observedObject: kind === 'object_observed' && RPG_OBJECTS.has(req.detected_object ?? '')
         ? req.detected_object as RpgObject
         : null,
+      executionConfirmed,
+      priorAction,
     };
   }
 
   resolve(inspection: RpgInspection, scaffold: ScaffoldLevel, distressed: boolean): RpgResolution {
-    const { seed, currentNode, priorRpg, sourceTurnId, evidence } = inspection;
+    const { seed, currentNode, priorRpg, priorAction, sourceTurnId, evidence } = inspection;
     let worldRevision = priorRpg?.world_revision ?? 1;
     let inventory = [...(priorRpg?.inventory ?? [])];
     let completedNodes = [...(priorRpg?.completed_nodes ?? [])];
@@ -166,7 +170,21 @@ export class EmbodiedRpg {
       confirmedObject = inspection.objectMatched ? inspection.observedObject : null;
     }
 
-    if (priorRpg?.phase === 'completed' || currentNode.terminal) {
+    const reviewedTransitionFeedbackIds = new Set(
+      seed.nodes.filter(candidate => !candidate.terminal)
+        .map(candidate => candidate.success_feedback_id),
+    );
+    const replayUndeliveredTransition = inspection.inputKind === 'resume'
+      && !inspection.executionConfirmed
+      && priorAction?.teaching_action === 'advance_story'
+      && priorAction.feedback_id === priorRpg?.feedback_id
+      && reviewedTransitionFeedbackIds.has(priorRpg?.feedback_id ?? '');
+
+    if (replayUndeliveredTransition) {
+      phase = priorRpg!.phase;
+      feedbackId = priorRpg!.feedback_id;
+      actionKind = 'advance_story';
+    } else if (priorRpg?.phase === 'completed' || currentNode.terminal) {
       phase = 'completed';
       feedbackId = currentNode.success_feedback_id;
       actionKind = 'pause';

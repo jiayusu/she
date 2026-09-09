@@ -25,6 +25,13 @@ Debug reads `http://127.0.0.1:8788` from
 Info.plist and is not hard-coded in the API client. Release intentionally uses
 the inert `api.invalid` domain until a production endpoint is approved.
 
+The optional read-only Embodied Language RPG card is disabled by default. To
+connect a local demo session, set both `RPG_CHILD_ID` and `RPG_SESSION_ID` in
+`clients/ios/Config/Debug.xcconfig` to Gateway-safe identifiers (letters,
+numbers, `_`, or `-`, at most 80 characters). The app then reads
+`GET /v1/rpg/state`; it has no API for changing quest, inventory, world state,
+or mastery. Never commit production child/session identifiers to this file.
+
 ## Accessibility and privacy audit
 
 ```powershell

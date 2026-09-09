@@ -49,6 +49,9 @@ absence of a dedicated evaluator; existing numeric values remain valid.
   15-minute in-memory cache TTL.
 - A new RPG turn is rejected while the previous action is planned/issuing; failed or expired delivery can
   only enter the explicit `resume` recovery path.
+- If a committed transition's success feedback failed delivery, resume emits the same reviewed feedback with
+  no world events; repeated recovery failures remain recoverable, and the reward/revision is neither rolled
+  back nor duplicated.
 - Speech and resume events cannot skip a node's required-object gate; only a confirmed object context can
   enter the language-resolution branch.
 - Speech turns require `detected_object=null`, preventing stale perception from being smuggled into the

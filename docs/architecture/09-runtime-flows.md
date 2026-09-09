@@ -98,7 +98,8 @@
 - Interaction 不可用：不 claim/播放成功反馈；保留已提交状态供同 turn 重试。
 - 设备离线：不把 `HTTP 202` 当作播放完成；已提交世界状态不回滚，也不评估后续 speech。
 - 动作 delivery 失败/过期：公开 `delivery_status`；普通 speech/object 被拒绝，仅显式 `resume`
-  可创建恢复动作，且 ACK 本身永远不能补写或重复 world event。
+  可创建恢复动作；若失败的是已提交成功反馈，就重播同一审核反馈但提交空 `world_events`，
+  ACK 本身永远不能补写或重复 world event。
 - 视觉不确定：保持 `seeking_object/confirming_object`，不得构造已确认物体。
 - ASR 低置信：`reinvite`，不计语言失败、不写长期弱点。
 - 情绪风险：`pause`；只有显式 resume 才重新呈现。

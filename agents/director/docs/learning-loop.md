@@ -44,8 +44,10 @@ RPG 回合的关键触发条件：
 
 Shared State 恢复的 durable turn 不受本地 15 分钟 Map TTL 影响。失败/过期后只有显式 `resume`
 可以提交恢复动作；普通 speech/object 回合保持关闭。若失败发生在已提交的成功反馈上，ACK 不会
-回滚既有 world transition，也不会再产生一个 transition，客户端应依据独立 `delivery_status`
-进入恢复路径。
+回滚既有 world transition；恢复动作会重播同一审核成功反馈，但携带空 `world_events`，因此不会
+重复发道具或推进 revision。恢复资格来自 StorySeed 中有限的成功反馈 ID 与 `advance_story`
+动作，所以恢复播放再次失败后仍可继续显式 `resume`。客户端应依据独立 `delivery_status` 进入
+恢复路径。
 
 ## Assessment 与剧情判定
 

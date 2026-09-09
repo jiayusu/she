@@ -25,6 +25,21 @@ Add the public boundary for the bounded `milk_picnic.v1` runtime:
 The existing `/v1/learning/direct`, `/v1/learning/state`, and
 `/v1/learning/execute` migration routes remain available.
 
+The synthetic `scripts/rpg-smoke.mjs` acceptance journey now exercises the
+state machine beyond the shortest happy path, without real sensors or hardware:
+
+- same-turn direct replay leaves the learning revision and world event ID
+  unchanged;
+- concurrent and already-completed execute replays emit only one `speak`;
+- low-ASR input neither increments failure count nor changes the world;
+- a confident water request and a blue-cup selection cannot advance the
+  reviewed milk/red-cup quest;
+- a failed prompt ACK projects `delivery_failed`, rejects ordinary speech, and
+  recovers only through an explicit `resume` turn;
+- a failed milk-success feedback ACK can be resumed with the same reviewed
+  feedback while emitting no second world event and retaining revision 2;
+- the red-cup Speech Act remains the only completion path to revision 4.
+
 ## Contract impact
 
 Backward-compatible v1 addition. `rpg-quest-summary.schema.json` is a new
@@ -49,8 +64,9 @@ read-only response schema; it does not add a client world-state write field.
 
 Not run, following the user's explicit instruction to edit files without
 running tests, typechecks, builds, or verification commands. The new fixtures
-and contract cases, Gateway route boundary cases, plus the synthetic full-quest
-smoke were registered for the next authorized verification run.
+and contract cases, Gateway route boundary cases, plus the expanded synthetic
+replay/failure/recovery/full-quest smoke were registered for the next authorized
+verification run.
 
 ## Rollback
 

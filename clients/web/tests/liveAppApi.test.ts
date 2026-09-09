@@ -1,5 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { resolve } from "node:path";
+import { readFileSync } from "node:fs";
 
 import { afterAll, beforeAll, describe, test } from "vitest";
 import assert from "node:assert/strict";
@@ -95,5 +96,29 @@ describe("LiveAppApi against the real Device Gateway", () => {
       assert.ok(error instanceof AppApiError);
       assert.equal(error.kind, "offline");
     }
+  });
+
+  test("quest state URL-encodes the explicitly supplied demo identity", async () => {
+    const payload = readFileSync(
+      resolve(repoRoot, "shared/contracts/v1/fixtures/valid/rpg-quest-summary.json"),
+      "utf8",
+    );
+    let requestedUrl = "";
+    const fetchImpl = (async (input: RequestInfo | URL) => {
+      requestedUrl = String(input);
+      return new Response(payload, {
+        status: 200,
+        headers: { "content-type": "application/json" },
+      });
+    }) as typeof fetch;
+    const api = new LiveAppApi({ baseUrl: "https://gateway.example", fetchImpl });
+
+    const summary = await api.questState("child/demo", "session?demo");
+
+    assert.equal(
+      requestedUrl,
+      "https://gateway.example/v1/rpg/state?child_id=child%2Fdemo&session_id=session%3Fdemo",
+    );
+    assert.equal(summary.quest?.node_id, "find_red_cup");
   });
 });

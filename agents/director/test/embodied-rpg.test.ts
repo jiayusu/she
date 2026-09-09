@@ -183,6 +183,41 @@ test('pause preserves confirmed context and explicit resume replays a reviewed p
   assert.equal(resumed.teaching_action.teaching_action, 'ask');
 });
 
+test('resume after failed success feedback replays feedback without duplicating world events', () => {
+  const director = new LearningDirector();
+  const fridge = director.plan(objectTurn('t1', null, 'fridge'), undefined, false);
+  const milk = director.plan(
+    speechTurn('t2', 't1', 'I want milk.'),
+    prior(fridge),
+    true,
+  );
+  const recovery = director.plan({
+    ...objectTurn('t3', 't2', 'table'),
+    input_kind: 'resume',
+    detected_object: null,
+  }, prior(milk), false);
+
+  assert.equal(recovery.teaching_action.teaching_action, 'advance_story');
+  assert.equal(recovery.teaching_action.feedback_id, 'milk_ready');
+  assert.equal(recovery.rpg?.node_id, 'find_red_cup');
+  assert.equal(recovery.rpg?.phase, 'seeking_object');
+  assert.equal(recovery.rpg?.world_revision, 2);
+  assert.deepEqual(recovery.rpg?.inventory, ['milk_token']);
+  assert.deepEqual(recovery.rpg?.world_events, []);
+
+  const secondRecovery = director.plan({
+    ...objectTurn('t4', 't3', 'table'),
+    input_kind: 'resume',
+    detected_object: null,
+  }, prior(recovery), false);
+
+  assert.equal(secondRecovery.teaching_action.teaching_action, 'advance_story');
+  assert.equal(secondRecovery.teaching_action.feedback_id, 'milk_ready');
+  assert.equal(secondRecovery.rpg?.node_id, 'find_red_cup');
+  assert.equal(secondRecovery.rpg?.world_revision, 2);
+  assert.deepEqual(secondRecovery.rpg?.world_events, []);
+});
+
 test('durable RPG state survives the in-memory session TTL', () => {
   let now = 0;
   const director = new LearningDirector({ now: () => now, sessionTtlMs: 10 });

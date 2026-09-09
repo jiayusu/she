@@ -4,6 +4,7 @@ import {
   decodeDeviceSettings,
   decodeParentConstraints,
   decodePrivacyOperation,
+  decodeRpgQuestSummary,
   decodeWeeklyReport,
   encodeDeviceSettingsPatch,
   encodeParentConstraintsUpdate,
@@ -13,6 +14,7 @@ import {
   type ParentConstraints,
   type ParentConstraintsUpdate,
   type PrivacyOperation,
+  type RpgQuestSummary,
   type WeeklyReport,
 } from "./contracts";
 
@@ -20,6 +22,7 @@ export interface AppApi {
   dashboard(): Promise<DashboardSnapshot>;
   parentConstraints(): Promise<ParentConstraints>;
   weeklyReport(): Promise<WeeklyReport>;
+  questState(childId: string, sessionId: string): Promise<RpgQuestSummary>;
   deviceSettings(deviceId: string): Promise<DeviceSettings>;
   updateDeviceSettings(deviceId: string, patch: DeviceSettingsPatch): Promise<DeviceSettings>;
   updateParentConstraints(update: ParentConstraintsUpdate): Promise<ParentConstraints>;
@@ -56,6 +59,11 @@ export class LiveAppApi implements AppApi {
 
   weeklyReport(): Promise<WeeklyReport> {
     return this.request("v1/reports/weekly", decodeWeeklyReport);
+  }
+
+  questState(childId: string, sessionId: string): Promise<RpgQuestSummary> {
+    const query = `child_id=${encodeURIComponent(childId)}&session_id=${encodeURIComponent(sessionId)}`;
+    return this.request(`v1/rpg/state?${query}`, decodeRpgQuestSummary);
   }
 
   deviceSettings(deviceId: string): Promise<DeviceSettings> {

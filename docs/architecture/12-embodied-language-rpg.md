@@ -126,6 +126,8 @@ paused
 8. world event、next node 和新 revision 必须在同一提交中产生。
 9. Interaction 成功反馈只能在提交成功后播放；提交失败不能先宣布获得道具。
 10. `completed`、`paused`、`delivery_failed` 不会由客户端或 LLM 自述触发。
+11. 已提交 transition 的成功反馈若播放失败，`resume` 只重播有限审核反馈；连续失败可继续重播，
+    直到一次 delivery 完成，不得回滚或重复 world event。
 
 ## 4. 故事资产模型
 

@@ -5,7 +5,7 @@ import { afterEach, expect, test, vi } from "vitest";
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { RootApp } from "@/features/RootApp";
-import { AppModel } from "@/state/appModel";
+import { AppModel, type RpgDemoIdentity } from "@/state/appModel";
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 let root: Root;
@@ -21,7 +21,7 @@ const fixture = (name: string) =>
       "utf8",
     ),
   );
-async function mount() {
+async function mount(rpgDemoIdentity?: RpgDemoIdentity) {
   const constraints = {
     ...fixture("parent-constraints"),
     session_budget_seconds: 900,
@@ -34,6 +34,7 @@ async function mount() {
     weeklyReport: async () => fixture("weekly-report"),
     deviceSettings: async () => fixture("device-settings"),
     parentConstraints: async () => constraints,
+    questState: vi.fn(async () => fixture("rpg-quest-summary")),
     updateParentConstraints: vi.fn(async (value) => ({
       ...constraints,
       ...value,
@@ -43,7 +44,14 @@ async function mount() {
   document.body.append(host);
   root = createRoot(host);
   await act(async () =>
-    root.render(<RootApp model={new AppModel(api as never)} />),
+    root.render(
+      <RootApp
+        model={new AppModel(
+          api as never,
+          rpgDemoIdentity === undefined ? {} : { rpgDemoIdentity },
+        )}
+      />,
+    ),
   );
   return api;
 }
@@ -54,6 +62,24 @@ async function click(text: string) {
   expect(button, text).toBeTruthy();
   await act(async () => button!.click());
 }
+test("RPG card is absent when no demo identity is configured", async () => {
+  const api = await mount();
+  expect(api.questState).not.toHaveBeenCalled();
+  expect(host.querySelector("[data-rpg-quest]")).toBeNull();
+});
+test("Today shows the current read-only embodied quest summary", async () => {
+  const api = await mount({ childId: "child-demo", sessionId: "session-demo" });
+  expect(api.questState).toHaveBeenCalledWith("child-demo", "session-demo");
+  expect(host.querySelector("[data-rpg-quest]")).toBeTruthy();
+  expect(host.textContent).toContain("当前现实语言任务 · 家长只读");
+  expect(host.textContent).toContain("正在寻找现实线索");
+  expect(host.textContent).toContain("杯子管理员");
+  expect(host.textContent).toContain("I choose the red cup.");
+  expect(host.textContent).toContain("牛奶（虚拟）");
+  expect(host.textContent).toContain("在房间里找到红杯子");
+  expect(host.textContent).toContain("等待发送到设备");
+  expect(host.textContent).not.toContain("milk_ready");
+});
 test("home opens a child preview without parent controls and returns to home", async () => {
   await mount();
   await click("和孩子一起看");

@@ -287,6 +287,77 @@ main:focus {
   color: var(--so-secondary);
   font-size: 15px;
 }
+.rpg-quest-card {
+  background: #fff7d8;
+  border: 2px solid var(--outline);
+  border-radius: 20px 16px 22px 18px;
+  box-shadow: var(--paper-shadow);
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+.rpg-quest-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 20px;
+}
+.quest-phase {
+  flex: none;
+  max-width: 280px;
+  padding: 8px 14px;
+  border: 2px solid var(--outline);
+  border-radius: 999px;
+  background: #d8f4e7;
+  color: var(--so-ink);
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+}
+.quest-facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.quest-facts > div {
+  min-width: 0;
+  padding: 14px 16px;
+  border-left: 3px solid #6652b8;
+  background: #ffffffb8;
+}
+.quest-facts dt {
+  color: var(--so-secondary);
+  font-size: 14px;
+  font-weight: 650;
+}
+.quest-facts dd {
+  margin: 3px 0 0;
+  font-size: 18px;
+  font-weight: 700;
+  overflow-wrap: anywhere;
+}
+.virtual-inventory h3 {
+  margin: 0 0 10px;
+  font-size: 17px;
+}
+.virtual-inventory ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.virtual-inventory li {
+  padding: 7px 13px;
+  border: 2px solid var(--outline);
+  border-radius: 10px 13px 9px 12px;
+  background: #e9dffe;
+  box-shadow: 2px 2px 0 var(--outline);
+  font-weight: 650;
+}
 .report-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -552,9 +623,16 @@ input[type="range"] {
   }
   .page-heading,
   .section-heading,
-  .device-note {
+  .device-note,
+  .rpg-quest-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+  .quest-facts {
+    grid-template-columns: 1fr;
+  }
+  .quest-phase {
+    max-width: none;
   }
   .glass-card {
     padding: 22px;
@@ -841,7 +919,7 @@ input[type="range"] {
   border: 2px dashed #74718e;
   border-radius: 24px;
 }
-:where(.glass-card, .welcome-card, .metric-tile, .child-preview, .child-task) {
+:where(.glass-card, .welcome-card, .metric-tile, .rpg-quest-card, .child-preview, .child-task) {
   position: relative;
   isolation: isolate;
 }
@@ -849,6 +927,7 @@ input[type="range"] {
   .glass-card,
   .welcome-card,
   .metric-tile,
+  .rpg-quest-card,
   .child-preview,
   .child-task
 )::before {

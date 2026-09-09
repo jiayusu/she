@@ -47,4 +47,25 @@ final class ContractDecodingTests: XCTestCase {
         XCTAssertTrue(constraints.mock)
         XCTAssertEqual(constraints.teachingPressure, .low)
     }
+
+    func testQuestSummaryDecodesCanonicalReadOnlyProjection() throws {
+        let summary = try decoder.decode(
+            RpgQuestSummary.self,
+            from: fixture("rpg-quest-summary")
+        )
+
+        XCTAssertEqual(summary.contractVersion, "1.0")
+        XCTAssertEqual(summary.learningRevision, 2)
+        XCTAssertEqual(summary.quest?.nodeID, .findRedCup)
+        XCTAssertEqual(summary.quest?.inventory, [.milkToken])
+        XCTAssertEqual(summary.quest?.targetExpression, "I choose the red cup.")
+        XCTAssertTrue(summary.quest?.isCanonicalMilkPicnicState == true)
+        XCTAssertTrue(summary.isCanonicalProjection)
+    }
+
+    func testRpgIdentityRejectsMissingOrUnsafeGatewayKeys() {
+        XCTAssertNil(RpgReadIdentity(childID: nil, sessionID: "session-demo"))
+        XCTAssertNil(RpgReadIdentity(childID: "child demo", sessionID: "session-demo"))
+        XCTAssertNotNil(RpgReadIdentity(childID: "child-demo", sessionID: "session_demo"))
+    }
 }

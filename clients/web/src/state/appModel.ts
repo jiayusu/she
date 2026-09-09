@@ -5,6 +5,7 @@ import {
   type DeviceSettingsPatch,
   type ParentConstraints,
   type ParentConstraintsUpdate,
+  type RpgQuestSummary,
   type WeeklyReport,
 } from "@/api/contracts";
 import type { AppApi } from "@/api/appApi";
@@ -17,6 +18,8 @@ export interface AppState {
   weeklyReport: WeeklyReport | null;
   deviceSettings: DeviceSettings | null;
   parentConstraints: ParentConstraints | null;
+  questSummary: RpgQuestSummary | null;
+  questError: AppApiError | null;
   transientError: AppApiError | null;
   refreshError: AppApiError | null;
 }
@@ -27,11 +30,22 @@ export const initialAppState: AppState = {
   weeklyReport: null,
   deviceSettings: null,
   parentConstraints: null,
+  questSummary: null,
+  questError: null,
   transientError: null,
   refreshError: null,
 };
 
 export type AppModelListener = (state: AppState) => void;
+
+export interface RpgDemoIdentity {
+  childId: string;
+  sessionId: string;
+}
+
+export interface AppModelOptions {
+  rpgDemoIdentity?: RpgDemoIdentity;
+}
 
 /**
  * Same view-model contract as the iOS `AppModel`: a failed refresh over
@@ -42,8 +56,14 @@ export type AppModelListener = (state: AppState) => void;
 export class AppModel {
   private state: AppState = initialAppState;
   private readonly listeners = new Set<AppModelListener>();
+  private readonly rpgDemoIdentity: RpgDemoIdentity | null;
 
-  constructor(private readonly api: AppApi) {}
+  constructor(private readonly api: AppApi, options: AppModelOptions = {}) {
+    const identity = options.rpgDemoIdentity;
+    const childId = identity?.childId.trim();
+    const sessionId = identity?.sessionId.trim();
+    this.rpgDemoIdentity = childId && sessionId ? { childId, sessionId } : null;
+  }
 
   getState(): AppState {
     return this.state;
@@ -68,7 +88,27 @@ export class AppModel {
       const weeklyReport = await this.api.weeklyReport();
       const deviceSettings = await this.api.deviceSettings(dashboard.device.device_id);
       const parentConstraints = await this.api.parentConstraints();
-      this.setState({ dashboard, weeklyReport, deviceSettings, parentConstraints, phase: "ready" });
+      let questSummary = this.state.questSummary;
+      let questError: AppApiError | null = null;
+      if (this.rpgDemoIdentity) {
+        try {
+          questSummary = await this.api.questState(
+            this.rpgDemoIdentity.childId,
+            this.rpgDemoIdentity.sessionId,
+          );
+        } catch (error) {
+          questError = error instanceof AppApiError ? error : new AppApiError("invalid_response");
+        }
+      }
+      this.setState({
+        dashboard,
+        weeklyReport,
+        deviceSettings,
+        parentConstraints,
+        questSummary,
+        questError,
+        phase: "ready",
+      });
     } catch (error) {
       const appError = error instanceof AppApiError ? error : new AppApiError("invalid_response");
       if (hasEvidence) {
@@ -78,6 +118,8 @@ export class AppModel {
           dashboard: null,
           weeklyReport: null,
           deviceSettings: null,
+          questSummary: null,
+          questError: null,
           transientError: appError,
           refreshError: appError,
           phase: "offline",

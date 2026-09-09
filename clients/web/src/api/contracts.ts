@@ -134,6 +134,66 @@ export interface PrivacyOperation extends VersionedContract {
   store_mutated: boolean;
 }
 
+export type RpgDeliveryStatus = "planned" | "issuing" | "completed" | "failed" | "expired";
+export type RpgNodeId = "collect_milk" | "find_red_cup" | "picnic_ready";
+export type RpgPhase =
+  | "seeking_object"
+  | "confirming_object"
+  | "presenting"
+  | "awaiting_speech"
+  | "resolving"
+  | "paused"
+  | "delivery_failed"
+  | "completed";
+export type RpgInventoryToken = "milk_token" | "red_cup_token";
+export type RpgObject = "fridge" | "table" | "red_cup" | "blue_cup";
+export type RpgWorldRole = "饮品保管员" | "杯子管理员" | "野餐向导";
+export type RpgActionKind =
+  | "ask"
+  | "reinvite"
+  | "prompt"
+  | "recast"
+  | "advance_story"
+  | "explore"
+  | "pause";
+export type RpgPromptId =
+  | `collect_milk_s${0 | 1 | 2 | 3 | 4 | 5 | 6}`
+  | `find_red_cup_s${0 | 1 | 2 | 3 | 4 | 5 | 6}`
+  | `picnic_ready_s${0 | 1 | 2 | 3 | 4 | 5 | 6}`;
+export type RpgFeedbackId =
+  | RpgPromptId
+  | "milk_ready"
+  | "milk_help"
+  | "red_cup_ready"
+  | "red_cup_help"
+  | "picnic_complete"
+  | "picnic_pause";
+
+export interface RpgQuest {
+  seed_id: "milk_picnic";
+  seed_version: 1;
+  node_id: RpgNodeId;
+  phase: RpgPhase;
+  world_revision: number;
+  inventory: RpgInventoryToken[];
+  completed_nodes: RpgNodeId[];
+  confirmed_object: RpgObject | null;
+  world_role: RpgWorldRole;
+  action_kind: RpgActionKind;
+  target_expression: string;
+  prompt_id: RpgPromptId | null;
+  feedback_id: RpgFeedbackId;
+  next_quest_id: Exclude<RpgNodeId, "picnic_ready"> | null;
+}
+
+export interface RpgQuestSummary extends VersionedContract {
+  contract_version: typeof SUPPORTED_CONTRACT_VERSION;
+  learning_revision: number;
+  turn_id: string | null;
+  delivery_status: RpgDeliveryStatus | null;
+  quest: RpgQuest | null;
+}
+
 export type AppApiErrorKind =
   | "offline"
   | "invalid_response"
@@ -167,8 +227,133 @@ const EVIDENCE_KINDS: ReadonlySet<string> = new Set([
 
 const TEACHING_PRESSURES: ReadonlySet<string> = new Set(["low", "normal"]);
 
+const RPG_DELIVERY_STATUSES: ReadonlySet<string> = new Set([
+  "planned",
+  "issuing",
+  "completed",
+  "failed",
+  "expired",
+]);
+const RPG_NODE_IDS: ReadonlySet<string> = new Set([
+  "collect_milk",
+  "find_red_cup",
+  "picnic_ready",
+]);
+const RPG_NEXT_QUEST_IDS: ReadonlySet<string> = new Set(["collect_milk", "find_red_cup"]);
+const RPG_PHASES: ReadonlySet<string> = new Set([
+  "seeking_object",
+  "confirming_object",
+  "presenting",
+  "awaiting_speech",
+  "resolving",
+  "paused",
+  "delivery_failed",
+  "completed",
+]);
+const RPG_INVENTORY_TOKENS: ReadonlySet<string> = new Set(["milk_token", "red_cup_token"]);
+const RPG_OBJECTS: ReadonlySet<string> = new Set(["fridge", "table", "red_cup", "blue_cup"]);
+const RPG_WORLD_ROLES: ReadonlySet<string> = new Set(["饮品保管员", "杯子管理员", "野餐向导"]);
+const RPG_ACTION_KINDS: ReadonlySet<string> = new Set([
+  "ask",
+  "reinvite",
+  "prompt",
+  "recast",
+  "advance_story",
+  "explore",
+  "pause",
+]);
+const RPG_PROMPT_IDS: ReadonlySet<string> = new Set([
+  "collect_milk_s0",
+  "collect_milk_s1",
+  "collect_milk_s2",
+  "collect_milk_s3",
+  "collect_milk_s4",
+  "collect_milk_s5",
+  "collect_milk_s6",
+  "find_red_cup_s0",
+  "find_red_cup_s1",
+  "find_red_cup_s2",
+  "find_red_cup_s3",
+  "find_red_cup_s4",
+  "find_red_cup_s5",
+  "find_red_cup_s6",
+  "picnic_ready_s0",
+  "picnic_ready_s1",
+  "picnic_ready_s2",
+  "picnic_ready_s3",
+  "picnic_ready_s4",
+  "picnic_ready_s5",
+  "picnic_ready_s6",
+]);
+const RPG_CONTENT_IDS: ReadonlySet<string> = new Set([
+  ...RPG_PROMPT_IDS,
+  "milk_ready",
+  "milk_help",
+  "red_cup_ready",
+  "red_cup_help",
+  "picnic_complete",
+  "picnic_pause",
+]);
+const COLLECT_MILK_CONTENT_IDS: ReadonlySet<string> = new Set([
+  "collect_milk_s0",
+  "collect_milk_s1",
+  "collect_milk_s2",
+  "collect_milk_s3",
+  "collect_milk_s4",
+  "collect_milk_s5",
+  "collect_milk_s6",
+  "milk_help",
+]);
+const FIND_RED_CUP_CONTENT_IDS: ReadonlySet<string> = new Set([
+  "find_red_cup_s0",
+  "find_red_cup_s1",
+  "find_red_cup_s2",
+  "find_red_cup_s3",
+  "find_red_cup_s4",
+  "find_red_cup_s5",
+  "find_red_cup_s6",
+  "milk_ready",
+  "red_cup_help",
+]);
+const PICNIC_READY_CONTENT_IDS: ReadonlySet<string> = new Set([
+  "picnic_ready_s0",
+  "picnic_ready_s1",
+  "picnic_ready_s2",
+  "picnic_ready_s3",
+  "picnic_ready_s4",
+  "picnic_ready_s5",
+  "picnic_ready_s6",
+  "red_cup_ready",
+  "picnic_complete",
+  "picnic_pause",
+]);
+const RPG_QUEST_KEYS = [
+  "seed_id",
+  "seed_version",
+  "node_id",
+  "phase",
+  "world_revision",
+  "inventory",
+  "completed_nodes",
+  "confirmed_object",
+  "world_role",
+  "action_kind",
+  "target_expression",
+  "prompt_id",
+  "feedback_id",
+  "next_quest_id",
+] as const;
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function assertExactKeys(record: Record<string, unknown>, expected: readonly string[]): void {
+  const expectedKeys = new Set(expected);
+  const actual = Object.keys(record);
+  if (actual.length !== expected.length || actual.some((key) => !expectedKeys.has(key))) {
+    throw new AppApiError("invalid_response");
+  }
 }
 
 function stringField(record: Record<string, unknown>, key: string): string {
@@ -180,6 +365,12 @@ function stringField(record: Record<string, unknown>, key: string): string {
 function numberField(record: Record<string, unknown>, key: string): number {
   const value = record[key];
   if (typeof value !== "number" || !Number.isFinite(value)) throw new AppApiError("invalid_response");
+  return value;
+}
+
+function nonNegativeIntegerField(record: Record<string, unknown>, key: string): number {
+  const value = numberField(record, key);
+  if (!Number.isInteger(value) || value < 0) throw new AppApiError("invalid_response");
   return value;
 }
 
@@ -202,6 +393,60 @@ function stringArrayField(record: Record<string, unknown>, key: string): string[
     throw new AppApiError("invalid_response");
   }
   return value as string[];
+}
+
+function enumStringField<T extends string>(
+  record: Record<string, unknown>,
+  key: string,
+  values: ReadonlySet<string>,
+): T {
+  const value = stringField(record, key);
+  if (!values.has(value)) throw new AppApiError("invalid_response");
+  return value as T;
+}
+
+function nullableEnumStringField<T extends string>(
+  record: Record<string, unknown>,
+  key: string,
+  values: ReadonlySet<string>,
+): T | null {
+  const value = record[key];
+  if (value === null) return null;
+  if (typeof value !== "string" || !values.has(value)) {
+    throw new AppApiError("invalid_response");
+  }
+  return value as T;
+}
+
+function enumStringArrayField<T extends string>(
+  record: Record<string, unknown>,
+  key: string,
+  values: ReadonlySet<string>,
+  maxItems: number,
+): T[] {
+  const items = stringArrayField(record, key);
+  if (items.length > maxItems || new Set(items).size !== items.length) {
+    throw new AppApiError("invalid_response");
+  }
+  if (items.some((item) => !values.has(item))) throw new AppApiError("invalid_response");
+  return items as T[];
+}
+
+function nullableIdField(record: Record<string, unknown>, key: string): string | null {
+  const value = record[key];
+  if (value === null) return null;
+  if (typeof value !== "string" || !/^[A-Za-z0-9_.-]{1,120}$/.test(value)) {
+    throw new AppApiError("invalid_response");
+  }
+  return value;
+}
+
+function sameItems(left: readonly string[], right: readonly string[]): boolean {
+  return left.length === right.length && left.every((item, index) => item === right[index]);
+}
+
+function requireRpg(condition: boolean): void {
+  if (!condition) throw new AppApiError("invalid_response");
 }
 
 function recordField(record: Record<string, unknown>, key: string): Record<string, unknown> {
@@ -354,6 +599,146 @@ export function decodePrivacyOperation(value: unknown): PrivacyOperation {
     status: stringField(root, "status"),
     mock: booleanField(root, "mock"),
     store_mutated: booleanField(root, "store_mutated"),
+  };
+}
+
+/**
+ * Strictly decode the bounded milk_picnic quest projection. Unlike the older
+ * parent-demo contracts, this client-boundary decoder rejects unknown keys and
+ * impossible node snapshots instead of silently dropping response drift.
+ */
+export function decodeRpgQuestSummary(value: unknown): RpgQuestSummary {
+  const root = decodeVersioned(value);
+  assertExactKeys(root, [
+    "contract_version",
+    "learning_revision",
+    "turn_id",
+    "delivery_status",
+    "quest",
+  ]);
+  const learningRevision = nonNegativeIntegerField(root, "learning_revision");
+  const turnId = nullableIdField(root, "turn_id");
+  const deliveryStatus = nullableEnumStringField<RpgDeliveryStatus>(
+    root,
+    "delivery_status",
+    RPG_DELIVERY_STATUSES,
+  );
+  const questValue = root.quest;
+  if (questValue === null) {
+    return {
+      contract_version: SUPPORTED_CONTRACT_VERSION,
+      learning_revision: learningRevision,
+      turn_id: turnId,
+      delivery_status: deliveryStatus,
+      quest: null,
+    };
+  }
+  if (!isRecord(questValue)) throw new AppApiError("invalid_response");
+  assertExactKeys(questValue, RPG_QUEST_KEYS);
+
+  requireRpg(stringField(questValue, "seed_id") === "milk_picnic");
+  requireRpg(nonNegativeIntegerField(questValue, "seed_version") === 1);
+  const nodeId = enumStringField<RpgNodeId>(questValue, "node_id", RPG_NODE_IDS);
+  const phase = enumStringField<RpgPhase>(questValue, "phase", RPG_PHASES);
+  const worldRevision = nonNegativeIntegerField(questValue, "world_revision");
+  const inventory = enumStringArrayField<RpgInventoryToken>(
+    questValue,
+    "inventory",
+    RPG_INVENTORY_TOKENS,
+    16,
+  );
+  const completedNodes = enumStringArrayField<RpgNodeId>(
+    questValue,
+    "completed_nodes",
+    RPG_NODE_IDS,
+    64,
+  );
+  const confirmedObject = nullableEnumStringField<RpgObject>(
+    questValue,
+    "confirmed_object",
+    RPG_OBJECTS,
+  );
+  const worldRole = enumStringField<RpgWorldRole>(questValue, "world_role", RPG_WORLD_ROLES);
+  const actionKind = enumStringField<RpgActionKind>(questValue, "action_kind", RPG_ACTION_KINDS);
+  const targetExpression = stringField(questValue, "target_expression");
+  requireRpg(targetExpression.length >= 1 && targetExpression.length <= 120);
+  const promptId = nullableEnumStringField<RpgPromptId>(questValue, "prompt_id", RPG_PROMPT_IDS);
+  const feedbackId = enumStringField<RpgFeedbackId>(questValue, "feedback_id", RPG_CONTENT_IDS);
+  const nextQuestId = nullableEnumStringField<Exclude<RpgNodeId, "picnic_ready">>(
+    questValue,
+    "next_quest_id",
+    RPG_NEXT_QUEST_IDS,
+  );
+
+  if (["presenting", "awaiting_speech", "resolving", "delivery_failed"].includes(phase)) {
+    requireRpg(confirmedObject !== null);
+  }
+  if (["seeking_object", "confirming_object", "completed"].includes(phase)) {
+    requireRpg(confirmedObject === null);
+  }
+
+  switch (nodeId) {
+    case "collect_milk":
+      requireRpg(phase !== "completed");
+      requireRpg(worldRevision === 1);
+      requireRpg(sameItems(inventory, []));
+      requireRpg(sameItems(completedNodes, []));
+      requireRpg(confirmedObject === null || confirmedObject === "fridge");
+      requireRpg(worldRole === "饮品保管员");
+      requireRpg(targetExpression === "I want milk.");
+      requireRpg(COLLECT_MILK_CONTENT_IDS.has(feedbackId));
+      requireRpg(nextQuestId === "collect_milk");
+      break;
+    case "find_red_cup":
+      requireRpg(phase !== "completed");
+      requireRpg(worldRevision === 2);
+      requireRpg(sameItems(inventory, ["milk_token"]));
+      requireRpg(sameItems(completedNodes, ["collect_milk"]));
+      requireRpg(
+        confirmedObject === null ||
+          confirmedObject === "table" ||
+          confirmedObject === "red_cup" ||
+          confirmedObject === "blue_cup",
+      );
+      requireRpg(worldRole === "杯子管理员");
+      requireRpg(targetExpression === "I choose the red cup.");
+      requireRpg(FIND_RED_CUP_CONTENT_IDS.has(feedbackId));
+      requireRpg(nextQuestId === "find_red_cup");
+      break;
+    case "picnic_ready":
+      requireRpg(phase === "completed");
+      requireRpg(worldRevision === 4);
+      requireRpg(sameItems(inventory, ["milk_token", "red_cup_token"]));
+      requireRpg(sameItems(completedNodes, ["collect_milk", "find_red_cup", "picnic_ready"]));
+      requireRpg(confirmedObject === null);
+      requireRpg(worldRole === "野餐向导");
+      requireRpg(targetExpression === "Our picnic is ready.");
+      requireRpg(PICNIC_READY_CONTENT_IDS.has(feedbackId));
+      requireRpg(nextQuestId === null);
+      break;
+  }
+
+  return {
+    contract_version: SUPPORTED_CONTRACT_VERSION,
+    learning_revision: learningRevision,
+    turn_id: turnId,
+    delivery_status: deliveryStatus,
+    quest: {
+      seed_id: "milk_picnic",
+      seed_version: 1,
+      node_id: nodeId,
+      phase,
+      world_revision: worldRevision,
+      inventory,
+      completed_nodes: completedNodes,
+      confirmed_object: confirmedObject,
+      world_role: worldRole,
+      action_kind: actionKind,
+      target_expression: targetExpression,
+      prompt_id: promptId,
+      feedback_id: feedbackId,
+      next_quest_id: nextQuestId,
+    },
   };
 }
 

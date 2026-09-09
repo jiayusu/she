@@ -4,7 +4,7 @@
 > [`AGENTS.md](../../AGENTS.md)；现实语言 RPG 产品定义见
 > [`12-embodied-language-rpg.md](12-embodied-language-rpg.md)。
 >
-> 当前 iOS quest UI、生产身份与真实隐私链均未实现。
+> 当前 iOS 已有可选配置驱动的只读 quest 卡；生产身份、儿童实时交互入口与真实隐私链仍未实现。
 
 ---
 
@@ -32,7 +32,7 @@ App 是家长与系统之间的控制面，不是儿童实时教学 Agent。它�
 | Device | 有设备状态/有限设置页面和 Gateway API client |
 | Parent constraints | 可提交时长与场景等约束 |
 | Privacy | 有演示导出/删除确认 UI；后端不导出、不删除真实数据 |
-| RPG quest | 未解码或调用 `GET /v1/rpg/state`，没有真实任务卡 |
+| RPG quest | 可选读取 `GET /v1/rpg/state` 并展示脱敏任务卡；默认不配置身份，无写入口 |
 | 生产接入 | Release endpoint 为惰性占位域名；没有登录和多家庭授权 |
 
 “有页面/客户端方法”只表示 UI 与协议骨架存在，不等于生产能力完成。
@@ -44,36 +44,42 @@ Today 页面展示：
 ~~~text
 设备在线摘要
 小P的观察
+现实语言任务（仅在配置了演示 child/session 时出现）
 dashboard task
 三个学习指标
 ~~~
 
-其中“下一步”来自通用 `DashboardSnapshot.task`。当前按钮没有启动 RPG 的行为，也不读取
-`rpg-quest-summary`，所以它不是 `milk_picnic.v1` 当前节点的权威任务卡。
+其中“下一步”仍来自通用 `DashboardSnapshot.task`，按钮没有启动 RPG 的行为。独立的“现实语言
+任务”卡才读取 `rpg-quest-summary`；它是 Memory 权威状态的 Gateway 脱敏投影，不在 App 内
+计算下一节点。
 
-## 33.2 待实现：RPG Quest UI
+## 33.2 当前实现：只读 RPG Quest UI
 
-Gateway 已提供后端只读端点：
+Gateway 提供后端只读端点：
 
 ~~~text
-GET /v1/rpg/state?child_id=...&session_id=...&turn_id=...
+GET /v1/rpg/state?child_id=...&session_id=...
 ~~~
 
-iOS 仍需要新增共享 contract 对应模型、严格 decoder、API method 和明确的加载/空/离线/错误
-状态。Quest UI 只能呈现脱敏摘要，例如：
+iOS 已新增共享 contract 对应的有限枚举模型、`milk_picnic.v1` canonical state 检查、API method
+和加载/空/刷新失败状态。只有 `RPG_CHILD_ID` 与 `RPG_SESSION_ID` 同时存在且匹配 Gateway
+identity 规则时才发起读取；默认 Debug/Release 配置均为空，不在源码硬编码家庭身份。
+
+当前 Quest 卡呈现：
 
 ~~~text
 当前节点与 phase
 小P可转述的 world role
-审核 prompt/feedback 引用对应的产品文案
-虚拟 inventory 与完成节点
-next quest
-delivery status
-world revision（仅调试或支持场景）
+当前节点对应的家长可读标题
+有效 phase 的家长可读状态
+world role 与目标表达
+虚拟 inventory
+刷新失败时的缓存状态提示
 ~~~
 
-它不得显示儿童逐字原话、Speech Act evidence、内部 assessment、原始感知、request hash 或完整
-Memory response，也不得提供 inventory/world/mastery 编辑功能。
+它不显示儿童逐字原话、Speech Act evidence、内部 assessment、原始感知、request hash 或完整
+Memory response，也没有 inventory/world/mastery 或 quest progression 编辑方法。`AppAPI` 仅增加
+`questState(identity:)` 的 GET 读取，Speech Act 与剧情推进仍只发生在服务端链路。
 
 阶段触发建议：
 
@@ -84,11 +90,15 @@ Memory response，也不得提供 inventory/world/mastery 编辑功能。
 | `presenting` | 显示提示正在准备/播放 |
 | `awaiting_speech` | 仅说明设备正在等待，不在 App 代替孩子作答 |
 | `delivery_failed` | 提供检查设备/重试说明，不伪造剧情推进 |
-| `paused` | 尊重暂停，只通过明确操作发起 resume |
+| `paused` | 尊重暂停；当前 App 不提供 resume 写操作 |
 | `completed` | 展示虚拟成果，不等同于 mastery |
 
 RPG 的实时 speech 和 pointing 仍发生在设备/Gateway 链路，家长 App 不应成为第二套
 SpeechActResolver 或 Story Engine。
+
+尚未完成的 App 侧产品能力包括：生产登录/授权后安全派生 child/session identity、历史 turn 查询、
+推送或轮询刷新策略，以及经过产品评审的家长 resume 操作。任何未来 resume 都必须提交明确的
+新 turn 到 Gateway，而不能直接改本地 phase。
 
 ## 33.3 学习报告
 
@@ -171,4 +181,3 @@ App 不得：
 - 把 quest success 包装成分数或“已掌握”；
 - 缓存或记录原始儿童音视频/逐字话语用于调试；
 - 以 demo 数据、HTTP 202 或按钮存在为依据宣称生产隐私完成。
-

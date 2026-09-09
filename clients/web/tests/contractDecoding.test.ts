@@ -10,6 +10,7 @@ import {
   decodeDeviceSettings,
   decodeParentConstraints,
   decodePrivacyOperation,
+  decodeRpgQuestSummary,
   decodeWeeklyReport,
 } from "@/api/contracts";
 
@@ -49,6 +50,46 @@ describe("contract decoding against canonical fixtures", () => {
     const constraints = decodeParentConstraints(fixture("valid/parent-constraints.json"));
     assert.equal(constraints.teaching_pressure, "low");
     assert.equal(constraints.session_budget_seconds, 600);
+  });
+
+  test("RPG quest summary decodes the bounded canonical projection", () => {
+    const summary = decodeRpgQuestSummary(fixture("valid/rpg-quest-summary.json"));
+    assert.equal(summary.learning_revision, 2);
+    assert.equal(summary.delivery_status, "planned");
+    assert.equal(summary.quest?.node_id, "find_red_cup");
+    assert.equal(summary.quest?.world_role, "杯子管理员");
+    assert.deepEqual(summary.quest?.inventory, ["milk_token"]);
+    assert.equal(summary.quest?.next_quest_id, "find_red_cup");
+  });
+
+  test("RPG decoder rejects missing, extra, and impossible canonical fields", () => {
+    const extra = fixture("valid/rpg-quest-summary.json") as Record<string, unknown>;
+    extra.internal_debug = true;
+    assert.throws(() => decodeRpgQuestSummary(extra), AppApiError);
+
+    const missing = fixture("valid/rpg-quest-summary.json") as Record<string, unknown>;
+    delete (missing.quest as Record<string, unknown>).world_role;
+    assert.throws(() => decodeRpgQuestSummary(missing), AppApiError);
+
+    const impossible = fixture("valid/rpg-quest-summary.json") as Record<string, unknown>;
+    (impossible.quest as Record<string, unknown>).world_revision = 3;
+    assert.throws(() => decodeRpgQuestSummary(impossible), AppApiError);
+
+    const nestedExtra = fixture("valid/rpg-quest-summary.json") as Record<string, unknown>;
+    (nestedExtra.quest as Record<string, unknown>).evidence = { raw: true };
+    assert.throws(() => decodeRpgQuestSummary(nestedExtra), AppApiError);
+  });
+
+  test("RPG decoder reports a future contract as incompatible", () => {
+    const payload = fixture("valid/rpg-quest-summary.json") as Record<string, unknown>;
+    payload.contract_version = "2.0";
+    try {
+      decodeRpgQuestSummary(payload);
+      assert.fail("expected incompatible RPG contract");
+    } catch (error) {
+      assert.ok(error instanceof AppApiError);
+      assert.equal(error.kind, "incompatible_contract");
+    }
   });
 
   test("future contract version is rejected as incompatible", () => {

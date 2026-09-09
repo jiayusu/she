@@ -30,6 +30,21 @@ final class LiveAppAPI: AppAPI {
         try await request("v1/dashboard")
     }
 
+    func questState(identity: RpgReadIdentity) async throws -> RpgQuestSummary {
+        var components = URLComponents(
+            url: baseURL.appending(path: "v1/rpg/state"),
+            resolvingAgainstBaseURL: false
+        )
+        components?.queryItems = [
+            URLQueryItem(name: "child_id", value: identity.childID),
+            URLQueryItem(name: "session_id", value: identity.sessionID),
+        ]
+        guard let url = components?.url else { throw AppAPIError.invalidResponse }
+        let summary: RpgQuestSummary = try await request(url)
+        guard summary.isCanonicalProjection else { throw AppAPIError.invalidResponse }
+        return summary
+    }
+
     func weeklyReport() async throws -> WeeklyReport {
         try await request("v1/reports/weekly")
     }
@@ -58,7 +73,7 @@ final class LiveAppAPI: AppAPI {
         _ path: String,
         method: String = "GET"
     ) async throws -> Response {
-        try await request(path, method: method, bodyData: nil)
+        try await request(baseURL.appending(path: path), method: method, bodyData: nil)
     }
 
     private func request<Response: Decodable & VersionedContract, Body: Encodable>(
@@ -66,15 +81,26 @@ final class LiveAppAPI: AppAPI {
         method: String,
         body: Body
     ) async throws -> Response {
-        try await request(path, method: method, bodyData: encoder.encode(body))
+        try await request(
+            baseURL.appending(path: path),
+            method: method,
+            bodyData: encoder.encode(body)
+        )
     }
 
     private func request<Response: Decodable & VersionedContract>(
-        _ path: String,
+        _ url: URL,
+        method: String = "GET"
+    ) async throws -> Response {
+        try await request(url, method: method, bodyData: nil)
+    }
+
+    private func request<Response: Decodable & VersionedContract>(
+        _ url: URL,
         method: String,
         bodyData: Data?
     ) async throws -> Response {
-        var request = URLRequest(url: baseURL.appending(path: path))
+        var request = URLRequest(url: url)
         request.httpMethod = method
         request.httpBody = bodyData
         request.setValue("application/json", forHTTPHeaderField: "Accept")

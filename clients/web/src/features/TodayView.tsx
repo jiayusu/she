@@ -1,6 +1,42 @@
 import { MetricTile } from "@/components/MetricTile";
 import { PetOrb } from "@/components/PetOrb";
+import type {
+  RpgDeliveryStatus,
+  RpgInventoryToken,
+  RpgNodeId,
+  RpgPhase,
+} from "@/api/contracts";
 import type { AppState } from "@/state/appModel";
+
+const PHASE_LABELS: Record<RpgPhase, string> = {
+  seeking_object: "正在寻找现实线索",
+  confirming_object: "正在确认找到的物品",
+  presenting: "提示正在准备播放",
+  awaiting_speech: "设备正在等待孩子表达",
+  resolving: "正在理解这次表达",
+  paused: "任务已暂停",
+  delivery_failed: "设备提示未成功播放",
+  completed: "任务已完成",
+};
+
+const DELIVERY_LABELS: Record<RpgDeliveryStatus, string> = {
+  planned: "等待发送到设备",
+  issuing: "正在发送到设备",
+  completed: "设备已完成播放",
+  failed: "设备播放失败",
+  expired: "设备指令已过期",
+};
+
+const INVENTORY_LABELS: Record<RpgInventoryToken, string> = {
+  milk_token: "牛奶",
+  red_cup_token: "红杯子",
+};
+
+const QUEST_LABELS: Record<RpgNodeId, string> = {
+  collect_milk: "向饮品保管员取得牛奶",
+  find_red_cup: "在房间里找到红杯子",
+  picnic_ready: "完成野餐准备",
+};
 
 export function TodayView({
   state,
@@ -41,6 +77,8 @@ export function TodayView({
       </div>
     );
   const { dashboard } = state;
+  const quest = state.questSummary?.quest ?? null;
+  const deliveryStatus = state.questSummary?.delivery_status ?? null;
   return (
     <>
       <header className="page-heading">
@@ -74,6 +112,59 @@ export function TodayView({
           </p>
         </section>
       </div>
+      {quest && (
+        <section className="rpg-quest-card" data-rpg-quest aria-labelledby="rpg-quest-title">
+          <header className="rpg-quest-heading">
+            <div>
+              <p className="eyebrow">当前现实语言任务 · 家长只读</p>
+              <h2 id="rpg-quest-title">{QUEST_LABELS[quest.node_id]}</h2>
+            </div>
+            <span className="quest-phase">{PHASE_LABELS[quest.phase]}</span>
+          </header>
+          <dl className="quest-facts">
+            <div>
+              <dt>故事角色</dt>
+              <dd>{quest.world_role}</dd>
+            </div>
+            <div>
+              <dt>语言目标</dt>
+              <dd lang="en">{quest.target_expression}</dd>
+            </div>
+            <div>
+              <dt>下一任务</dt>
+              <dd>
+                {quest.next_quest_id === null
+                  ? "本次有限任务已完成"
+                  : QUEST_LABELS[quest.next_quest_id]}
+              </dd>
+            </div>
+            <div>
+              <dt>设备状态</dt>
+              <dd>
+                {deliveryStatus === null
+                  ? "暂无设备动作"
+                  : DELIVERY_LABELS[deliveryStatus]}
+              </dd>
+            </div>
+          </dl>
+          <div className="virtual-inventory">
+            <h3>故事中的虚拟道具</h3>
+            {quest.inventory.length === 0 ? (
+              <p className="secondary-text">暂时还没有虚拟道具。</p>
+            ) : (
+              <ul aria-label="虚拟道具清单">
+                {quest.inventory.map((token) => (
+                  <li key={token}>{INVENTORY_LABELS[token]}（虚拟）</li>
+                ))}
+              </ul>
+            )}
+          </div>
+          <p className="helper-text">
+            这里只展示服务端任务摘要，不能在网页中修改剧情、道具或学习状态。
+            {state.questError ? " 本次刷新未成功，当前显示的是上次读取结果。" : ""}
+          </p>
+        </section>
+      )}
       <section aria-label="学习记录">
         <div className="section-heading">
           <h2>{dashboard.mock ? "示例中的小进步" : "这次记录的小进步"}</h2>
