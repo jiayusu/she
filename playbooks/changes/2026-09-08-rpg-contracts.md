@@ -11,6 +11,12 @@ speech acts, slots, revision-bearing world events, and asset references; it
 does not allow world-state or mastery writes, arbitrary state patches, or raw
 child data.
 
+The later contract tightening requires `detected_object=null` on speech turns,
+adds server-derived `confirmed_object` to RPG decisions and child-safe quest
+summaries, and makes the `milk_picnic.v1` node state, role, content, item,
+criterion and event identifiers finite at the Gateway boundary. Adding another
+seed requires an explicit reviewed contract update instead of arbitrary IDs.
+
 ## Layer
 
 Shared State.
@@ -24,11 +30,15 @@ Backward-compatible. New standalone v1 schemas do not modify
 
 - `shared/contracts/v1/rpg-turn.schema.json`
 - `shared/contracts/v1/rpg-decision.schema.json`
+- `shared/contracts/v1/rpg-quest-summary.schema.json`
 - `shared/contracts/v1/fixtures/valid/rpg-turn.json`
+- `shared/contracts/v1/fixtures/valid/rpg-turn-speech.json`
 - `shared/contracts/v1/fixtures/valid/rpg-decision.json`
 - `shared/contracts/v1/fixtures/invalid/rpg-turn-world-state.json`
+- `shared/contracts/v1/fixtures/invalid/rpg-turn-speech-stale-object.json`
 - `shared/contracts/v1/fixtures/invalid/rpg-decision-state-patch.json`
 - `shared/contracts/v1/fixtures/invalid/rpg-decision-unknown-world-event.json`
+- `shared/contracts/v1/fixtures/invalid/rpg-decision-unreviewed-content.json`
 - `shared/contracts/tests/test_contracts.py`
 - `shared/contracts/validate_contracts.py`
 - `shared/contracts/README.md`
@@ -40,6 +50,10 @@ Backward-compatible. New standalone v1 schemas do not modify
   (23 passed).
 - `python validate_contracts.py` from `shared/contracts`: 11 valid accepted and
   11 invalid rejected.
+
+Those commands describe the initial schema addition only. No contract command
+was run after the speech/confirmed-object/summary tightening, per the user's
+explicit no-test instruction; the current aggregate remains unverified.
 
 ## Rollback
 

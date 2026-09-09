@@ -1,0 +1,14 @@
+{
+  "contract_version": "1.0",
+  "child_id": "child-demo",
+  "session_id": "session-demo",
+  "turn_id": "rpg-turn-002",
+  "previous_turn_id": "rpg-turn-001",
+  "device_id": "rx5-demo-001",
+  "input_kind": "speech",
+  "utterance": "I want milk.",
+  "asr": 0.96,
+  "emotion": null,
+  "detected_object": null,
+  "perception_event_id": "speech-event-002"
+}

@@ -109,12 +109,16 @@ Agent 之间优先传结构化数据，不传自由长文本。
 ```
 
 该对象 `additionalProperties=false`，不接受 world state、state patch、mastery 或客户端自报成功。
+只有 `object_observed` 可以携带 `detected_object`；`speech`/`resume` 必须显式传 `null`。
 
 ## RpgDecision
 
 Director 返回当前有限状态、Speech Act evidence 和本次 world events。JSON Schema 约束形状；
-Memory 事务另外核对上一节点、连续 revision、canonical inventory、上一 `action_id`/scaffold 及
+Memory 事务另外核对上一节点、连续 revision、canonical inventory、当前节点
+`confirmed_object`、上一 `action_id`/scaffold、已完成 delivery、节点匹配的审核 prompt，以及
 event-evidence 引用。同一合法回合最多产生两个事件（红杯奖励 `2→3`、任务完成 `3→4`）。
+当前 v1 只允许 `milk_picnic.v1` 的 canonical 节点状态、角色、内容 ID、道具、criterion 和
+event；新增种子必须先完成契约与内容审核，不能依靠任意字符串透传。
 
 ## RpgQuestSummary
 

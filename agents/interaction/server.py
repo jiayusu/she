@@ -8,7 +8,7 @@ from flask import Flask, jsonify, request
 from she_engine.learning_render import (
     PROMPT_CONTEXT,
     REVIEWED_STORY_ACTIONS,
-    RPG_FEEDBACK_IDS,
+    RPG_CONTENT_IDS,
     RPG_NODES,
     RPG_PHASES,
     RPG_PROMPT_IDS,
@@ -119,7 +119,7 @@ def _valid_action(action: Any) -> bool:
         return False
     if not _optional_enum(action, "prompt_id", RPG_PROMPT_IDS):
         return False
-    if not _optional_enum(action, "feedback_id", RPG_FEEDBACK_IDS):
+    if not _optional_enum(action, "feedback_id", RPG_CONTENT_IDS):
         return False
     if not _optional_enum(action, "node_id", RPG_NODES):
         return False
@@ -144,6 +144,11 @@ def _valid_action(action: Any) -> bool:
         if feedback_id is None or story_action != f"rpg:{feedback_id}":
             return False
     if "prompt_id" in action and PROMPT_CONTEXT[action["prompt_id"]][1] != action["scaffold_level"]:
+        return False
+    if feedback_id in RPG_PROMPT_IDS and (
+        action.get("prompt_id") != feedback_id
+        or action["teaching_action"] not in {"ask", "prompt", "reinvite"}
+    ):
         return False
     return True
 

@@ -43,6 +43,12 @@ POST /interaction/render
 `400 {"error":"invalid_action"}`。`ask`、`prompt`、`reinvite`、`advance_story`、`pause`、
 `explore` 分别使用审核文案，所有出口（含降级）最终经过 `LocalSafetyFilter`。
 
+RPG 的 `feedback_id` 是“本轮审核内容 ID”：可以是有限的剧情结果 ID（如
+`milk_ready`），也可以是 Director 已选择的提示 ID（如 `collect_milk_s2`）。后者必须与
+`prompt_id`、`scaffold_level` 和 `story_action=rpg:<feedback_id>` 一致，不能借此传入自由文本。
+`reinvite` 会按同一 S0–S6 行重新给出选项、句首或完整示范；例如 S2 仍明确复述
+`Milk or water?` / `Red cup or blue cup?`，为上下文短答提供真实的前一提示依据。
+
 ## 测试
 
 ```bash

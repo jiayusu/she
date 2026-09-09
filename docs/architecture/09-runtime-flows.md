@@ -29,7 +29,8 @@
    └── 选择唯一 TeachingAction + 有限 transition proposal
 
 4. Shared State / Memory
-   ├── 原子核对上一 action、node、world_revision、inventory
+   ├── 原子核对上一 action、审核 prompt、completed delivery、confirmed object
+   ├── 核对 node、world_revision、inventory
    ├── 核对 evidence 与 world event 引用
    └── 提交 turn；重放同一 turn 不重复发奖
 
@@ -44,7 +45,7 @@
 
 7. ACK 写回 Memory
    ├── completed：下一 speech 才有资格被评估
-   ├── failed/expired：不得宣布成功或推进世界
+   ├── failed/expired：ACK 不产生新 transition；后续普通输入关闭，只允许显式恢复
    └── ACK 本身不生成 world event
 ```
 
@@ -95,7 +96,9 @@
 - Memory 不可用：返回服务不可用；不在本地伪造 world revision 或跨天记忆。
 - Director 不可用：Gateway 不接受 RPG 决策，不由客户端计算下一节点。
 - Interaction 不可用：不 claim/播放成功反馈；保留已提交状态供同 turn 重试。
-- 设备离线：不把 `HTTP 202` 当作播放完成；世界状态不回滚，也不评估后续 speech。
+- 设备离线：不把 `HTTP 202` 当作播放完成；已提交世界状态不回滚，也不评估后续 speech。
+- 动作 delivery 失败/过期：公开 `delivery_status`；普通 speech/object 被拒绝，仅显式 `resume`
+  可创建恢复动作，且 ACK 本身永远不能补写或重复 world event。
 - 视觉不确定：保持 `seeking_object/confirming_object`，不得构造已确认物体。
 - ASR 低置信：`reinvite`，不计语言失败、不写长期弱点。
 - 情绪风险：`pause`；只有显式 resume 才重新呈现。

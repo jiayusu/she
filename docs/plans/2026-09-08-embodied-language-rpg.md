@@ -8,10 +8,10 @@
 | 阶段 | 状态 | 说明 |
 |---|---|---|
 | 0 Trust Boundary | 部分完成且当时已验证 | 最终 Safety、erase 原话残留、RequestInit 已修；capture/auth/KG 边界仍未完成 |
-| 1 契约与资产 | 已实现 | 初版曾验证；后续 summary/字段收紧未重跑 |
-| 2 Agent 核心 | 已实现，待验证 | Speech Act、物体门、有限 Story、唯一动作、审核 Interaction |
-| 3 Shared State | 已实现，待验证 | previous action/evidence/revision/event 的事务校验与恢复 |
-| 4 Gateway/合成闭环 | 已编写，待运行 | `/v1/rpg/*` 与 `scripts/rpg-smoke.mjs` |
+| 1 契约与资产 | 已实现 | 初版曾验证；speech 必须清空物体、summary/confirmed-object 收紧后未重跑 |
+| 2 Agent 核心 | 已实现，待验证 | Speech Act、物体门、持久恢复、成功撤帮助、有限 Story、唯一动作、审核 Interaction |
+| 3 Shared State | 已实现，待验证 | previous action/prompt/delivery/object/evidence/revision/event 的事务校验与恢复 |
+| 4 Gateway/合成闭环 | 已编写，待运行 | `/v1/rpg/*`、路由测试源码与 `scripts/rpg-smoke.mjs` |
 | 5 产品表面 | 部分实现 | Gateway 脱敏 summary 已有；Web/iOS 任务卡和 debug trace 未做 |
 | 6 真机/研究 | 未开始 | 必须保持待真机/研究验证 |
 
@@ -49,7 +49,8 @@
 1. 新增确定性 `SpeechActResolver`，区分 act、slots、上下文支持和任务满足。
 2. 将 Story World 从字符串 patch 改为 seed/node 驱动的有限 transition proposal。
 3. Curriculum 从当前节点选择目标，不再用四表达自由表决定 RPG 路径。
-4. Scaffold 使用真实的成功/失败历史；成功后降低帮助，清楚失败后提高帮助。
+4. Scaffold 从 canonical `completed_nodes` 和短期失败次数重建有限历史；完成 step 后降低帮助，
+   清楚失败后提高帮助。
 5. Director 明确区分 `quest_satisfied` 与 Assessment 的语言证据，并继续每轮只产出一个动作。
 6. Interaction 按 `ask/prompt/reinvite/advance_story/pause` 渲染不同审核文案并终审。
 
@@ -60,7 +61,8 @@
 
 1. 扩展 learning turn 持久记录中的 RPG 决策；当前 world state 只从上一服务端响应恢复。
 2. 在同一 turn 提交事务中验证 base revision、合法节点转换和 source evidence，并生成新 revision。
-3. 保持请求哈希、stale turn、delivery claim/ACK 和单次 evidence 规则。
+3. 保持请求哈希、stale turn、delivery claim/ACK 和单次 evidence 规则；world transition 必须由
+   已完成交付且与节点/脚手架一致的审核 prompt 引出。
 4. erase 继续以 session/child 根级联删除 RPG 回合和事件。
 
 验收：并发重放只发一次奖励；跨重启恢复同一节点；提交失败不产生成功反馈；删除后状态清空。

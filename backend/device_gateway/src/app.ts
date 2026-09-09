@@ -144,6 +144,7 @@ function rpgQuestSummary(state: unknown, requestedTurnId?: string): JsonObject {
       world_revision: response.rpg.world_revision,
       inventory: response.rpg.inventory,
       completed_nodes: response.rpg.completed_nodes,
+      confirmed_object: response.rpg.confirmed_object,
       world_role: response.rpg.world_role,
       action_kind: action.teaching_action,
       target_expression: action.target_expression,

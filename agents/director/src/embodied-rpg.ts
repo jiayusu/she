@@ -87,6 +87,7 @@ export class EmbodiedRpg {
           distressed: boolean): RpgInspection {
     const kind = inputKind(req);
     const priorRpg = prior?.rpg ?? null;
+    const priorAction = prior?.action ?? null;
     const currentNode = node(this.seed, priorRpg?.node_id ?? this.seed.start_node_id);
     const sourceTurnId = req.turn_id ?? stableId('turn', req.session_id, req.utterance,
       req.perception_event_id, currentNode.node_id);
@@ -108,16 +109,16 @@ export class EmbodiedRpg {
           asrConfidence: confidence,
           criterion: currentNode.criterion!,
           sourceTurnId,
-          elicitingActionId: prior.action.action_id ?? 'legacy_action',
-          elicitingPromptId: prior.action.prompt_id ?? priorRpg?.feedback_id ?? null,
-          scaffoldLevel: prior.action.scaffold_level,
+          elicitingActionId: priorAction?.action_id ?? 'legacy_action',
+          elicitingPromptId: priorAction?.prompt_id ?? priorRpg?.feedback_id ?? null,
+          scaffoldLevel: priorAction?.scaffold_level ?? 2,
           executionConfirmed,
         })
       : emptySpeechEvidence({
           sourceTurnId,
-          elicitingActionId: priorRpg ? prior?.action.action_id ?? 'legacy_action' : 'no_action',
+          elicitingActionId: priorRpg ? priorAction?.action_id ?? 'legacy_action' : 'no_action',
           criterionId: currentNode.criterion?.criterion_id ?? 'none.v1',
-          scaffoldLevel: priorRpg ? prior?.action.scaffold_level ?? 2 : 2,
+          scaffoldLevel: priorRpg ? priorAction?.scaffold_level ?? 2 : 2,
           errorType: speech ? 'no_completed_prompt' : 'unmatched',
         });
     const questSatisfied = evidence.quest_satisfied;

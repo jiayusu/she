@@ -37,6 +37,35 @@ RPG_OBJECTS = {
     "find_red_cup": {"table", "red_cup", "blue_cup"},
     "picnic_ready": set(),
 }
+RPG_PRESENTATION = {
+    "collect_milk": {
+        "world_role": "饮品保管员",
+        "feedback_ids": (
+            {f"collect_milk_s{level}" for level in range(7)} | {"milk_help"}
+        ),
+        "target_expression": "I want milk.",
+    },
+    "find_red_cup": {
+        "world_role": "杯子管理员",
+        "feedback_ids": (
+            {f"find_red_cup_s{level}" for level in range(7)}
+            | {"milk_ready", "red_cup_help"}
+        ),
+        "target_expression": "I choose the red cup.",
+    },
+    "picnic_ready": {
+        "world_role": "野餐向导",
+        "feedback_ids": (
+            {f"picnic_ready_s{level}" for level in range(7)}
+            | {"red_cup_ready", "picnic_complete", "picnic_pause"}
+        ),
+        "target_expression": "Our picnic is ready.",
+    },
+}
+RPG_PROMPT_PREFIX = {
+    "collect_milk": "collect_milk",
+    "find_red_cup": "find_red_cup",
+}
 # Server-authoritative projection of the reviewed milk_picnic.v1 graph. It is
 # deliberately finite; a new seed/version must add an explicit reviewed mapping.
 RPG_STATES = {
@@ -194,9 +223,9 @@ def _validate_rpg_state(value, turn=None):
             "seeking_object", "confirming_object", "completed")
             and confirmed_object is not None):
         _invalid_rpg("unexpected_confirmed_object")
-    if (not isinstance(value["world_role"], str)
-            or not 1 <= len(value["world_role"]) <= 120
-            or not _rpg_id(value["feedback_id"])):
+    presentation = RPG_PRESENTATION[value["node_id"]]
+    if (value["world_role"] != presentation["world_role"]
+            or value["feedback_id"] not in presentation["feedback_ids"]):
         _invalid_rpg("presentation_id")
     if value["next_quest_id"] is not None and not _rpg_id(value["next_quest_id"]):
         _invalid_rpg("next_quest")
@@ -204,6 +233,40 @@ def _validate_rpg_state(value, turn=None):
     if not isinstance(value["world_events"], list) or len(value["world_events"]) > 2:
         _invalid_rpg("world_events")
     return value["node_id"], value["world_revision"], evidence
+
+
+def _validate_rpg_action(action, value):
+    if not isinstance(action, dict) or not _rpg_id(action.get("action_id")):
+        _invalid_rpg("action_shape")
+    node = value["node_id"]
+    presentation = RPG_PRESENTATION[node]
+    if (action.get("node_id") != node
+            or action.get("phase") != value["phase"]
+            or action.get("world_role") != value["world_role"]
+            or action.get("feedback_id") != value["feedback_id"]
+            or action.get("story_action") != f"rpg:{value['feedback_id']}"
+            or action.get("target_expression")
+            != presentation["target_expression"]):
+        _invalid_rpg("action_reference")
+    prompt_prefix = f"{node}_s"
+    feedback_id = value["feedback_id"]
+    is_prompt = (feedback_id.startswith(prompt_prefix)
+                 and feedback_id[-1:] in "0123456")
+    if is_prompt:
+        if (action.get("prompt_id") != feedback_id
+                or action.get("teaching_action")
+                not in ("ask", "prompt", "reinvite")
+                or action.get("scaffold_level") != int(feedback_id[-1])):
+            _invalid_rpg("action_prompt")
+    else:
+        if action.get("prompt_id") is not None:
+            _invalid_rpg("action_prompt")
+        action_kind = action.get("teaching_action")
+        if feedback_id in ("milk_ready", "red_cup_ready"):
+            if action_kind != "advance_story":
+                _invalid_rpg("action_feedback")
+        elif action_kind not in ("explore", "pause"):
+            _invalid_rpg("action_feedback")
 
 
 def _validate_rpg_event(value, expected, base_revision, resulting_revision,
@@ -229,7 +292,8 @@ def _validate_rpg_event(value, expected, base_revision, resulting_revision,
         _invalid_rpg("event_evidence")
 
 
-def validate_rpg_transition(value, previous, turn, previous_action=None):
+def validate_rpg_transition(value, previous, turn, previous_action=None,
+                            previous_delivery=None):
     node, revision, evidence = _validate_rpg_state(value, turn)
     events = value["world_events"]
     if previous is None:
@@ -254,6 +318,22 @@ def validate_rpg_transition(value, previous, turn, previous_action=None):
     transition = RPG_TRANSITIONS.get((previous_node, node))
     if transition is None:
         _invalid_rpg("transition")
+    if (not isinstance(previous_delivery, dict)
+            or previous_delivery.get("status") != "completed"):
+        _invalid_rpg("transition_delivery")
+    if (previous["phase"] not in ("presenting", "awaiting_speech")
+            or previous["confirmed_object"] is None):
+        _invalid_rpg("transition_object_context")
+    expected_prompt = (
+        f"{RPG_PROMPT_PREFIX[previous_node]}_s"
+        f"{previous_action.get('scaffold_level')}"
+    )
+    if (previous_action.get("teaching_action")
+            not in ("ask", "prompt", "reinvite")
+            or previous_action.get("prompt_id") != expected_prompt
+            or previous_action.get("feedback_id") != expected_prompt
+            or previous.get("feedback_id") != expected_prompt):
+        _invalid_rpg("transition_prompt")
     if revision != previous_revision + len(transition["events"]):
         _invalid_rpg("transition_revision")
     if (evidence["quest_satisfied"] is not True
@@ -364,7 +444,9 @@ class LearningStore:
                     turn,
                     latest_response.get("teaching_action")
                     if latest_has_rpg else None,
+                    latest.get("delivery") if latest_has_rpg else None,
                 )
+                _validate_rpg_action(action, response["rpg"])
             elif latest_has_rpg:
                 _invalid_rpg("missing_state")
             conn.execute("INSERT OR IGNORE INTO sessions(session_id,child_id) VALUES(?,?)", (session, child))

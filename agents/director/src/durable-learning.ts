@@ -53,13 +53,27 @@ export function validateTurn(req: any): asserts req is DurableRequest {
         || !['fridge','table','red_cup','blue_cup'].includes(req.detected_object)))
       throw new LearningError('invalid_object_observation', 400);
     if (req.input_kind === 'speech'
-      && (!req.utterance.trim() || typeof req.asr !== 'number'))
+      && (!req.utterance.trim() || typeof req.asr !== 'number'
+        || req.detected_object !== null))
       throw new LearningError('invalid_speech_turn', 400);
     if (req.input_kind === 'resume'
       && (req.utterance !== '' || req.asr !== null || req.detected_object !== null))
       throw new LearningError('invalid_resume_turn', 400);
   }
 }
+
+export function validatePreviousDelivery(
+  prior: any,
+  inputKind?: DirectRequest['input_kind'],
+): void {
+  const status = prior?.delivery?.status;
+  if (status === 'issuing') throw new LearningError('delivery_pending');
+  if (!prior?.response?.rpg) return;
+  if (status === 'planned') throw new LearningError('delivery_pending');
+  if (status !== 'completed' && inputKind !== 'resume')
+    throw new LearningError('previous_delivery_not_completed');
+}
+
 export class DurableLearning {
   constructor(private readonly memoryUrl: string,
     private readonly filter: (text:string, emotion:DirectRequest['emotion'])=>{text:string;filtered:boolean;injection_suspected:boolean}) {}
@@ -74,7 +88,7 @@ export class DurableLearning {
     }
     const prior = state.latest;
     if ((prior?.turn_id ?? null) !== req.previous_turn_id) throw new LearningError('stale_turn');
-    if (prior?.delivery.status === 'issuing') throw new LearningError('delivery_pending');
+    validatePreviousDelivery(prior, req.input_kind);
     const hook = this.filter(req.utterance, req.emotion);
     // Profile is fetched from Shared State. Client-supplied mastery is forbidden.
     const response = new LearningDirector().plan({...req,utterance:hook.text,
@@ -82,6 +96,7 @@ export class DurableLearning {
         action:prior.response.teaching_action,
         failures:prior.response.learning_loop.failed_attempts, touched:prior.created*1000,
         rpg:prior.response.rpg,
+        persistent:true,
       } : undefined, prior?.delivery.status === 'completed');
     response.safety.input_filtered = hook.filtered;
     response.safety.injection_suspected = hook.injection_suspected;

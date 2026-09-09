@@ -48,7 +48,8 @@
       "then": {
         "properties": {
           "utterance": {"type": "string", "minLength": 1, "maxLength": 280},
-          "asr": {"type": "number", "minimum": 0, "maximum": 1}
+          "asr": {"type": "number", "minimum": 0, "maximum": 1},
+          "detected_object": {"const": null}
         }
       }
     },

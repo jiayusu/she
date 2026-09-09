@@ -17,6 +17,8 @@ export interface SessionTurn {
   failures: number;
   touched: number;
   rpg?: RpgDecision;
+  /** Durable turns from Shared State are not governed by the local cache TTL. */
+  persistent?: boolean;
 }
 interface DirectorOptions {
   now?: () => number;
@@ -85,7 +87,9 @@ export class LearningDirector {
     const prior = hooks.run("input", () => {
       for (const [id, turn] of this.turns)
         if (now - turn.touched >= this.ttl) this.turns.delete(id);
-      return previous && now - previous.touched < this.ttl ? previous : undefined;
+      return previous && (previous.persistent || now - previous.touched < this.ttl)
+        ? previous
+        : undefined;
     });
     const distressed = emotionValue(req.emotion) < -0.45;
     const uncertain = confidence(req) < 0.8;
@@ -250,7 +254,9 @@ export class LearningDirector {
     const prior = hooks.run('input', () => {
       for (const [id, turn] of this.turns)
         if (now - turn.touched >= this.ttl) this.turns.delete(id);
-      return previous && now - previous.touched < this.ttl ? previous : undefined;
+      return previous && (previous.persistent || now - previous.touched < this.ttl)
+        ? previous
+        : undefined;
     });
     const distressed = emotionValue(req.emotion) < -0.45;
     const wasPaused = prior?.rpg?.phase === 'paused';
@@ -308,11 +314,16 @@ export class LearningDirector {
       priority: 1,
     }));
     const pause = distressed || keepPaused || inspection.failures >= 2;
+    const completedQuestSteps = Math.min(2, prior?.rpg?.completed_nodes.length ?? 0);
+    const recentAttempts = [
+      ...Array.from({ length: completedQuestSteps }, () => ({
+        success: true,
+        scaffold_level: prior?.action.scaffold_level ?? 2,
+      })),
+      ...Array.from({ length: inspection.failures }, () => ({ success: false })),
+    ];
     const scaffold = hooks.run('scaffold', () => this.scaffoldAgent.propose(
-      {
-        ...req,
-        recent_attempts: Array.from({ length: inspection.failures }, () => ({ success: false })),
-      },
+      { ...req, recent_attempts: recentAttempts },
       pause,
       curriculum.primary_target,
     ));
@@ -393,7 +404,7 @@ export class LearningDirector {
       }),
       ctx_bundle: {
         session_state: { session_id: req.session_id, input_kind: inspection.inputKind },
-        story_state: structuredClone(resolution.rpg),
+        story_state: { ...structuredClone(resolution.rpg) },
         learner_state: structuredClone(req.learner_state ?? {}),
       },
       safety: {

@@ -29,6 +29,8 @@ absence of a dedicated evaluator; existing numeric values remain valid.
 - `agents/director/src/learning-director.ts`
 - `agents/director/src/assessment.ts`
 - `agents/director/src/durable-learning.ts`
+- `agents/director/test/embodied-rpg.test.ts`
+- `agents/director/test/durable-learning.test.ts`
 - `shared/contracts/v1/learning-event.schema.json`
 - `docs/architecture/02-agents.md`
 - `docs/architecture/08-contracts.md`
@@ -43,10 +45,20 @@ absence of a dedicated evaluator; existing numeric values remain valid.
 - Red-cup success grants `red_cup_token`, emits the finite completion event and ends the quest.
 - Low ASR confidence does not increment failure state. Two clear failures or emotional distress pause output.
 - World transitions require a prior reviewed RPG action; a legacy prompt cannot elicit a world mutation.
+- Durable turns restored from Shared State are marked persistent and are not discarded by the Director's
+  15-minute in-memory cache TTL.
+- A new RPG turn is rejected while the previous action is planned/issuing; failed or expired delivery can
+  only enter the explicit `resume` recovery path.
 - Speech and resume events cannot skip a node's required-object gate; only a confirmed object context can
   enter the language-resolution branch.
+- Speech turns require `detected_object=null`, preventing stale perception from being smuggled into the
+  language event.
+- The accepted object is persisted as `confirmed_object` on the bounded RPG decision and cleared on every
+  node transition, so `phase=presenting` cannot by itself fabricate embodied context.
 - The selected language level is the nearest level declared by the reviewed seed, so malformed, fractional,
   or unsupported learner-state values cannot leak into the action.
+- Completed quest steps provide bounded recent-success history: each prior success withdraws one scaffold
+  level (up to two), while clear failures add support and two failures still pause.
 - Assessment now requires all target-expression words for full-expression evidence, while Speech Act evidence
   independently controls quest progress.
 - Assessment reports pronunciation intelligibility as `null` until a dedicated evaluator exists; ASR

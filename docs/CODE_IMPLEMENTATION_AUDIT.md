@@ -15,13 +15,14 @@
 | Memory erase 清理 cache/snapshot，manifest/audit 去原话 | 已修复 | 修复时 73 项 Memory 测试通过 |
 | Gateway `RequestInit.body` 类型问题 | 已修复 | 修复时 Gateway/Web 测试与类型检查通过 |
 | RPG turn/decision、StorySeed 初版 | 已加入 | 初版契约与 seed 曾单独验证 |
-| Speech Act、物体门、Director 决策、Memory world transition | 已加入 | 最新 runtime 改动未运行测试 |
-| Interaction RPG 审核文案、Gateway RPG 边界/只读摘要 | 已加入 | 未运行测试 |
+| Speech Act、物体门、Director 决策、Memory world transition | 已加入；补齐持久 TTL、成功撤帮助、交付/审核提示门 | 最新 runtime 改动未运行测试 |
+| Interaction RPG 审核提示/反馈契约、Gateway RPG 边界/只读摘要 | 已对齐并加入路由测试源码 | 未运行测试 |
 | `scripts/rpg-smoke.mjs` 完整合成剧情 | 已编写 | 未运行 |
 
 以上“已加入/已修复”表示文件中存在实现，不等于本轮集成通过。用户要求继续编辑且不运行测试，
 因此所有最新 RPG runtime、契约扩展与 Compose 链都必须保持“待验证”。原审计中的 Gateway
 capture 授权、KG/Memory/Intel 生产认证、真实 ASR/发音、客户端产品面和真机缺口仍未关闭。
+本轮新增的 Director、Interaction、Memory、Gateway 与 contract 用例都只是测试源码，未被执行。
 
 ## 1. 结论
 

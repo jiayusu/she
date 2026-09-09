@@ -17,11 +17,15 @@ v1/learning-event.schema.json   学习证据事件（raw / candidate / confirmed
 v1/rpg-turn.schema.json         现实 RPG 输入（仅感知与身份引用）
 v1/rpg-decision.schema.json     Director 有限 RPG 决策（无任意 state patch）
 v1/rpg-quest-summary.schema.json  Gateway 脱敏只读任务投影（无儿童原话/evidence）
-v1/rpg-quest-summary.schema.json  客户端只读、脱敏的当前任务投影
 v1/fixtures/valid/*.json        必须被接受的样例
 v1/fixtures/invalid/*.json      必须被拒绝的样例
 learning_events.py              Python 侧 evidence 辅助（手写，见下）
 ```
+
+RPG v1 当前是有意收窄的发布契约：只接受审核种子 `milk_picnic.v1` 的 canonical 节点状态、
+物体、角色、内容 ID、道具、criterion 与 event。`speech` / `resume` 必须把
+`detected_object` 设为 `null`；新增种子要先扩展 schema、fixtures、Memory 映射与 Interaction
+审核内容，不能把自由字符串直接放进运行时。
 
 ## 测试
 

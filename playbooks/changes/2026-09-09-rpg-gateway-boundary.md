@@ -40,6 +40,7 @@ read-only response schema; it does not add a client world-state write field.
 - `shared/contracts/README.md`
 - `backend/device_gateway/src/contracts.ts`
 - `backend/device_gateway/src/app.ts`
+- `backend/device_gateway/test/rpg-http.test.ts`
 - `backend/device_gateway/README.md`
 - `scripts/rpg-smoke.mjs`
 - `playbooks/changes/2026-09-09-rpg-gateway-boundary.md`
@@ -48,8 +49,8 @@ read-only response schema; it does not add a client world-state write field.
 
 Not run, following the user's explicit instruction to edit files without
 running tests, typechecks, builds, or verification commands. The new fixtures
-and contract cases, plus the synthetic full-quest smoke, were registered for
-the next authorized verification run.
+and contract cases, Gateway route boundary cases, plus the synthetic full-quest
+smoke were registered for the next authorized verification run.
 
 ## Rollback
 

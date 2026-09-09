@@ -49,9 +49,10 @@ PROMPT_CONTEXT: dict[str, tuple[str, int]] = {
     **{f"picnic_ready_s{level}": ("picnic_ready", level) for level in range(7)},
 }
 RPG_PROMPT_IDS = frozenset(PROMPT_CONTEXT)
+RPG_CONTENT_IDS = RPG_PROMPT_IDS | RPG_FEEDBACK_IDS
 
-_FEEDBACK_FROM_STORY_ACTION = {
-    f"rpg:{feedback_id}": feedback_id for feedback_id in RPG_FEEDBACK_IDS
+_CONTENT_FROM_STORY_ACTION = {
+    f"rpg:{content_id}": content_id for content_id in RPG_CONTENT_IDS
 }
 _LEGACY_STORY_SCENE = {
     "world_waits_for_milk": "collect_milk",
@@ -61,7 +62,7 @@ _LEGACY_STORY_SCENE = {
 }
 _NEUTRAL_STORY_ACTIONS = frozenset({"pause_and_offer_comfort"})
 REVIEWED_STORY_ACTIONS = frozenset(
-    {*_FEEDBACK_FROM_STORY_ACTION, *_LEGACY_STORY_SCENE, *_NEUTRAL_STORY_ACTIONS}
+    {*_CONTENT_FROM_STORY_ACTION, *_LEGACY_STORY_SCENE, *_NEUTRAL_STORY_ACTIONS}
 )
 
 # Kept as a public constant for existing callers. Each tuple is
@@ -129,6 +130,15 @@ _RPG_SCAFFOLDED_COPY = {
             "Let's say it together: I want milk.",
             "Let's listen together: I want milk.",
         ),
+        "reinvite": (
+            "Let's ask the drink keeper again. What should we ask for?",
+            "The drink keeper is listening again. What do we need?",
+            "The drink keeper asks again: Milk or water?",
+            "Try the words again: I want...",
+            "Try the whole sentence again: I want milk.",
+            "Let's say it again together: I want milk.",
+            "Listen once more: I want milk.",
+        ),
     },
     "find_red_cup": {
         "ask": (
@@ -148,6 +158,15 @@ _RPG_SCAFFOLDED_COPY = {
             "You can say: I choose the red cup.",
             "Let's say it together: I choose the red cup.",
             "Let's listen together: I choose the red cup.",
+        ),
+        "reinvite": (
+            "Let's ask the cup keeper again. Which cup should we pick?",
+            "The cup keeper is listening again. Which cup do we need?",
+            "The cup keeper asks again: Red cup or blue cup?",
+            "Try the words again: I choose...",
+            "Try the whole sentence again: I choose the red cup.",
+            "Let's say it again together: I choose the red cup.",
+            "Listen once more: I choose the red cup.",
         ),
     },
     "picnic_ready": {
@@ -169,26 +188,32 @@ _RPG_SCAFFOLDED_COPY = {
             "Let's say it together: Our picnic is ready.",
             "Let's listen together: Our picnic is ready.",
         ),
+        "reinvite": (
+            "Let's hear the picnic message again.",
+            "The picnic guide has the happy message again.",
+            "Ready or not yet? Let's hear: Our picnic is ready.",
+            "Listen again: Our picnic...",
+            "Listen again: Our picnic is ready.",
+            "Let's say it again together: Our picnic is ready.",
+            "Listen once more: Our picnic is ready.",
+        ),
     },
 }
 
 _RPG_FIXED_COPY = {
     "collect_milk": {
-        "reinvite": "The drink keeper is listening. Would you like to try again?",
         "recast": "I want milk. The drink keeper heard us.",
         "advance_story": "Milk is ready. Find a cup!",
         "explore": "Let's find the drink keeper by the fridge.",
         "pause": "The drink keeper can wait. Let's take a little break.",
     },
     "find_red_cup": {
-        "reinvite": "The cup keeper is listening. Would you like to try again?",
         "recast": "I choose the red cup. The cup keeper heard us.",
         "advance_story": "Red cup! Our picnic is ready!",
         "explore": "Let's look for the red cup by the table.",
         "pause": "The cup keeper can wait. Let's take a little break.",
     },
     "picnic_ready": {
-        "reinvite": "The picnic guide can wait. Listen when you're ready.",
         "recast": "Our picnic is ready. What a lovely ending!",
         "advance_story": "Our picnic is ready. We did it!",
         "explore": "Our pretend picnic is ready. Let's look for a new adventure.",
@@ -320,7 +345,7 @@ def _resolve_context(action: Mapping[str, Any]) -> tuple[str | None, str | None,
         return None, None, False
     if not _known_string(action, "prompt_id", RPG_PROMPT_IDS):
         return None, None, False
-    if not _known_string(action, "feedback_id", RPG_FEEDBACK_IDS):
+    if not _known_string(action, "feedback_id", RPG_CONTENT_IDS):
         return None, None, False
     if not _known_string(action, "phase", RPG_PHASES):
         return None, None, False
@@ -346,21 +371,30 @@ def _resolve_context(action: Mapping[str, Any]) -> tuple[str | None, str | None,
         scenes.add(_LEGACY_STORY_SCENE[story_action])
 
     feedback_id = action.get("feedback_id")
-    action_feedback = _FEEDBACK_FROM_STORY_ACTION.get(story_action)
-    if action_feedback is not None:
-        if feedback_id is not None and feedback_id != action_feedback:
+    action_content = _CONTENT_FROM_STORY_ACTION.get(story_action)
+    if action_content is not None:
+        if feedback_id is not None and feedback_id != action_content:
             return None, None, False
-        feedback_id = action_feedback
+        feedback_id = action_content
+
+    if feedback_id in RPG_PROMPT_IDS:
+        if prompt_id != feedback_id or action.get("teaching_action") not in {
+            "ask",
+            "prompt",
+            "reinvite",
+        }:
+            return None, None, False
+        scenes.add(PROMPT_CONTEXT[feedback_id][0])
 
     if len(scenes) > 1:
         return None, None, False
-    if not scenes and feedback_id is not None:
+    if not scenes and feedback_id in RPG_FEEDBACK_IDS:
         scenes.add(_SCENE_BY_FEEDBACK[feedback_id])
 
     is_rpg = any(
         field in action
         for field in ("node_id", "phase", "world_role", "prompt_id", "feedback_id")
-    ) or action_feedback is not None
+    ) or action_content is not None
     return (next(iter(scenes)) if scenes else None), feedback_id, is_rpg
 
 
@@ -387,7 +421,7 @@ def _render_generic(target: str, kind: str, level: int) -> str:
 def _render_rpg(scene: str, kind: str, level: int, feedback_id: str | None) -> str:
     if kind == "advance_story" and feedback_id in _SUCCESS_FEEDBACK_COPY:
         return _SUCCESS_FEEDBACK_COPY[feedback_id]
-    if kind in {"ask", "prompt"}:
+    if kind in {"ask", "prompt", "reinvite"}:
         return _RPG_SCAFFOLDED_COPY[scene][kind][level]
     return _RPG_FIXED_COPY[scene][kind]
 

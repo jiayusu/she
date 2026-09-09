@@ -29,6 +29,45 @@ def _rpg_action(kind="ask", *, node="collect_milk", level=2, feedback="milk_help
     }
 
 
+def _director_prompt_action(kind="ask", *, node="collect_milk", level=2):
+    return _rpg_action(
+        kind,
+        node=node,
+        level=level,
+        feedback=f"{node}_s{level}",
+    )
+
+
+def test_director_prompt_content_ids_select_reviewed_rows():
+    cases = (
+        ("collect_milk", 1, "The drink keeper is listening. What do we need?"),
+        ("collect_milk", 2, "The drink keeper asks: Milk or water?"),
+        ("collect_milk", 3, "The drink keeper is listening: I want..."),
+        ("find_red_cup", 1, "Which cup does our picnic need?"),
+        ("find_red_cup", 2, "The cup keeper asks: Red cup or blue cup?"),
+        ("find_red_cup", 3, "The cup keeper is listening: I choose..."),
+        ("picnic_ready", 1, "The picnic guide says our pretend picnic is ready."),
+        ("picnic_ready", 2, "The picnic guide says our pretend picnic is ready."),
+        ("picnic_ready", 3, "The picnic guide says: Our picnic..."),
+    )
+
+    for node, level, expected in cases:
+        assert render(_director_prompt_action(node=node, level=level)) == expected
+
+
+def test_rpg_reinvite_repeats_the_scaffold_context():
+    cases = (
+        ("collect_milk", "The drink keeper asks again: Milk or water?"),
+        ("find_red_cup", "The cup keeper asks again: Red cup or blue cup?"),
+        ("picnic_ready", "Ready or not yet? Let's hear: Our picnic is ready."),
+    )
+
+    for node, expected in cases:
+        text = render(_director_prompt_action("reinvite", node=node, level=2))
+        assert text == expected
+        assert "Would you like to try again?" not in text
+
+
 def test_rpg_actions_have_distinct_reviewed_copy():
     rendered = {
         kind: render(
@@ -78,6 +117,11 @@ def test_unknown_or_contradictory_dynamic_values_are_never_interpolated():
     unknown_feedback["feedback_id"] = "child supplied feedback"
     unknown_feedback["story_action"] = "rpg:child supplied feedback"
     assert render(unknown_feedback) == SAFE_FALLBACK
+
+    mismatched_prompt_content = _director_prompt_action()
+    mismatched_prompt_content["feedback_id"] = "find_red_cup_s2"
+    mismatched_prompt_content["story_action"] = "rpg:find_red_cup_s2"
+    assert render(mismatched_prompt_content) == SAFE_FALLBACK
 
     malformed_action = _rpg_action()
     malformed_action["teaching_action"] = []

@@ -26,8 +26,17 @@ The validator intentionally supports only reviewed `milk_picnic` version 1:
 - transition evidence must satisfy the current criterion, belong to the current
   turn, cite the exact previously persisted `action_id` and scaffold level,
   carry confidence of at least 0.8, and be the evidence referenced by every event;
+- a world transition additionally requires the previous delivery to be
+  `completed`, the previous phase to be `presenting/awaiting_speech`, a valid
+  `confirmed_object`, and the exact reviewed S0-S6 prompt ID matching the node
+  and persisted scaffold level;
 - no-event turns keep the current node, revision, inventory, and completed-node
   set unchanged.
+- `confirmed_object` must belong to the current node, is required for presentation/evaluation phases,
+  and must be cleared while seeking the next node or after completion.
+- Every stored RPG TeachingAction must point back to the same node, phase, role and finite content ID;
+  prompt IDs must match its scaffold suffix, while success/help feedback is restricted to its reviewed
+  action kind. This prevents a structurally valid world state from carrying contradictory child output.
 
 The existing `(session_id, turn_id)` replay and request-hash conflict handling
 runs before transition validation, so a same-turn retry returns the already
@@ -71,4 +80,6 @@ rewrite is required because RPG state uses the existing response JSON column.
 
 Finite story state needs transaction-time checks in addition to JSON Schema:
 dynamic revision continuity, prior-node ownership, canonical inventory, and
-event-to-evidence linkage all depend on the last committed server response.
+event-to-evidence linkage all depend on the last committed server response. The
+same boundary must also receive the previous delivery record and TeachingAction;
+schema-valid evidence alone is not proof that a child heard the prompt.

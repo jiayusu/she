@@ -9,9 +9,9 @@
 | 能力 | 代码状态 | 验证状态 |
 |---|---|---|
 | `milk_picnic.v1` 审核 seed 与严格 loader | 已实现 | seed/初版契约曾单独验证；后续集成未重跑 |
-| Speech Act、物体门、唯一 TeachingAction | 已实现 | 本轮未运行 |
-| Memory 原子 world transition / 幂等 / erase 级联 | 已实现 | 本轮未运行 |
-| Interaction 审核文案与最终 Safety | 已实现 | 最终 Safety 修复曾验证；RPG 文案本轮未运行 |
+| Speech Act、物体门、唯一 TeachingAction、持久会话恢复 | 已实现 | 本轮未运行 |
+| Memory 原子 world transition / 交付与审核提示门 / 幂等 / erase 级联 | 已实现 | 本轮未运行 |
+| Interaction 审核提示/结果白名单与最终 Safety | 已实现 | 最终 Safety 修复曾验证；RPG 契约对齐本轮未运行 |
 | Gateway 输入/输出契约与脱敏 quest summary | 已实现 | 本轮未运行 |
 | 合成完整剧情脚本 | 已编写 `scripts/rpg-smoke.mjs` | 未运行 |
 | Web/iOS 任务卡、自动设备事件编排、真实 ASR/真机 | 未实现或待验证 | 不得宣称完成 |
@@ -118,12 +118,14 @@ paused
 
 1. `object_observed` 只更新场景上下文，不会被当作一次语言失败。
 2. `speech` 只有在上一 `action_id` 的 delivery 为 `completed` 时可被评估。
-3. 当前节点尚未确认 `required_objects` 时，`speech` 与 `resume` 都不能跳过现实探索，只能继续寻找。
-4. `quest_satisfied` 只由当前节点的 criterion 判定。
-5. transition 的 `base_revision` 必须等于 Shared State 当前 revision。
-6. world event、next node 和新 revision 必须在同一提交中产生。
-7. Interaction 成功反馈只能在提交成功后播放；提交失败不能先宣布获得道具。
-8. `completed`、`paused`、`delivery_failed` 不会由客户端或 LLM 自述触发。
+3. `speech` 必须携带 `detected_object=null`；物体上下文只来自此前已接受的感知回合。
+4. 当前节点尚未确认 `required_objects` 时，`speech` 与 `resume` 都不能跳过现实探索，只能继续寻找。
+5. `quest_satisfied` 只由当前节点的 criterion 判定。
+6. transition 的 `base_revision` 必须等于 Shared State 当前 revision。
+7. Memory 只接受由上一条已完成交付、节点匹配的审核提示所引出的 transition。
+8. world event、next node 和新 revision 必须在同一提交中产生。
+9. Interaction 成功反馈只能在提交成功后播放；提交失败不能先宣布获得道具。
+10. `completed`、`paused`、`delivery_failed` 不会由客户端或 LLM 自述触发。
 
 ## 4. 故事资产模型
 
@@ -156,7 +158,7 @@ paused
 | 字段 | 语义 |
 |---|---|
 | `node_id` | 种子内稳定 ID |
-| `required_object` | 进入任务所需的确认物体/场景 |
+| `required_objects` | 进入任务所需的一组允许物体/场景 |
 | `world_role` | 物体的故事身份，仅供小P转述 |
 | `motivation` | 孩子为何需要说这句话 |
 | `learning_goal` | 教学目标 |
@@ -177,12 +179,16 @@ paused
   "phase": "presenting",
   "world_revision": 1,
   "inventory": [],
-  "completed_nodes": []
+  "completed_nodes": [],
+  "confirmed_object": "fridge"
 }
 ```
 
 World State 是有限字段集合，不接受任意 JSON Patch。`inventory`、节点和事件必须引用当前
-StorySeed 已声明的 ID。语言失败次数属于 Director 的短期学习循环，不是客户端可写的世界字段。
+StorySeed 已声明的 ID。`confirmed_object` 是服务端从已接受感知中派生的当前节点上下文，进入下一
+节点时必须清空；客户端不能用它自报“已经找到”。语言失败次数属于 Director 的短期学习循环，
+不是客户端可写的世界字段。Durable 模式从 Shared State 恢复的状态不受进程内 15 分钟缓存 TTL
+影响；TTL 只约束未配置持久服务的本地演示会话。
 
 ## 5. 首个故事种子：milk_picnic.v1
 
@@ -293,6 +299,9 @@ speech_act = request_item | select_item | none
 world_event.kind = virtual_item_granted | quest_completed
 ```
 
+`object_observed` 才能携带审核物体枚举；`speech` 与 `resume` 的 `detected_object` 必须为 `null`，
+防止把上一帧或客户端自报物体混入语言证据。
+
 新增字段优先保持旧 learning 客户端可后兼容；破坏性设备事件变更另开 `v2/`，不能原地破坏
 `device-event` / `device-command` v1。
 
@@ -303,7 +312,7 @@ world_event.kind = virtual_item_granted | quest_completed
 | 1 | 显式唤醒触发短时视觉；确认 `fridge` | `collect_milk/presenting`, rev=1 | “Milk or water?” |
 | 2 | 提示 action 的 TTS ACK=`completed` | `awaiting_speech` | 等待孩子 |
 | 3 | “Milk!”, ASR=.97 | `request_item(milk)`；写 se1/we1；获得 `milk_token`；转 `find_red_cup/seeking_object`, rev=2 | “Milk is ready. Find a cup!” |
-| 4 | 后续显式观察确认 `table` 与红/蓝杯场景 | `find_red_cup/presenting`；不记语言失败 | “Red cup or blue cup?” |
+| 4 | 后续显式观察确认 `table` 或杯子场景 | `find_red_cup/presenting`；前一步成功使帮助由 S2 降至 S1 | “Which cup does our picnic need?” |
 | 5 | 提示已完成；“Blue cup.” | act 正确但 color 不匹配；失败=1；world rev 不变 | “Red…” |
 | 6 | 新提示已完成；“Red cup!” | 写 se2/we2；奖励事件 `2→3`，完成事件 `3→4`；转 `picnic_ready`, rev=4 | “Red cup! Our picnic is ready!” |
 | 7 | 最终提示完成 | quest=`completed` | 等待新的显式探索 |
@@ -319,7 +328,7 @@ world_event.kind = virtual_item_granted | quest_completed
 - `Milk!` 在二选一上下文推进取奶；`I want water.` 不推进；
 - `Red cup!` 只在找红杯节点推进；
 - 世界 revision 单调递增，非法节点/道具/任意 patch 被拒绝；
-- 连续成功能降低后续同类任务 scaffold，连续失败提高帮助，两次失败后暂停；
+- 已完成的 quest step 会降低后续节点 scaffold（最多两级），清楚失败提高帮助，两次失败后暂停；
 - transition 提交失败时不播放成功反馈；
 - 所有动态与 fallback 文本都经过最终安全过滤；
 - erase 后缓存、数据库、manifest 和审计中不保留儿童原话；

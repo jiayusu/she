@@ -29,7 +29,8 @@ RPG 回合的关键触发条件：
 |---|---|---|
 | 首次确认 `fridge` | `collect_milk/presenting`，发审核提示 | 否，rev=1 |
 | 节点仍在 `seeking_object` 时收到 speech/resume | 继续 `explore` | 否 |
-| 上一提示未完成即收到 speech | `no_completed_prompt`，重新邀请 | 否 |
+| 上一提示仍 `planned/issuing` 即收到新回合 | `delivery_pending`，不提交新 turn | 否 |
+| 上一提示 `failed/expired` 后收到非 resume | `previous_delivery_not_completed` | 否 |
 | ASR < 0.8 | `reinvite`，不增加失败次数 | 否 |
 | 清楚但槽位错误 | 提高 scaffold；第二次后 pause | 否 |
 | 已确认物体 + 提示完成 + `request_item(milk)` | 发 `milk_token`，进入 `find_red_cup` | rev 1→2 |
@@ -40,6 +41,11 @@ RPG 回合的关键触发条件：
 `presenting` 是持久 RPG 状态；设备 ACK 由 Memory 的 delivery 独立保存。Gateway 的只读摘要把
 `presenting + completed` 投影成 `awaiting_speech`，把 `presenting + failed/expired` 投影成
 `delivery_failed`。ACK 不产生 world event。
+
+Shared State 恢复的 durable turn 不受本地 15 分钟 Map TTL 影响。失败/过期后只有显式 `resume`
+可以提交恢复动作；普通 speech/object 回合保持关闭。若失败发生在已提交的成功反馈上，ACK 不会
+回滚既有 world transition，也不会再产生一个 transition，客户端应依据独立 `delivery_status`
+进入恢复路径。
 
 ## Assessment 与剧情判定
 
@@ -59,8 +65,9 @@ RPG 回合的关键触发条件：
 1. 同一 turn、同一请求返回已提交响应；
 2. 同一 turn、不同请求返回 idempotency conflict；
 3. `previous_turn_id` 与最新回合不一致时拒绝；
-4. world transition 在 Memory 事务内核对上一节点、revision、inventory、事件顺序、Speech Act
-   evidence、上一 `action_id` 和 scaffold；
+4. world transition 在 Memory 事务内核对上一节点、revision、inventory、当前节点
+   `confirmed_object`、事件顺序、Speech Act evidence、上一 `action_id`/scaffold、上一 delivery
+   已完成，以及节点/脚手架对应的审核 prompt ID；
 5. Interaction 只在提交成功后渲染，Gateway 再 claim、发送和等待 ACK。
 
 ## 隐私与审计
