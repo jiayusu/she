@@ -466,7 +466,11 @@ class Engine:
 
     def _safe_or_template(self, response: TurnResponse, minister: str, intent: str,
                           req: TurnRequest, mode: str = "normal") -> TurnResponse:
+        local_safety = LocalSafetyFilter()
         ok, text = self._safety.filter(response.text, context=mode)
+        if ok:
+            # Configured adapters cannot remove the local output safety floor.
+            ok, text = local_safety.filter(text, context=mode)
         if ok:
             response.text = text
             return response
@@ -475,10 +479,17 @@ class Engine:
             self._state.state, "generic")
         tpl = self._templates.pick(minister, scene, **self._slot_vars(req))
         fallback = tpl.render(**self._slot_vars(req)) if tpl else "Hello! | 你好呀！"
+        # Templates contain untrusted assessment slots: validate after rendering.
+        ok, fallback = self._safety.filter(fallback, context=mode)
+        if ok:
+            ok, fallback = local_safety.filter(fallback, context=mode)
+        if not ok:
+            fallback = "Hello! | 你好呀！"  # Fixed reviewed text; no dynamic slots.
+            tpl = None
         response.text = fallback
         response.meta["fallback_used"] = True
         response.meta["template_id"] = tpl.id if tpl else "hardcoded"
-        self._bus.fallback(template_hit=True, minister=minister, scene=scene)
+        self._bus.fallback(template_hit=tpl is not None, minister=minister, scene=scene)
         return response
 
     def _template_fallback_after_llm_failure(self, minister: str, intent: str,

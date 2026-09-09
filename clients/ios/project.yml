@@ -23,6 +23,8 @@ targets:
         CFBundleDisplayName: 小P家长端
         UILaunchScreen: {}
         API_BASE_URL: $(API_BASE_URL)
+        RPG_CHILD_ID: $(RPG_CHILD_ID)
+        RPG_SESSION_ID: $(RPG_SESSION_ID)
         NSAppTransportSecurity:
           NSAllowsLocalNetworking: true
   SHEParentAppTests:

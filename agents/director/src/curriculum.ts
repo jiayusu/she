@@ -13,7 +13,8 @@ export class CurriculumAgent {
     };
     const target = table[object] ?? Object.entries(table).find(([key]) => req.utterance.toLowerCase().includes(key))?.[1] ?? fallback;
     const level = Math.max(0, Math.min(5, Number(req.learner_state?.language_level ?? 1))) as LanguageLevel;
-    const review = Array.isArray(req.learner_state?.candidate_weaknesses) ? req.learner_state?.candidate_weaknesses.filter((v): v is string => typeof v === 'string').slice(0, 2) : [];
+    const due = req.learner_state?.review_targets ?? req.learner_state?.candidate_weaknesses;
+    const review = Array.isArray(due) ? due.filter((v): v is string => typeof v === 'string').slice(0, 2) : [];
     return { learning_goal: target.goal, primary_target: target.expression, review_targets: review, i_plus_1_target: target.expression, language_level: level, priority: review.length ? 0.95 : 0.8 };
   }
 }

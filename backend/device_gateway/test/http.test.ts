@@ -97,3 +97,63 @@ describe("parent control HTTP API", () => {
     assert.equal((await malformed.json()).error.code, "invalid_json");
   });
 });
+
+describe("browser CORS allowlist", () => {
+  let gateway: GatewayHandle;
+
+  afterEach(async () => {
+    await gateway.close();
+  });
+
+  test("allowed origin receives preflight and echoed CORS headers", async () => {
+    gateway = await createGateway({
+      host: "127.0.0.1",
+      port: 0,
+      allowedOrigins: ["http://localhost:5173"],
+    });
+
+    const preflight = await fetch(`${gateway.url}/v1/dashboard`, {
+      method: "OPTIONS",
+      headers: {
+        origin: "http://localhost:5173",
+        "access-control-request-method": "PATCH",
+      },
+    });
+    assert.equal(preflight.status, 204);
+    assert.equal(preflight.headers.get("access-control-allow-origin"), "http://localhost:5173");
+    assert.match(preflight.headers.get("access-control-allow-methods") ?? "", /PATCH/);
+
+    const dashboard = await fetch(`${gateway.url}/v1/dashboard`, {
+      headers: { origin: "http://localhost:5173" },
+    });
+    assert.equal(dashboard.status, 200);
+    assert.equal(dashboard.headers.get("access-control-allow-origin"), "http://localhost:5173");
+  });
+
+  test("disallowed origin gets no allow-origin header and CORS stays opt-in", async () => {
+    gateway = await createGateway({
+      host: "127.0.0.1",
+      port: 0,
+      allowedOrigins: ["http://localhost:5173"],
+    });
+
+    const stranger = await fetch(`${gateway.url}/v1/dashboard`, {
+      headers: { origin: "http://evil.example" },
+    });
+    assert.equal(stranger.status, 200);
+    assert.equal(stranger.headers.get("access-control-allow-origin"), null);
+    assert.equal(stranger.headers.get("vary"), "Origin");
+
+    const optIn = await createGateway({ host: "127.0.0.1", port: 0 });
+    try {
+      const legacy = await fetch(`${optIn.url}/v1/dashboard`, {
+        headers: { origin: "http://localhost:5173" },
+      });
+      assert.equal(legacy.status, 200);
+      assert.equal(legacy.headers.get("access-control-allow-origin"), null);
+      assert.equal(legacy.headers.get("vary"), null);
+    } finally {
+      await optIn.close();
+    }
+  });
+});

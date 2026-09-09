@@ -71,6 +71,11 @@ struct TodayView: View {
                 }
                 .softOrbitEntrance(index: 1)
 
+                if model.isQuestStateConfigured {
+                    questCard(model.questSummary)
+                        .softOrbitEntrance(index: 2)
+                }
+
                 GlassCard {
                     VStack(alignment: .leading, spacing: SoftOrbit.Spacing.medium) {
                         Text("下一步")
@@ -86,10 +91,10 @@ struct TodayView: View {
                             .buttonStyle(SoftOrbitPrimaryButtonStyle())
                     }
                 }
-                .softOrbitEntrance(index: 2)
+                .softOrbitEntrance(index: 3)
 
                 metrics(dashboard.metrics)
-                    .softOrbitEntrance(index: 3)
+                    .softOrbitEntrance(index: 4)
             }
             .animation(
                 reduceMotion ? nil : SoftOrbit.Motion.settle,
@@ -98,6 +103,88 @@ struct TodayView: View {
             .padding(SoftOrbit.Spacing.large)
         }
         .refreshable { await model.load() }
+    }
+
+    private func questCard(_ summary: RpgQuestSummary?) -> some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: SoftOrbit.Spacing.medium) {
+                HStack {
+                    Label("现实语言任务", systemImage: "map.fill")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(SoftOrbit.mint)
+                    Spacer()
+                    Text("只读")
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.secondary)
+                }
+
+                if let quest = summary?.quest {
+                    Text(questTitle(quest.nodeID))
+                        .font(.title3.bold())
+                    Label(phaseLabel(quest.phase), systemImage: phaseIcon(quest.phase))
+                        .font(.subheadline.weight(.medium))
+                    LabeledContent("现实角色", value: quest.worldRole.rawValue)
+                    LabeledContent("目标表达", value: quest.targetExpression)
+                    if !quest.inventory.isEmpty {
+                        LabeledContent(
+                            "已经获得",
+                            value: quest.inventory.map(inventoryLabel).joined(separator: "、")
+                        )
+                    }
+                    if model.questRefreshError != nil {
+                        Label("状态暂时未刷新，当前显示上次保存的任务", systemImage: "arrow.clockwise")
+                            .font(.footnote)
+                            .foregroundStyle(SoftOrbit.warm)
+                    }
+                } else if model.questRefreshError != nil {
+                    Label("暂时读不到设备上的剧情状态", systemImage: "wifi.exclamationmark")
+                        .foregroundStyle(.secondary)
+                } else {
+                    Label("当前没有进行中的现实语言任务", systemImage: "sparkles")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            .accessibilityElement(children: .combine)
+        }
+    }
+
+    private func questTitle(_ node: RpgNodeID) -> String {
+        switch node {
+        case .collectMilk: "寻找野餐牛奶"
+        case .findRedCup: "寻找红色杯子"
+        case .picnicReady: "野餐准备完成"
+        }
+    }
+
+    private func phaseLabel(_ phase: RpgQuestPhase) -> String {
+        switch phase {
+        case .seekingObject: "等待孩子找到现实物体"
+        case .confirmingObject: "正在确认孩子指向的物体"
+        case .presenting: "角色正在给出语言任务"
+        case .awaitingSpeech: "等待孩子开口改变剧情"
+        case .resolving: "正在判定这次语言行动"
+        case .paused: "任务已暂停，稍后可继续"
+        case .deliveryFailed: "上次话术未送达，设备将安全重试"
+        case .completed: "任务已经完成"
+        }
+    }
+
+    private func phaseIcon(_ phase: RpgQuestPhase) -> String {
+        switch phase {
+        case .seekingObject, .confirmingObject: "viewfinder"
+        case .presenting, .awaitingSpeech: "quote.bubble"
+        case .resolving: "ellipsis.circle"
+        case .paused: "pause.circle"
+        case .deliveryFailed: "exclamationmark.arrow.triangle.2.circlepath"
+        case .completed: "checkmark.seal.fill"
+        }
+    }
+
+    private func inventoryLabel(_ item: RpgInventoryItem) -> String {
+        switch item {
+        case .milkToken: "牛奶"
+        case .redCupToken: "红色杯子"
+        }
     }
 
     private var staleBanner: some View {

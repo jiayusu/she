@@ -1,42 +1,119 @@
-03 五大臣 Agent 调度 PRD · V1.0
-1. 背景与目标
-BMAM 论文架构的产品化翻译层：决定"这句话归谁管、带多少上下文、往哪里写记忆"。
-防止出现"阿海和老颞各记各的"式的记忆碎片化——论文称之为 soul erosion（灵魂侵蚀）。
-北极星指标：路由准确率 ≥90%；大臣切换时剧情上下文保持率 100%（不串台）。
-2. 范围
-In：意图路由、上下文注入规范、记忆读写调度、与 MCP 工具的边界、运行时自生长触发。
-Out：记忆存储的 Schema 与实现（见 04）、剧情引擎内部逻辑（见 01）、各大臣能力实现。
-3. 用户故事
-孩子说"我昨天教会小熊什么来着" → 小P 判为记忆询问 → 路由阿海，阿海带最近剧情上下文作答。
-孩子指着冰箱 → 万物意图 → 老颞接管，但小P 先注入"当前在朝会剧情中"以免冰箱说串场。
-系统每周自动把高频情景记忆巩固成语义边（孩子无感知）。
-4. 功能需求
-表格
-编号	需求	优先级	验收
-FR-G01	意图分类器：输入 ASR 文本+声学情绪分 → 输出六类意图（朝会/记忆/学词/安抚/万物/闲聊）+ 置信度	P0	六类意图准确率 ≥90%，低置信度走"小P 反问澄清"
-FR-G02	大臣映射表：意图→主大臣→备选大臣（安抚可由任何大臣降级执行），映射表配置化非硬编码	P0	运营可改映射，无需发版
-FR-G03	上下文注入包：切换大臣时按规范拼装 {剧本状态, 最近10轮, 今日已学词, 孩子情绪分}，token 预算分级（闲聊500/任务1500）	P0	注入包生成延迟 ≤50ms
-FR-G04	记忆写调度：接收剧情引擎 memory_write[]，按大臣归属分发到五库（见 04 的写入接口），写失败重试 1 次后入死信队列告警	P0	写入成功率 ≥99.9%，死信当日清零
-FR-G05	显著性打标：杏杏规则（里程碑事件/孩子首次行为/情绪高峰）自动给记忆打 salience 分，≥阈值进"永不遗忘"白名单	P0	白名单只增不删，人工可增不可减
-FR-G06	巩固触发器：每周批量任务，将阿海情景记忆中"出现≥3 次且评估通过"的词→老颞语义层（KG 热更新接口）	P1	每周自动产出 diff 报告，人工一键确认后生效
-FR-G07	元认知三 agent：复盘（每周剧情质量报告）、遗忘剪枝（低显著性记忆按 EMA 置信度衰减）、巩固触发（FR-G06 的调度壳）	P1	三任务可观测、可手动触发
-FR-G08	工具边界：KG 查询/日程提醒等走 MCP tool-call（LLM 自主调）；情绪检测/内容过滤走系统钩子（LLM 不可绕过）	P0	边界清单文档化，安全类钩子不可被提示词注入绕过
-5. 非功能
-路由+注入全流程 ≤100ms（不含 LLM 推理）
-单会话状态内存常驻，崩溃恢复后从记忆存储重建（≤2s）
-全部调度决策留审计日志（路由理由/注入内容摘要/写库结果）
-6. 接口
-plain
-POST /agent/direct    { utterance, asr, emotion, session_id } → { teaching_action, scaffold, story }
-POST /agent/dispatch  { utterance, asr, emotion, session_id } → legacy minister route
-WS   /agent/session   会话状态订阅（App 端看"当前哪位大臣值守"灯效同步）
-依赖: ASR(02) / 剧情引擎(01) / 记忆存储(04) / 内容安全钩子(05)
+# Learning Director（学习导演）
 
-7. 风险
-表格
-风险	对策
-意图路由错导致"冰箱用阿海的语气说话"	映射表带备选大臣+FR-G01 低置信反问；盲测集每月扩
-记忆写入放大 LLM 幻觉（错误记忆固化）	FR-G04 写入前过事实校验（与 KG 冲突则标待审，走 04 冲突接口）
-提示词注入让孩子绕过安全钩子	FR-G08 系统钩子层不可绕，注入检测进 05 模块
-8. 埋点
-route_done(intent, minister, conf) / ctx_built(tokens) / memory_write(store, ok) / consolidate_batch(count)
+学习优先的唯一调度入口。它把权威上一回合、当前感知、情绪和学习摘要组织成固定六阶段决策，
+每轮只返回一个 `teaching_action`。它不直接对儿童说话、不发设备命令，也不直接写 Learner
+Profile、KG 或 SQLite。
+
+- 架构定位：`AGENTS.md` §29 与
+  [`docs/architecture/02-agents.md`](../../docs/architecture/02-agents.md) §4
+- 现实语言 RPG：
+  [`docs/architecture/12-embodied-language-rpg.md`](../../docs/architecture/12-embodied-language-rpg.md)
+- 当前学习循环：[`docs/learning-loop.md`](docs/learning-loop.md)
+- API / 注入 / 工具边界：[`docs/api.md`](docs/api.md) ·
+  [`docs/context-injection.md`](docs/context-injection.md) ·
+  [`docs/tool-boundary.md`](docs/tool-boundary.md)
+
+## 当前主路径
+
+```text
+Gateway rpg-turn
+  → DurableLearning 读取 Memory 权威上一回合与 delivery
+  → input → assessment → curriculum → scaffold → story → decision
+  → Memory 原子校验并提交 rpg-decision
+  → Interaction 渲染审核话术
+  → Gateway 发送设备命令并等待 ACK
+```
+
+当配置 `SHE_MEMORY_URL` 时，`POST /agent/direct` 使用持久路径：校验身份和输入、执行
+`turn_id` 幂等、拒绝 stale turn，并从 `latest.response.rpg` 恢复故事。未配置时仅使用进程内
+会话，适合组件演示，不是生产权威状态。
+
+首个审核种子是 `content/story-seeds/milk_picnic.v1.json`：
+
+```text
+fridge → request_item(milk) → milk_token
+       → table/cup → select_item(red cup) → red_cup_token → completed
+```
+
+Speech Act 只有在当前节点已确认现实物体、上一动作 delivery 为 `completed`、ASR ≥ 0.8 且
+槽位命中审核 criterion 时才能提出世界 transition。任务成功与完整句学习证据分开：上下文中的
+“Milk!” 可以推进剧情，但不等于掌握 “I want milk.”。
+
+## 运行
+
+```bash
+npm ci
+npm start
+```
+
+默认监听 `127.0.0.1:8790`，`PORT` 可覆盖。持久模式还需配置：
+
+```text
+SHE_MEMORY_URL=http://127.0.0.1:8789
+```
+
+端点：
+
+```text
+POST /agent/direct       新客户端/内部 Gateway 使用
+POST /agent/dispatch     迁移期旧五大臣入口；不得承担新 RPG 长期状态
+WS   /agent/session      旧调试订阅
+GET  /healthz
+GET/POST /admin/*        旧运维入口
+```
+
+RPG 输入示例（所有 ID 为合成值）：
+
+```json
+{
+  "contract_version": "1.0",
+  "child_id": "child-demo",
+  "session_id": "session-demo",
+  "turn_id": "turn-001",
+  "previous_turn_id": null,
+  "device_id": "rx5-demo",
+  "input_kind": "object_observed",
+  "utterance": "",
+  "asr": null,
+  "emotion": null,
+  "detected_object": "fridge",
+  "perception_event_id": "perception-001"
+}
+```
+
+对外产品调用优先走 Device Gateway 的 `POST /v1/rpg/direct`，由 Gateway 先校验共享输入契约。
+
+## 实现分工
+
+- `src/story-seed.ts`：审核资产的严格解析、有限图与引用校验。
+- `src/speech-act.ts`：确定性 act/slot/context 判定，不修改状态。
+- `src/embodied-rpg.ts`：物体门、失败/暂停和有限 transition proposal。
+- `src/learning-director.ts`：固定阶段、唯一动作、任务与 Assessment 分离。
+- `src/durable-learning.ts`：Shared State 读取、幂等、ACK 门槛和提交。
+- `src/assessment.ts`：当前仅做完整目标词文本观察；无专用发音结果时明确返回 `null`。
+
+## 共享契约
+
+- `shared/contracts/v1/rpg-turn.schema.json`
+- `shared/contracts/v1/rpg-decision.schema.json`
+- `shared/contracts/v1/learning-loop.schema.json`
+- `shared/contracts/v1/learning-event.schema.json`
+
+TypeScript 类型仍是手写消费者；跨端字段必须先改 `shared/contracts/`。
+
+## 测试命令
+
+```bash
+npm test
+npm run typecheck
+```
+
+仓库级合成链由 `scripts/rpg-smoke.mjs` 驱动。真实 ASR、发音 evaluator、RDK X5 视觉与真实儿童
+学习效果仍是待验证能力，不能由规则单测或模拟器结果替代。
+
+## 已知边界
+
+- 当前只允许一个审核 seed，不支持开放世界或运行时生成节点。
+- Learner Model 尚未形成跨种子个体化课程；Memory 只保存保守 evidence，不自动确认 mastery。
+- 生产家庭认证、多租户授权和速率限制不在本组件内完成。
+- 旧 `dispatch`、minister 类型和包名仍为迁移遗留；新客户端不得依赖它们。

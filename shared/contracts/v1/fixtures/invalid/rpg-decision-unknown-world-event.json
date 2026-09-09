@@ -1,0 +1,38 @@
+{
+  "contract_version": "1.0",
+  "seed_id": "milk_picnic",
+  "seed_version": 1,
+  "node_id": "find_red_cup",
+  "phase": "seeking_object",
+  "world_revision": 2,
+  "inventory": ["milk_token"],
+  "completed_nodes": ["collect_milk"],
+  "confirmed_object": null,
+  "world_role": "杯子管理员",
+  "feedback_id": "milk_ready",
+  "next_quest_id": "find_red_cup",
+  "speech_act_evidence": {
+    "evidence_id": "speech-evidence-002",
+    "source_turn_id": "rpg-turn-002",
+    "eliciting_action_id": "action-001",
+    "criterion_id": "request_milk.v1",
+    "act": "request_item",
+    "slots": {"item": "milk"},
+    "confidence": 0.97,
+    "context_supported": true,
+    "scaffold_level_used": 2,
+    "quest_satisfied": true,
+    "error_type": null
+  },
+  "world_events": [
+    {
+      "event_id": "world-event-001",
+      "kind": "state_patch",
+      "base_revision": 1,
+      "resulting_revision": 2,
+      "source_evidence_id": "speech-evidence-002",
+      "from_node_id": "collect_milk",
+      "to_node_id": "find_red_cup"
+    }
+  ]
+}

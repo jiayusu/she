@@ -1,0 +1,29 @@
+[project]
+name = "she-memory-store"
+version = "1.0.0"
+description = "共享记忆存储：工作/情景/显著性/程序性四库与巩固、遗忘、快照生命周期"
+requires-python = ">=3.10"
+dependencies = [
+    "flask>=3.0",
+    "numpy>=1.26",
+    "faiss-cpu>=1.8",
+    "requests>=2.31",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8.0"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+# 扁平布局：包目录是 memstore/，不是 src/。只发布 memstore 包，
+# 不把 server.py 之类的顶层脚本当模块发布。
+[tool.setuptools.packages.find]
+include = ["memstore*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# 让 `python -m pytest tests` 无需安装本包、也无需 conftest 改 sys.path 即可导入 memstore。
+pythonpath = ["."]

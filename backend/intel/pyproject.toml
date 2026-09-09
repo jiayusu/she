@@ -1,0 +1,16 @@
+# 本文件**只提供工具配置**，不声明可安装的分发包。
+#
+# 为什么不加 [project] / [build-system]：本组件是扁平模块布局，顶层模块名很通用
+# （config / db / server / llm_client / pipeline …）。一旦做成可 pip install 的包，
+# 这些名字会进入 site-packages 顶层命名空间：
+#   - 与 backend/knowledge_graph 的 llm_client.py、server.py 直接同名冲突（且内容不同）；
+#   - 也容易与第三方库互相遮蔽。
+# 需要真正打包时，先把模块收进 intel/ 包目录再加 [project]，不要原地发布顶层模块。
+#
+# 运行依赖见 requirements.txt；测试依赖见 requirements-dev.txt。
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# 让 tests/ 能 `import config` / `import pipeline`，替代 conftest.py 里的 sys.path 改写。
+pythonpath = ["."]

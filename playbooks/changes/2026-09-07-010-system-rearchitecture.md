@@ -17,7 +17,7 @@ Retired implementation paths were migrated into role-based locations. The Device
 
 ## Verification
 
-- `npm run typecheck` in `A:\working\she\backend\device_gateway` passed.
+- `npm run typecheck` in `backend/device_gateway` passed.
 - `git diff --check` passed.
 - Full platform verification is run after dependency/path normalization; physical RX5 validation remains pending SSH access.
 

@@ -80,4 +80,19 @@ describe("device WebSocket sessions", () => {
     assert.equal((await nextJson(socket)).status, "accepted");
     assert.equal(gateway.sessions.snapshot("rx5-demo-001")?.pendingCommands, 0);
   });
+
+  test("an unbound socket cannot acknowledge another connection's command", async () => {
+    socket.send(JSON.stringify(baseEvent));
+    await nextJson(socket);
+    const pending = gateway.sessions.sendCommand(baseEvent.device_id, {type:'speak',payload:{text:'Hello!'}});
+    await nextJson(socket);
+    const intruder = new WebSocket(`${gateway.wsUrl}/v1/device/session`);
+    await once(intruder, 'open');
+    intruder.send(JSON.stringify({...baseEvent,event_id:'66666666-6666-4666-8666-666666666666',sequence:1,type:'command_ack',
+      payload:{command_id:pending.command_id,status:'completed',error_code:null}}));
+    assert.equal((await nextJson(intruder)).error.code, 'socket_mismatch');
+    intruder.close();
+    await once(intruder,'close');
+    assert.equal(gateway.sessions.snapshot(baseEvent.device_id)?.pendingCommands,1);
+  });
 });

@@ -125,7 +125,8 @@ LLM_MODEL = env("LLM_MODEL", env("KG_LLM_MODEL", "gpt-4o-mini"))
 LLM_MIN_INTERVAL = env_float("LLM_MIN_INTERVAL", 10.5)
 
 # ---------------------------------------------------------------- 服务
-INTEL_PORT = env_int("INTEL_PORT", 8788)
+# 8791: 8788 归 backend/device_gateway(iOS 客户端硬编码该端口)。
+INTEL_PORT = env_int("INTEL_PORT", 8791)
 INTEL_TOKEN = env("INTEL_TOKEN", "")              # 设非空则变更接口需 X-Intel-Token
 DB_PATH = Path(env("INTEL_DB") or (DATA_DIR / "intel.db"))
 

@@ -1,6 +1,6 @@
 # RX5 Deployment Runbook
 
-1. Verify `A:\working\she\clients\hardware-rx5\scripts\preflight.sh` on the board.
+1. Verify `clients/hardware-rx5/scripts/preflight.sh` on the board.
 2. Verify the gateway health endpoint and WebSocket enrollment.
 3. Start the simulator with `gateway_smoke.py` before enabling hardware capture.
 4. Confirm `GET /v1/devices/{id}/twin` reports capabilities and fresh heartbeat data.

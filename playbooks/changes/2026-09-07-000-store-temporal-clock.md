@@ -16,9 +16,9 @@ Backward-compatible. `MemoryService.recall()` adds an optional `now` parameter; 
 
 ## Files
 
-- `A:\working\she\store\memstore\service.py`
-- `A:\working\she\store\tests\test_timeline.py`
-- `A:\working\she\playbooks\incidents\INC-0001-store-temporal-wall-clock.md`
+- `store/memstore/service.py`
+- `store/tests/test_timeline.py`
+- `playbooks/incidents/INC-0001-store-temporal-wall-clock.md`
 
 ## Verification
 
@@ -31,4 +31,4 @@ Revert this logical change. No persisted state or schema migration is involved.
 
 ## Reusable knowledge
 
-See `A:\working\she\playbooks\incidents\INC-0001-store-temporal-wall-clock.md`.
+See `playbooks/incidents/INC-0001-store-temporal-wall-clock.md`.

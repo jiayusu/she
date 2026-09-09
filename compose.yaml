@@ -1,0 +1,52 @@
+name: she
+services:
+  memory:
+    build:
+      context: .
+      dockerfile: deploy/memory.Dockerfile
+    volumes:
+      - learning-memory:/data
+    restart: unless-stopped
+  interaction:
+    build:
+      context: .
+      dockerfile: deploy/interaction.Dockerfile
+    restart: unless-stopped
+  director:
+    build:
+      context: .
+      dockerfile: deploy/director.Dockerfile
+    environment:
+      SHE_MEMORY_URL: http://memory:8789
+    depends_on:
+      memory:
+        condition: service_healthy
+    restart: unless-stopped
+    init: true
+  gateway:
+    build:
+      context: .
+      dockerfile: deploy/gateway.Dockerfile
+    restart: unless-stopped
+    init: true
+    environment:
+      SHE_MEMORY_URL: http://memory:8789
+      SHE_DIRECTOR_URL: http://director:8790
+      SHE_INTERACTION_URL: http://interaction:8791
+    depends_on:
+      director:
+        condition: service_healthy
+      interaction:
+        condition: service_healthy
+  web:
+    build:
+      context: .
+      dockerfile: deploy/web.Dockerfile
+    ports:
+      - "127.0.0.1:${SHE_WEB_PORT:-8080}:8080"
+    depends_on:
+      gateway:
+        condition: service_healthy
+    restart: unless-stopped
+volumes:
+  learning-memory:

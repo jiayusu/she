@@ -34,10 +34,12 @@ import { DEFAULT_LEXICON, loadConfigs, loadJson } from './config.ts';
 import type { LexiconCfg } from './intent.ts';
 import { LearningDirector } from './learning-director.ts';
 import { LearningEventStore } from './learning-events.ts';
+import { DurableLearning, type DurableRequest } from './durable-learning.ts';
 
 export interface AppOptions {
   dataDir: string;
   configDir?: string | null;
+  memoryUrl?: string;
   storeFaults?: Partial<Record<'episodic' | 'semantic' | 'affective' | 'procedural' | 'working', { failureRate?: number; failEveryNth?: number }>>;
 }
 
@@ -68,6 +70,7 @@ export class App {
   readonly dataDir: string;
   readonly learningDirector = new LearningDirector();
   readonly learningEvents: LearningEventStore;
+  readonly durableLearning?: DurableLearning;
 
   private degraded = new Set<MinisterId>();
   private mapFile: string | null;
@@ -105,6 +108,9 @@ export class App {
     this.contextBuilder = new ContextBuilder(cfgs.budgets);
     this.sessions = new SessionManager(opts.dataDir);
     this.tools = new ToolGateway(this.kg, cfgs.lexicon, this.audit, this.bus);
+    const memoryUrl = opts.memoryUrl ?? process.env.SHE_MEMORY_URL;
+    if (memoryUrl) this.durableLearning = new DurableLearning(memoryUrl,
+      (text, emotion) => this.tools.runInputHooks(text, normalizeEmotion(emotion)));
     this.consolidation = new ConsolidationService(this.stores, this.kg, this.metrics, this.audit, this.bus, opts.dataDir);
 
     this.jobs = new JobScheduler(this.bus);
@@ -317,6 +323,11 @@ export class App {
   }
 
   /** New learning-first decision API. It never selects or exposes a minister. */
+  async directPersistent(req: DurableRequest): Promise<DirectResponse> {
+    if (!this.durableLearning) throw new DispatchError('persistent_learning_not_configured');
+    return this.durableLearning.direct(req);
+  }
+
   direct(req: DirectRequest): DirectResponse {
     if (!req || typeof req !== 'object' || typeof req.session_id !== 'string' || !req.session_id) {
       throw new DispatchError('缺少 session_id');
@@ -324,10 +335,12 @@ export class App {
     if (typeof req.utterance !== 'string') throw new DispatchError('缺少 utterance');
     const hook = this.tools.runInputHooks(req.utterance, normalizeEmotion(req.emotion));
     const response = this.learningDirector.direct({ ...req, utterance: hook.text });
-    const event = this.learningEvents.record({ ...req, utterance: hook.text }, response);
-    response.learning_event_id = event.event_id;
-    response.evidence_status = event.evidence_status;
-    response.teaching_action.memory_policy = event.event_kind === 'confirmed_mastery' ? 'confirmed' : event.event_kind === 'candidate_evidence' ? 'candidate' : 'no_write';
+    // The direct learning loop returns candidate evidence only. Do not send raw
+    // replies into the legacy JSONL fallback or treat that file as Shared State.
+    this.audit.append({ ts: Date.now(), type: 'learning_loop', session_id: req.session_id,
+      detail: { operation: 'learning_loop', trace_id: response.learning_loop.trace_id,
+        stages: response.learning_loop.stages, reason: response.learning_loop.reason,
+        failed_attempts: response.learning_loop.failed_attempts, memory_write: 'not_performed' } });
     response.safety.input_filtered = hook.filtered;
     response.safety.injection_suspected = hook.injection_suspected;
     return response;

@@ -7,7 +7,7 @@ ChildProcessWithoutNullStreams`, followed by `TS18048 child is possibly undefine
 
 ## Environment
 
-- `A:\working\she\backend\device_gateway`
+- `backend/device_gateway`
 - TypeScript NodeNext with `@types/node`
 - Cross-process test launching Python through `node:child_process.spawn`
 
@@ -37,7 +37,7 @@ for test logic while keeping the optional outer variable only for cleanup.
 
 ## Verification
 
-From `A:\working\she\backend\device_gateway`, run `npm test` and
+From `backend/device_gateway`, run `npm test` and
 `npm run typecheck`; both must pass.
 
 ## Prevention

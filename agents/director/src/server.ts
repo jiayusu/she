@@ -8,6 +8,7 @@ import http from 'node:http';
 import { WebSocketServer, WebSocket } from 'ws';
 import type { App } from './app.ts';
 import { DispatchError } from './app.ts';
+import { LearningError } from './durable-learning.ts';
 import { MINISTER_LABEL, MINISTERS } from './types.ts';
 
 const MAX_BODY = 1 << 20; // 1MB
@@ -87,7 +88,12 @@ export function createServer(app: App): HttpServerInfo {
     }],
     ['POST', /^\/agent\/direct$/, async ({ res, body }) => {
       const parsed = (await parseJsonBody(body)) as never;
-      sendJson(res, 200, app.direct(parsed));
+      try {
+        sendJson(res, 200, app.durableLearning ? await app.directPersistent(parsed) : app.direct(parsed));
+      } catch (error) {
+        if (error instanceof LearningError) sendJson(res, error.status, {error:error.message});
+        else throw error;
+      }
     }],
     ['GET', /^\/agent\/session\/(?<id>.+)$/, async ({ res, params }) => {
       const state = app.sessions.list().find((s) => s.session_id === params.id);

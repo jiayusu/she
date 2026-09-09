@@ -15,6 +15,7 @@ class WorkingMemory:
         self.db = db
         self.cap = cap
         self._sessions: dict[str, OrderedDict] = {}  # session_id -> LRU 队列
+        self._session_children: dict[str, str] = {}  # session_id -> child_id
 
     # ------------------------------------------------------------ 热路径
     def push(self, session_id: str, text: str, role: str = "child", scene: str = "",
@@ -22,6 +23,7 @@ class WorkingMemory:
         """压入一条; 超容量时按 LRU 逐出, 返回 {evicted: turn|None}。"""
         ts = now() if ts is None else float(ts)
         queue = self._sessions.setdefault(session_id, OrderedDict())
+        self._session_children[session_id] = child_id
         queue[ts] = {"ts": ts, "role": role, "text": text, "scene": scene}
         queue.move_to_end(ts)
         evicted = None
@@ -65,6 +67,7 @@ class WorkingMemory:
                                      "text": r["utterance"], "scene": r["scene"],
                                      "episode_id": r["id"]}
         self._sessions[session_id] = queue
+        self._session_children[session_id] = child_id
         return {"session_id": session_id, "child_id": child_id,
                 "script_state": srow["script_state"] if srow else "{}",
                 "chapter": srow["chapter"] if srow else 1,
@@ -74,3 +77,19 @@ class WorkingMemory:
 
     def forget_session(self, session_id: str):
         self._sessions.pop(session_id, None)
+        self._session_children.pop(session_id, None)
+
+    def forget_child(self, child_id: str) -> int:
+        session_ids = [
+            session_id for session_id, owner in self._session_children.items()
+            if owner == child_id
+        ]
+        for session_id in session_ids:
+            self.forget_session(session_id)
+        return len(session_ids)
+
+    def forget_all(self) -> int:
+        count = len(self._sessions)
+        self._sessions.clear()
+        self._session_children.clear()
+        return count

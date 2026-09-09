@@ -16,9 +16,9 @@ Implements contract version `1.0` without changing it.
 
 ## Files
 
-- `A:\working\she\backend\device_gateway\src`
-- `A:\working\she\backend\device_gateway\test`
-- `A:\working\she\backend\device_gateway\package.json`
+- `backend/device_gateway/src`
+- `backend/device_gateway/test`
+- `backend/device_gateway/package.json`
 
 ## Verification
 

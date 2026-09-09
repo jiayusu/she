@@ -208,6 +208,40 @@ def test_safety_block_falls_back_to_template():
     assert r.meta["fallback_used"]
 
 
+@pytest.mark.parametrize("provider_failure", ["blocked_text", "unavailable", "malformed"])
+@pytest.mark.parametrize("custom_safety", [False, True])
+def test_final_fallback_rejects_unsafe_assessment_slot(provider_failure, custom_safety):
+    """Synthetic untrusted slot must not reappear after an unsafe output is rejected."""
+    from she_engine.llm import LLMResult
+    from she_engine.safety import LocalSafetyFilter, PassThroughFilter
+
+    class UnsafeProvider:
+        def complete(self, system_prompt, user_prompt):
+            return LLMResult(ok=True, text=(
+                '{"speaker":"xingxing","text":"bomb",'
+                '"emotion_tag":"happy","memory_write":[]}'
+            ))
+
+    providers = {
+        "blocked_text": UnsafeProvider(),
+        "unavailable": FlakyProvider(MockProvider(), fail_times=999),
+        "malformed": GarbledProvider(),
+    }
+    eng = _engine(provider=providers[provider_failure],
+                  safety=PassThroughFilter() if custom_safety else None)
+    response = eng.turn({
+        "child_utterance": "apple",
+        "route_intent": "word_learning",
+        "assess_result": {"word": "bomb", "has_error": False},
+    })
+
+    assert response.text.strip()
+    assert "bomb" not in response.text.lower()
+    assert LocalSafetyFilter().filter(response.text)[0]
+    assert response.meta["fallback_used"]
+    assert response.meta["template_id"] == "hardcoded"
+
+
 # ---------------------------------------------------------------- 成本护栏
 def test_cost_warning_event(sink):
     class CostlyProvider(MockProvider):

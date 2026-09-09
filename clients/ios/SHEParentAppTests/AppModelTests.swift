@@ -71,9 +71,24 @@ final class AppModelTests: XCTestCase {
         XCTAssertEqual(model.transientError, .offline)
     }
 
+    func testConfiguredIdentityLoadsReadOnlyQuestProjection() async throws {
+        let identity = try XCTUnwrap(
+            RpgReadIdentity(childID: "child-demo", sessionID: "session-demo")
+        )
+        let model = AppModel(api: MockAppAPI(), rpgIdentity: identity)
+
+        await model.load()
+
+        XCTAssertEqual(model.phase, .ready)
+        XCTAssertEqual(model.questSummary?.quest?.nodeID, .findRedCup)
+        XCTAssertEqual(model.questSummary?.quest?.phase, .seekingObject)
+        XCTAssertNil(model.questRefreshError)
+    }
+
     func testAppModelHasNoMasteryMutationAPI() {
         let selectors = [
-            "setMastery:", "updateMastery:", "saveMastery:", "overrideMastery:"
+            "setMastery:", "updateMastery:", "saveMastery:", "overrideMastery:",
+            "setWorldState:", "advanceQuest:", "completeQuest:"
         ]
         for selector in selectors {
             XCTAssertFalse(AppModel.instancesRespond(to: NSSelectorFromString(selector)))

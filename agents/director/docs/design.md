@@ -1,6 +1,7 @@
 # 设计说明(03 五大臣 Agent 调度)
 
-任务:`b9d7d95ef06a070951d9b5a82093e7a7fc9f040f` · PRD 见 [README.md](../README.md)
+运行与测试见 [`../README.md`](../README.md)。
+历史 PRD（已归档，非权威）：[`docs/archive/prd/director-prd-v1.md`](../../../docs/archive/prd/director-prd-v1.md)
 
 ## 定位
 

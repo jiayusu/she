@@ -1,0 +1,22 @@
+{
+  "contract_version": "1.0",
+  "learning_revision": 2,
+  "turn_id": "rpg-turn-002",
+  "delivery_status": "planned",
+  "quest": {
+    "seed_id": "milk_picnic",
+    "seed_version": 1,
+    "node_id": "find_red_cup",
+    "phase": "seeking_object",
+    "world_revision": 2,
+    "inventory": ["milk_token"],
+    "completed_nodes": ["collect_milk"],
+    "confirmed_object": null,
+    "world_role": "杯子管理员",
+    "action_kind": "advance_story",
+    "target_expression": "I choose the red cup.",
+    "prompt_id": null,
+    "feedback_id": "milk_ready",
+    "next_quest_id": "find_red_cup"
+  }
+}

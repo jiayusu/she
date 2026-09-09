@@ -1,41 +1,73 @@
-04 记忆存储 PRD · V1.0
-1. 背景与目标
-BMAM 五记忆子系统的工程实现：工作记忆/情景/语义(KG)/显著性/程序性五库存储与生命周期。
-KG 工作流（独立文件夹）只覆盖语义层——本模块是另外四库的主人，及五库间的巩固/遗忘/剪枝引擎。
-北极星指标：跨天情景召回 ≥85%；里程碑记忆零丢失（永不被剪枝）；
-热更新（巩固回流+DLC 词包）万级边 ≤5 分钟不停服。
-2. 范围
-In：五库 Schema、巩固/遗忘/再巩固生命周期、快照与回滚、与 KG 热更新管线的衔接、容量管理。
-Out：KG 内容生产（见 KG 文件夹）、剧情引擎（消费方）、Agent 调度（触发方）。
-3. 功能需求
-表格
-编号	需求	优先级	验收
-FR-M01	五库 Schema：工作记忆(session 内存,10条) / 情景库(SQLite+FAISS,含 StoryArc 时间线字段) / 语义库(=KG,kg.db) / 显著性缓冲(1k条,含白名单) / 程序性库(500条,触发-动作模式)	P0	ER 图评审通过，五库物理分离
-FR-M02	情景写入：每轮对话落一条 episode {ts, scene, utterance, assess, emotion, salience}，向量入库供跨天检索	P0	写入 ≤20ms，检索 top-k ≤50ms
-FR-M03	StoryArc 时间线：episode 按"天+剧本章节"组织，支持"第一次/上周/第 N 章"类时间查询（对齐 BMAM temporal query）	P0	时间查询准确率 ≥80%（对齐度量#10）
-FR-M04	巩固管线：接收 Agent 调度的巩固批次，走 KG 热更新接口（增量嵌入+版本+1），冲突边进待审队列	P0	与 KG README 的热更新验收一致
-FR-M05	遗忘剪枝：低显著性记忆按 EMA 置信度衰减，低于阈值剪除；白名单（FR-G05 打标）物理隔离不参与剪枝	P0	白名单 3 年模拟零丢失；剪枝日志可审计
-FR-M06	再巩固：已剪枝记忆被重新提及时（孩子问"之前那个…"），从冷存储恢复并加权	P1	恢复链路可用
-FR-M07	程序性库：小基模式存储 {触发条件(时间/场景), 动作}，到期自动执行（朝会提醒/周总结）	P0	20:30 提醒准时率 100%
-FR-M08	快照与回滚：每日自动快照+手动快照；任意版本 ≤1 分钟恢复	P0	回滚演练通过
-FR-M09	容量管理：工作记忆满→按 LRU 溢出到情景库；显著性缓冲满→最低分降入情景库（不清除）	P1	溢出策略单测覆盖
-4. 非功能
-五库统一审计日志：谁写入/何时/内容摘要，保留 3 年（儿童合规）
-崩溃恢复：服务重启后 session 状态从情景库重建 ≤2s
-数据删除：家长发起"删除孩子数据"→ 五库+KG+回流数据 72h 内物理清除（合规红线）
-5. 接口
-plain
-POST /memory/episodes          写入(来自 Agent 调度 FR-G04)
-GET  /memory/recall?query=     跨天召回(阿海)
-POST /memory/consolidate       巩固批次入 KG 热更新
-GET  /memory/procedural/due    到期程序性任务(小基)
-POST /memory/snapshot | /rollback/{v}
+# Shared Memory Store（共享记忆存储）
 
-6. 风险
-表格
-风险	对策
-FAISS 索引损坏导致记忆"失忆"	每日快照+SQLite 原始数据可重建索引
-巩固错误放大（孩子说错的词被固化）	FR-M04 入 KG 前必须经发音评估 ≥通过阈值
-家长删除权与模型已训练数据的矛盾	删除流程含"微调数据集剔除清单"，法务过审
-7. 埋点
-ep_write / recall_hit(k, latency) / prune_count / consolidate_edges / snapshot_ok
+Shared State Layer 的持久化底座：工作记忆、情景记忆、显著性缓冲、程序性记忆四库，
+以及巩固 / 遗忘 / 再巩固生命周期、快照与回滚。语义层（KG）不在本组件，由
+`backend/knowledge_graph` 拥有。
+
+**Agent 不直接读写本组件的 SQLite / FAISS 文件**，只能走下列 HTTP 接口（`AGENTS.md` §20）。
+
+- 架构定位：`AGENTS.md` §29 与 [`docs/architecture/03-shared-state.md`](../../docs/architecture/03-shared-state.md) §11
+- 设计与实现：[`docs/design.md`](docs/design.md) · 五库 ER 图：[`docs/er.md`](docs/er.md)
+
+## 运行
+
+```bash
+python -m pip install -r requirements.txt     # 只装运行依赖
+python server.py          # 默认 127.0.0.1:8789
+```
+
+环境变量：`STORE_PORT`(8789) / `STORE_DATA`(data/) / `KG_URL`(http://127.0.0.1:8787，指向
+`backend/knowledge_graph` 的热更新服务)。
+
+主要端点：
+
+```text
+POST /memory/episodes           写情景
+GET  /memory/recall?query=&k=   跨天检索（支持"上周/第一次"类时间查询）
+POST /memory/consolidate        巩固批次（走 KG 热更新）
+POST /memory/snapshot           快照       GET /memory/snapshots
+POST /memory/erase              删除       GET /memory/erase/jobs
+GET  /memory/salience  /whitelist  /audit  /metrics  /conflicts  /healthz
+POST /memory/procedural         程序性任务  GET /memory/procedural/due
+```
+
+学习与 RPG 权威状态：
+
+```text
+GET  /memory/learning/state
+POST /memory/learning/commit
+POST /memory/learning/claim
+POST /memory/learning/ack
+```
+
+`learning/commit` 在同一 SQLite 事务中校验并保存 `milk_picnic.v1` 的有限状态：上一节点、
+连续 `world_revision`、canonical inventory、Speech Act evidence、上一 `action_id`/scaffold 和
+world-event 引用。客户端不能直接写该接口；产品入口由 Gateway/Director 编排。同 turn 重放
+返回原响应，不会重复发放虚拟道具。RPG 状态位于 `learning_turns.response`，沿用 session/child
+删除根级联清除。
+
+## 测试
+
+```bash
+python -m pip install -e '.[dev]'    # 运行依赖 + pytest
+python -m pytest tests -q
+```
+
+`pyproject.toml` 只发布 `memstore/` 包（不发布 `server.py` 等顶层脚本），并通过
+`[tool.pytest.ini_options] pythonpath` 让测试无需改 `sys.path` 即可导入。
+
+## 涉及契约
+
+`shared/contracts/v1/learning-event.schema.json` 与
+`shared/contracts/v1/rpg-decision.schema.json`。写入必须携带 evidence 状态：
+candidate 与 confirmed 语义不可混淆（`AGENTS.md` §18）。
+
+## 运行时数据目录
+
+`data/`（已 gitignore）：SQLite 库、FAISS 索引、快照。生成产物不入库。
+
+## 历史
+
+旧的「04 记忆存储 PRD」（含 FR-M01…FR-M08 验收项）已归档在
+[`docs/archive/prd/memory_store-prd-v1.md`](../../docs/archive/prd/memory_store-prd-v1.md)。
+它把五库描述为五个对话 Agent，那个模型已废弃（`AGENTS.md` §28.3）；记忆仍作为存储机制存在。

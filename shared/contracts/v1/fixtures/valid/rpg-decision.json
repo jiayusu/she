@@ -1,0 +1,28 @@
+{
+  "contract_version": "1.0",
+  "seed_id": "milk_picnic",
+  "seed_version": 1,
+  "node_id": "collect_milk",
+  "phase": "presenting",
+  "world_revision": 1,
+  "inventory": [],
+  "completed_nodes": [],
+  "confirmed_object": "fridge",
+  "world_role": "饮品保管员",
+  "feedback_id": "collect_milk_s2",
+  "next_quest_id": "collect_milk",
+  "speech_act_evidence": {
+    "evidence_id": "speech-evidence-001",
+    "source_turn_id": "rpg-turn-001",
+    "eliciting_action_id": "action-001",
+    "criterion_id": "none.v1",
+    "act": "none",
+    "slots": {},
+    "confidence": 0,
+    "context_supported": false,
+    "scaffold_level_used": 2,
+    "quest_satisfied": false,
+    "error_type": "no_completed_prompt"
+  },
+  "world_events": []
+}

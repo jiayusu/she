@@ -16,10 +16,10 @@ None.
 
 ## Files
 
-- `A:\working\she\.gitignore`
-- `A:\working\she\AGENTS.md`
-- `A:\working\she\playbooks`
-- `A:\working\she\skills`
+- `.gitignore`
+- `AGENTS.md`
+- `playbooks`
+- `skills`
 
 ## Verification
 

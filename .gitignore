@@ -28,6 +28,20 @@ backend/knowledge_graph/data/snapshots/
 backend/knowledge_graph/data/reports/
 backend/knowledge_graph/data/edges_candidates.csv.gz
 
+# 这些规则按路径锚定在 data/ 下, 曾漏掉 backend/knowledge_graph/kg/data/
+# 里的同类产物, 导致约 60MB 二进制被跟踪。按类型兜底, 任何深度都不入库:
+# 模型/索引/图谱产物一律由 KG 管线重新生成(见 backend/knowledge_graph/README.md)。
+backend/knowledge_graph/**/embeddings/
+backend/knowledge_graph/**/snapshots/
+backend/knowledge_graph/**/packs/
+backend/knowledge_graph/**/*.graphml
+backend/knowledge_graph/**/*.npy
+backend/knowledge_graph/**/*.idx
+backend/knowledge_graph/**/*.pt
+backend/knowledge_graph/**/edges_candidates.csv.gz
+backend/knowledge_graph/**/llm_clean_decisions*.jsonl
+backend/knowledge_graph/**/reports/
+
 agents/director/data/audit/
 agents/director/data/reports/
 agents/director/data/snapshots/
@@ -39,3 +53,5 @@ backend/intel/.tmp/
 backend/intel/.env
 
 clients/hardware-rx5/.state/
+
+**/dist/

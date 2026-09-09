@@ -16,7 +16,7 @@ DAY = 86400.0
 
 class Erase:
     def __init__(self, db, audit, metrics, report_dir: Path, consolidator,
-                 index_purger=None):
+                 index_purger=None, snapshot_purger=None):
         self.db = db
         self.audit = audit
         self.metrics = metrics
@@ -24,6 +24,7 @@ class Erase:
         self.dir.mkdir(parents=True, exist_ok=True)
         self.consolidator = consolidator
         self.index_purger = index_purger  # (episode_ids, cold_ids) -> None 注入向量清理
+        self.snapshot_purger = snapshot_purger  # () -> 已删除快照数量
 
     def request(self, child_id: str, requested_by: str = "parent",
                 purge_all: bool = False) -> dict:
@@ -36,39 +37,31 @@ class Erase:
         args = () if purge_all else (child_id,)
 
         with self.db.tx() as conn:
-            # 采集清单(微调数据集剔除)
-            for r in conn.execute(
-                    f"SELECT id, ts, day, chapter, scene, utterance, kind FROM episodes "
-                    f"{where}", args).fetchall():
-                manifest_rows.append({"type": "episode", **dict(r)})
-            for r in conn.execute(
-                    f"SELECT id, ts, day, scene, utterance, kind FROM episodes_cold "
-                    f"{where}", args).fetchall():
-                manifest_rows.append({"type": "episode_cold", **dict(r)})
-            for r in conn.execute(
-                    f"SELECT id, ref_id, content, salience, kind FROM salience_buffer "
-                    f"{where}", args).fetchall():
-                manifest_rows.append({"type": "salience", **dict(r)})
-            for r in conn.execute(
-                    f"SELECT id, ref_id, content, reason, source FROM whitelist "
-                    f"{where}", args).fetchall():
-                manifest_rows.append({"type": "whitelist", **dict(r)})
-            for r in conn.execute(
-                    f"SELECT id, name, trigger, action FROM procedural {where}",
-                    args).fetchall():
-                manifest_rows.append({"type": "procedural", **dict(r)})
-            for r in conn.execute(
-                    f"SELECT id, session_id, role, text FROM working_turns {where}",
-                    args).fetchall():
-                manifest_rows.append({"type": "working_turn", **dict(r)})
+            # 清单仅保留不透明记录标识；儿童内容不复制到删除报告。
+            def collect_ids(table: str, record_type: str, id_column: str = "id"):
+                rows = conn.execute(
+                    f"SELECT {id_column} AS id FROM {table} {where}", args
+                ).fetchall()
+                manifest_rows.extend(
+                    {"type": record_type, "id": row["id"]} for row in rows
+                )
+                return [row["id"] for row in rows]
+
+            ep_ids = collect_ids("episodes", "episode")
+            cold_ids = collect_ids("episodes_cold", "episode_cold")
+            collect_ids("salience_buffer", "salience")
+            collect_ids("whitelist", "whitelist")
+            collect_ids("procedural", "procedural")
+            collect_ids("working_turns", "working_turn")
+            collect_ids("sessions", "session", "session_id")
             # 回流台账(KG 侧待删边)
             ledger_edges: list[dict] = []
             for r in conn.execute(
-                    f"SELECT id, edges, episode_ids FROM consolidation_ledger {where}",
+                    f"SELECT id, edges FROM consolidation_ledger {where}",
                     args).fetchall():
                 for e in json.loads(r["edges"] or "[]"):
                     ledger_edges.append(e)
-                manifest_rows.append({"type": "consolidation_ledger", **dict(r)})
+                manifest_rows.append({"type": "consolidation_ledger", "id": r["id"]})
 
             stats["episodes"] = conn.execute(f"DELETE FROM episodes {where}",
                                              args).rowcount
@@ -88,10 +81,11 @@ class Erase:
                 f"DELETE FROM consolidation_ledger {where}", args).rowcount
 
         # 向量索引清理
-        ep_ids = [m["id"] for m in manifest_rows if m["type"] == "episode"]
-        cold_ids = [m["id"] for m in manifest_rows if m["type"] == "episode_cold"]
         if self.index_purger:
             self.index_purger(ep_ids, cold_ids)
+
+        # SQLite 快照覆盖全部孩子，无法安全地只编辑单个孩子；全部作废。
+        stats["snapshots"] = self.snapshot_purger() if self.snapshot_purger else 0
 
         # KG 侧: 该孩子巩固出的边尽力删除(失败 → partial, 可重试)
         kg_error = None

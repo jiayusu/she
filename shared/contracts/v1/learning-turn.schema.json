@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Durable learning turn request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["child_id", "session_id", "turn_id", "previous_turn_id", "device_id", "utterance"],
+  "properties": {
+    "child_id": {"$ref": "#/$defs/id"},
+    "session_id": {"$ref": "#/$defs/id"},
+    "turn_id": {"$ref": "#/$defs/id"},
+    "device_id": {"$ref": "#/$defs/id"},
+    "previous_turn_id": {"oneOf": [{"$ref": "#/$defs/id"}, {"type": "null"}]},
+    "utterance": {"type": "string", "maxLength": 2000},
+    "asr": {"type": "number", "minimum": 0, "maximum": 1},
+    "emotion": {"type": "number", "minimum": -1, "maximum": 1},
+    "detected_object": {"enum": ["milk", "water", "apple", "open", null]}
+  },
+  "$defs": {"id": {"type": "string", "pattern": "^[A-Za-z0-9_-]{1,80}$"}}
+}

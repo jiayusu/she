@@ -8,6 +8,14 @@ from jsonschema import Draft202012Validator
 
 ROOT = Path(__file__).resolve().parent / "v1"
 VALID = {
+    "learning-turn.json": "learning-turn.schema.json",
+    "learning-delivery.json": "learning-delivery.schema.json",
+    "learning-loop.json": "learning-loop.schema.json",
+    "rpg-turn.json": "rpg-turn.schema.json",
+    "rpg-turn-speech.json": "rpg-turn.schema.json",
+    "rpg-decision.json": "rpg-decision.schema.json",
+    "rpg-decision-transition.json": "rpg-decision.schema.json",
+    "rpg-quest-summary.json": "rpg-quest-summary.schema.json",
     "device-event.json": "device-event.schema.json",
     "device-command.json": "device-command.schema.json",
     "dashboard-snapshot.json": "dashboard-snapshot.schema.json",
@@ -16,6 +24,15 @@ VALID = {
     "device-settings.json": "device-settings.schema.json",
 }
 INVALID = {
+    "learning-turn-mastery.json": "learning-turn.schema.json",
+    "learning-delivery-text.json": "learning-delivery.schema.json",
+    "learning-loop-unbounded.json": "learning-loop.schema.json",
+    "rpg-turn-world-state.json": "rpg-turn.schema.json",
+    "rpg-turn-speech-stale-object.json": "rpg-turn.schema.json",
+    "rpg-decision-state-patch.json": "rpg-decision.schema.json",
+    "rpg-decision-unknown-world-event.json": "rpg-decision.schema.json",
+    "rpg-decision-unreviewed-content.json": "rpg-decision.schema.json",
+    "rpg-quest-summary-raw-response.json": "rpg-quest-summary.schema.json",
     "device-event-missing-version.json": "device-event.schema.json",
     "device-event-unknown-type.json": "device-event.schema.json",
     "device-command-extra-property.json": "device-command.schema.json",

@@ -23,6 +23,7 @@ from .snapshot import Snapshots
 from .temporal import is_temporal, parse
 from .vector import HashingEmbedder, VectorIndex
 from .working import WorkingMemory
+from .learning import LearningStore
 
 
 class MemoryService:
@@ -39,6 +40,7 @@ class MemoryService:
         self.procedural = ProceduralStore(self.db, cap=self.cfg.procedural_cap)
         self.audit = Audit(self.db, self.cfg.audit_dir(),
                            retention_days=self.cfg.audit_retention_days)
+        self.learning = LearningStore(self.db, self.audit)
         self.lifecycle = Lifecycle(
             self.db, self.episodic, self.salience, self.audit, self.metrics,
             decay_lambda=self.cfg.decay_lambda_per_day, floor=self.cfg.prune_floor,
@@ -51,7 +53,8 @@ class MemoryService:
             self.db, self.cfg.snapshot_dir(), self.cfg.vector_path(), self.episodic,
             self.embedder)
         self.erasure = Erase(self.db, self.audit, self.metrics, self.cfg.report_dir(),
-                             self.consolidator, index_purger=self._purge_vectors)
+                             self.consolidator, index_purger=self._purge_vectors,
+                             snapshot_purger=self.snapshots.purge_all)
         self._jobs_thread = None
         self._stop = threading.Event()
         self._last_job_day = {"snapshot": "", "decay": "", "retention": ""}
@@ -107,7 +110,7 @@ class MemoryService:
                     session_id, w["evicted"], self._overflow_add)
                 out["working_evicted_to"] = overflow["id"] if overflow else None
         self.audit.log(actor, "ep_write", f"episode:{row['id']}",
-                       f"scene={scene!r} utterance={utterance[:40]!r} "
+                       f"scene_present={bool(scene)} role={role} "
                        f"salience={salience} day={row['day']} ch={row['chapter']}")
         return out
 
@@ -132,7 +135,7 @@ class MemoryService:
                                                          self._overflow_add)
             out["overflow_episode_id"] = overflow["id"] if overflow else None
         self.audit.log(actor, "working_push", f"session:{session_id}",
-                       f"role={role} text={text[:40]!r}")
+                       f"role={role} chars={len(text)}")
         return out
 
     def working_get(self, session_id: str) -> dict:
@@ -204,7 +207,7 @@ class MemoryService:
 
         ms = (time.perf_counter() - t0) * 1000
         self.metrics.recall_hit(k, ms, len(results))
-        self.audit.log(actor, "recall", query[:40],
+        self.audit.log(actor, "recall", "query:redacted",
                        f"k={k} hits={len(results)} restored={len(restored)} "
                        f"temporal={[m['marker'] for m in parsed['matched']]} "
                        f"in {ms:.1f}ms")
@@ -259,7 +262,10 @@ class MemoryService:
               purge_all: bool = False) -> dict:
         out = self.erasure.request(child_id, requested_by=requested_by,
                                    purge_all=purge_all)
-        self.working.forget_session(child_id)
+        if purge_all:
+            self.working.forget_all()
+        else:
+            self.working.forget_child(child_id)
         return out
 
     # ================================================================ 后台任务

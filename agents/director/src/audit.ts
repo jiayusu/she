@@ -6,6 +6,7 @@ import { dirname, join } from 'node:path';
 import { dayOf, readJsonlSync } from './util.ts';
 
 export type AuditType =
+  | 'learning_loop'
   | 'dispatch'
   | 'map_reload'
   | 'memory_write'

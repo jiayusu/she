@@ -1,48 +1,63 @@
-06 数据情报 PRD · V1.0
-1. 背景与目标
-基于知乎开放平台官方 API（在.env）（zhihu_search / hot_list / global_search，实名后 1000 次/天免费<1>），
-把"家长痛点洞察 + 万物模式内容生产 + 舆情监控"从人工升级为自动管线。
-北极星指标：万物模式知识池月更新 ≥80 条过审条目；家长焦虑热词周报每周一 9:00 准时送达运营群。
-<1> https://developer.zhihu.com/docs?key=zhihu_search
-2. 范围
-In：问题池管线、家长语言雷达、舆情监控、人工审核工作台。
-Out：小智运行时（禁止接入——孩子对话不实时联网，见 §7 架构纪律）。
-3. 用户故事
-作为内容运营，每周一我收到"知乎孩子最好奇的 20 个问题"已提炼成结构化条目，我只需审核 15 分钟，一键推入 KG。
-作为市场负责人，每周我看到家长圈焦虑 TOP5 和热词变化，决定投放文案和内容选题。
-作为客服，有人在知乎写了"AI 英语玩具翻车"的回答，我当天就知道并响应。
-4. 功能需求
-表格
-编号	需求	优先级	验收
-FR-I01	问题池采集：定时任务多查询词调 zhihu_search（"孩子 问倒 家长""儿童 十万个为什么""孩子 总是问 为什么"等≥6 个词，可配置）	P0	每周抓取 ≥200 条候选
-FR-I02	质量排序：按回答数×浏览量加权取 top-20，去重（标题相似度>0.8 合并）	P0	重复率 ≤5%
-FR-I03	LLM 结构化：每条提炼 {现象, child_question, fact, difficulty(1-5), related_objects[]}，产出候选条目表	P0	结构化成功率 ≥95%
-FR-I04	人工审核工作台：候选表逐条 通过/修改/丢弃，修改留痕；通过后调 KG 热更新接口 /kg/edges:batch 进老颞知识库	P0	未经审核不得入 KG（硬闸门）
-FR-I05	家长语言雷达：抓英语启蒙话题新问题 → LLM 聚类本周焦虑 TOP5 + 新兴方法论词 → 企业微信机器人推送周报	P1	每周一 9:00 送达，连续 4 周准时
-FR-I06	舆情监控：品牌词+竞品词+品类词监控，新回答/新问题出现即推送（即时类）；负面倾向分类（LLM）	P2	负面内容 2 小时内推送，准确率 ≥85%
-FR-I07	额度治理：三用途共用 1000 次/天配额，优先级 问题池>舆情>雷达；超额自动降级为隔日补跑并告警	P1	月度实际调用 ≤1 万次（3% 占用）
-FR-I08	原始抓取存档：原始 JSON 存 90 天（争议溯源），结构化结果永久存档	P0	存档可检索
-5. 非功能
-全部调用走服务端 Bearer 认证，密钥进密钥管理（不进代码库）
-内容使用遵守知乎开放平台条款：仅存储结构化提炼结果，不转载原文全文
-管线故障不告警风暴：单用途失败不影响其他用途，日报汇总
-6. 接口
-plain
-GET  /intel/question-pool          本周候选条目（审核工作台数据源）
-POST /intel/question-pool/{id}/approve → 触发 KG /kg/edges:batch
-POST /intel/weekly-report/run      手动触发周报
-GET  /intel/sentiment                舆情列表
-依赖: KG 热更新接口（写入方） / LLM（结构化方） / 企业微信（推送方）
+# Data Intelligence（数据情报后台）
 
-7. 架构纪律（评审红线）
-zhihu_search 不得注册为小智/Agent 的任何 MCP 工具——孩子对话不实时联网；
-唯一入产品路径：人工审核 → KG 热更新 → 王冠本地检索（延续"孩子听到的知识必须可审查、可回滚"的 KG 哲学）；
-知乎原文不直接进任何面向孩子的输出，全部经 LLM 提炼 + 人工改写。
-8. 风险
-表格
-风险	对策
-API 配额策略调整/接口下线	抽象 Provider 层，可切换人工导入模式降级
-抓回内容含不当话题（死亡/暴力提问）	FR-I03 过滤清单前置 + FR-I04 人工闸门双保险
-热榜灌水导致雷达失真	FR-I02 同款去重算法复用，周报附原始样本链接供人工复核
-9. 埋点
-intel_fetched / intel_structured(ok_rate) / intel_approved(count) / intel_report_sent / intel_quota_used
+离线内容生产层：采集外部英语启蒙语料 → LLM 结构化 → 敏感过滤 → **人工审核硬闸门** →
+推入 KG → 可回滚。产出运营情报（家长焦虑雷达、品牌舆情）。
+
+**红线：本组件不在儿童实时链路上**（`AGENTS.md` §0.7 / §20）。知乎原文不出现在任何面向孩子的
+输出；入 KG 的只有 LLM 提炼 + 人工改写后的三元组。本仓不注册任何 MCP 工具，搜索能力不出服务端
+（`tests/test_guard.py` 守卫扫描）。
+
+- 架构定位：`AGENTS.md` §29 与 [`docs/architecture/04-backend-services.md`](../../docs/architecture/04-backend-services.md) §15
+- 设计与实现：[`docs/design.md`](docs/design.md)（模块映射、降级矩阵、平台接口速查）
+
+## 运行
+
+```bash
+python -m pip install -r requirements.txt
+cp .env.example .env      # 填 ZHIHU_API / LLM_API_KEY / WECOM_WEBHOOK
+
+python server.py          # API + 审核工作台，默认 127.0.0.1:8791
+python scheduler.py       # 定时管线（另开终端，与 server 共享 SQLite）
+```
+
+环境变量：`INTEL_PORT`(8791) / `INTEL_DB` / `KG_URL`(http://127.0.0.1:8787) / `INTEL_TOKEN`
+（设非空则变更接口需 `X-Intel-Token`）。生产部署把 `server.py` 与 `scheduler.py` 各注册为系统服务，
+`.env` 权限 600。
+
+## 测试
+
+```bash
+python -m pip install -r requirements-dev.txt   # 运行依赖 + pytest
+python -m pytest tests -q                      # 27 用例，全离线，不打真实网络
+```
+
+本组件是扁平模块布局，顶层模块名很通用（`config` / `db` / `server` / `llm_client`），
+因此 `pyproject.toml` **只提供工具配置，不声明可安装包**——发布这些名字会与
+`backend/knowledge_graph` 的同名模块冲突。测试的导入路径由
+`[tool.pytest.ini_options] pythonpath` 提供，不再改 `sys.path`。
+
+## 涉及契约
+
+不直接消费 `shared/contracts/v1`。对外只经 `POST {KG_URL}/kg/edges:batch` 推送三元组，
+`source` 标记为 `zhihu_intel:<id>`，失败挂 `kg_pending` 重试。
+
+## 唯一入产品路径（红线）
+
+```text
+zhihu_search（仅服务端，Bearer）
+  → pipeline 采集/去重（原始 JSON 归档 90 天）
+  → LLM 结构化（敏感词前置过滤）
+  → 人工审核工作台（approve/discard，修改留痕）   ← 硬闸门：filtered/pending 不可入 KG
+  → POST /kg/edges:batch                          ← 只推英文知识三元组
+  → 本地检索（可 /kg/rollback 回滚）
+```
+
+## 运行时数据目录
+
+`data/`（已 gitignore）：`intel.db` 永久存档、`raw/YYYYMMDD/` 原始抓取保留 90 天。
+结构化表只存标题 + 200 字摘录 + 链接；原文全文只在归档，不进工作台、不进 KG。
+
+## 历史
+
+旧的「06 数据情报 PRD」（含 FR-I01…FR-I08 验收项）已归档在
+[`docs/archive/prd/intel-prd-v1.md`](../../docs/archive/prd/intel-prd-v1.md)。

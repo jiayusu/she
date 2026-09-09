@@ -21,15 +21,22 @@ The CI workflow dynamically selects an installed iOS 17+ simulator.
 ## Local Gateway
 
 Debug reads `http://127.0.0.1:8788` from
-`A:\working\she\clients\ios\Config\Debug.xcconfig`; the value is injected into
+`clients/ios/Config/Debug.xcconfig`; the value is injected into
 Info.plist and is not hard-coded in the API client. Release intentionally uses
 the inert `api.invalid` domain until a production endpoint is approved.
+
+The optional read-only Embodied Language RPG card is disabled by default. To
+connect a local demo session, set both `RPG_CHILD_ID` and `RPG_SESSION_ID` in
+`clients/ios/Config/Debug.xcconfig` to Gateway-safe identifiers (letters,
+numbers, `_`, or `-`, at most 80 characters). The app then reads
+`GET /v1/rpg/state`; it has no API for changing quest, inventory, world state,
+or mastery. Never commit production child/session identifiers to this file.
 
 ## Accessibility and privacy audit
 
 ```powershell
-rg -n 'accessibilityReduceMotion|accessibilityReduceTransparency|accessibilityLabel|dynamicTypeSize' 'A:\working\she\clients\ios\SHEParentApp'
-rg -n 'SceneKit|RealityKit|\.animation\([^,]+\)' 'A:\working\she\clients\ios\SHEParentApp'
+rg -n 'accessibilityReduceMotion|accessibilityReduceTransparency|accessibilityLabel|dynamicTypeSize' 'clients/ios/SHEParentApp'
+rg -n 'SceneKit|RealityKit|\.animation\([^,]+\)' 'clients/ios/SHEParentApp'
 ```
 
 The first command must find all four accessibility hooks. The second must return

@@ -1,15 +1,10 @@
 """测试公共夹具。"""
 
-import os
-import sys
-
 import pytest
 
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
-
-from she_engine import Engine, EngineConfig          # noqa: E402
-from she_engine.llm import MockProvider               # noqa: E402
-from she_engine.memory import FileMemoryStore, InMemoryStore  # noqa: E402
+from she_engine import Engine, EngineConfig
+from she_engine.llm import MockProvider
+from she_engine.memory import FileMemoryStore, InMemoryStore
 
 
 @pytest.fixture

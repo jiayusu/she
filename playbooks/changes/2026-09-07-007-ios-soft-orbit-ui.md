@@ -20,15 +20,15 @@ bound to contract-backed `AppModel` values.
 
 ## Files
 
-- `A:\working\she\clients\ios\SHEParentApp\Design`
-- `A:\working\she\clients\ios\SHEParentApp\Components`
-- `A:\working\she\clients\ios\SHEParentApp\Features`
-- `A:\working\she\clients\ios\SHEParentAppTests\AccessibilityContractTests.swift`
-- `A:\working\she\clients\ios\README.md`
+- `clients/ios/SHEParentApp/Design`
+- `clients/ios/SHEParentApp/Components`
+- `clients/ios/SHEParentApp/Features`
+- `clients/ios/SHEParentAppTests/AccessibilityContractTests.swift`
+- `clients/ios/README.md`
 
 ## Verification
 
-The project skill `A:\working\she\skills\she-ios-soft-orbit\SKILL.md` governed
+The project skill `skills/she-ios-soft-orbit/SKILL.md` governed
 the implementation. Windows source audits cover hierarchy dependencies,
 accessibility hooks, heavyweight 3D imports, and unscoped animation. Build and
 XCTest remain for macOS CI because Xcode is unavailable on this host.

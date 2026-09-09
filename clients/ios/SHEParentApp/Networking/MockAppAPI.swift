@@ -16,6 +16,11 @@ final class MockAppAPI: AppAPI {
         return DemoData.dashboard
     }
 
+    func questState(identity: RpgReadIdentity) async throws -> RpgQuestSummary {
+        try await prepare()
+        return DemoData.quest
+    }
+
     func weeklyReport() async throws -> WeeklyReport {
         try await prepare()
         return DemoData.report
@@ -76,6 +81,28 @@ final class MockAppAPI: AppAPI {
 }
 
 private enum DemoData {
+    static let quest = RpgQuestSummary(
+        contractVersion: "1.0",
+        learningRevision: 2,
+        turnID: "rpg-turn-002",
+        deliveryStatus: .completed,
+        quest: RpgQuest(
+            seedID: "milk_picnic",
+            seedVersion: 1,
+            nodeID: .findRedCup,
+            phase: .seekingObject,
+            worldRevision: 2,
+            inventory: [.milkToken],
+            completedNodes: [.collectMilk],
+            confirmedObject: nil,
+            worldRole: .cupKeeper,
+            actionKind: .advanceStory,
+            targetExpression: "I choose the red cup.",
+            promptID: nil,
+            feedbackID: "milk_ready",
+            nextQuestID: .findRedCup
+        )
+    )
     static let device = DeviceSettings(
         contractVersion: "1.0", deviceID: "rx5-demo-001", name: "小P 设备",
         online: false, batteryPercent: 82, volume: 58, ledEnabled: true,

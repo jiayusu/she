@@ -60,7 +60,7 @@ export class DeviceSessionRegistry {
     if (!session?.online) throw new Error("device_offline");
     const issued = this.now();
     const command: DeviceCommand = {
-      command_id: randomUUID(),
+      command_id: draft.commandId ?? randomUUID(),
       contract_version: CONTRACT_VERSION,
       device_id: deviceId,
       session_id: session.sessionId,
@@ -149,6 +149,17 @@ export class DeviceSessionRegistry {
         boundDeviceId = event.device_id;
       }
 
+      if (session.socket !== socket) {
+        send(socket, error("socket_mismatch", "Event must originate from the bound device connection."));
+        return;
+      }
+      if (event.type === "command_ack") {
+        const command = session.pendingCommands.get(String(event.payload.command_id));
+        if (!command || this.now().getTime() >= Date.parse(command.expires_at)) {
+          send(socket, error("unknown_or_expired_command", "Acknowledgement must match a live command."));
+          return;
+        }
+      }
       if (session.seenEventIds.has(event.event_id)) {
         send(socket, { contract_version: CONTRACT_VERSION, status: "duplicate", event_id: event.event_id });
         return;

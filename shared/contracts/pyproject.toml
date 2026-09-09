@@ -1,0 +1,14 @@
+# 本文件**只提供工具配置**，不声明可安装的分发包。
+#
+# 为什么不加 [project] / [build-system]：本目录的真源是 v1/*.schema.json（数据，不是代码）。
+# `learning_events.py` 只是 Python 侧的手写辅助，其他组件目前不通过 import 使用它
+# （device_gateway 用 Ajv、hardware-rx5 用 jsonschema，都直接读 schema 文件）。
+# 把它发布成顶层模块 `learning_events` 只会增加命名冲突面，没有收益。
+#
+# 依赖见 requirements-dev.txt（jsonschema + pytest）。
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+# 让测试可以 `import learning_events`（当前用不到，但保持与其他组件一致的可导入性）。
+pythonpath = ["."]

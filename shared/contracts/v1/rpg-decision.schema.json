@@ -1,0 +1,257 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://she.local/contracts/v1/rpg-decision.schema.json",
+  "title": "RpgDecision",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "seed_id",
+    "seed_version",
+    "node_id",
+    "phase",
+    "world_revision",
+    "inventory",
+    "completed_nodes",
+    "confirmed_object",
+    "world_role",
+    "feedback_id",
+    "next_quest_id",
+    "speech_act_evidence",
+    "world_events"
+  ],
+  "properties": {
+    "contract_version": {"const": "1.0"},
+    "seed_id": {"const": "milk_picnic"},
+    "seed_version": {"const": 1},
+    "node_id": {"enum": ["collect_milk", "find_red_cup", "picnic_ready"]},
+    "phase": {
+      "enum": [
+        "seeking_object",
+        "confirming_object",
+        "presenting",
+        "awaiting_speech",
+        "resolving",
+        "paused",
+        "delivery_failed",
+        "completed"
+      ]
+    },
+    "world_revision": {"type": "integer", "minimum": 0},
+    "inventory": {
+      "type": "array",
+      "maxItems": 16,
+      "uniqueItems": true,
+      "items": {"enum": ["milk_token", "red_cup_token"]}
+    },
+    "completed_nodes": {
+      "type": "array",
+      "maxItems": 64,
+      "uniqueItems": true,
+      "items": {"enum": ["collect_milk", "find_red_cup", "picnic_ready"]}
+    },
+    "confirmed_object": {"enum": ["fridge", "table", "red_cup", "blue_cup", null]},
+    "world_role": {"enum": ["饮品保管员", "杯子管理员", "野餐向导"]},
+    "feedback_id": {"$ref": "#/$defs/content_id"},
+    "next_quest_id": {"enum": ["collect_milk", "find_red_cup", null]},
+    "speech_act_evidence": {"$ref": "#/$defs/speech_act_evidence"},
+    "world_events": {
+      "type": "array",
+      "maxItems": 2,
+      "items": {"$ref": "#/$defs/world_event"}
+    }
+  },
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "phase": {"enum": ["presenting", "awaiting_speech", "resolving", "delivery_failed"]}
+        }
+      },
+      "then": {
+        "properties": {
+          "confirmed_object": {"enum": ["fridge", "table", "red_cup", "blue_cup"]}
+        }
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "phase": {"enum": ["seeking_object", "confirming_object", "completed"]}
+        }
+      },
+      "then": {"properties": {"confirmed_object": {"const": null}}}
+    },
+    {
+      "if": {"properties": {"node_id": {"const": "collect_milk"}}},
+      "then": {
+        "properties": {
+          "phase": {"not": {"const": "completed"}},
+          "world_revision": {"const": 1},
+          "inventory": {"const": []},
+          "completed_nodes": {"const": []},
+          "confirmed_object": {"enum": ["fridge", null]},
+          "world_role": {"const": "饮品保管员"},
+          "feedback_id": {
+            "enum": [
+              "collect_milk_s0", "collect_milk_s1", "collect_milk_s2",
+              "collect_milk_s3", "collect_milk_s4", "collect_milk_s5",
+              "collect_milk_s6", "milk_help"
+            ]
+          },
+          "next_quest_id": {"const": "collect_milk"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"node_id": {"const": "find_red_cup"}}},
+      "then": {
+        "properties": {
+          "phase": {"not": {"const": "completed"}},
+          "world_revision": {"const": 2},
+          "inventory": {"const": ["milk_token"]},
+          "completed_nodes": {"const": ["collect_milk"]},
+          "confirmed_object": {"enum": ["table", "red_cup", "blue_cup", null]},
+          "world_role": {"const": "杯子管理员"},
+          "feedback_id": {
+            "enum": [
+              "find_red_cup_s0", "find_red_cup_s1", "find_red_cup_s2",
+              "find_red_cup_s3", "find_red_cup_s4", "find_red_cup_s5",
+              "find_red_cup_s6", "milk_ready", "red_cup_help"
+            ]
+          },
+          "next_quest_id": {"const": "find_red_cup"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"node_id": {"const": "picnic_ready"}}},
+      "then": {
+        "properties": {
+          "phase": {"const": "completed"},
+          "world_revision": {"const": 4},
+          "inventory": {"const": ["milk_token", "red_cup_token"]},
+          "completed_nodes": {"const": ["collect_milk", "find_red_cup", "picnic_ready"]},
+          "confirmed_object": {"const": null},
+          "world_role": {"const": "野餐向导"},
+          "feedback_id": {
+            "enum": [
+              "picnic_ready_s0", "picnic_ready_s1", "picnic_ready_s2",
+              "picnic_ready_s3", "picnic_ready_s4", "picnic_ready_s5",
+              "picnic_ready_s6", "red_cup_ready", "picnic_complete", "picnic_pause"
+            ]
+          },
+          "next_quest_id": {"const": null}
+        }
+      }
+    }
+  ],
+  "$defs": {
+    "id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]{1,120}$"},
+    "content_id": {
+      "enum": [
+        "collect_milk_s0", "collect_milk_s1", "collect_milk_s2",
+        "collect_milk_s3", "collect_milk_s4", "collect_milk_s5", "collect_milk_s6",
+        "find_red_cup_s0", "find_red_cup_s1", "find_red_cup_s2",
+        "find_red_cup_s3", "find_red_cup_s4", "find_red_cup_s5", "find_red_cup_s6",
+        "picnic_ready_s0", "picnic_ready_s1", "picnic_ready_s2",
+        "picnic_ready_s3", "picnic_ready_s4", "picnic_ready_s5", "picnic_ready_s6",
+        "milk_ready", "milk_help", "red_cup_ready", "red_cup_help",
+        "picnic_complete", "picnic_pause"
+      ]
+    },
+    "speech_act_evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "evidence_id",
+        "source_turn_id",
+        "eliciting_action_id",
+        "criterion_id",
+        "act",
+        "slots",
+        "confidence",
+        "context_supported",
+        "scaffold_level_used",
+        "quest_satisfied",
+        "error_type"
+      ],
+      "properties": {
+        "evidence_id": {"$ref": "#/$defs/id"},
+        "source_turn_id": {"$ref": "#/$defs/id"},
+        "eliciting_action_id": {"$ref": "#/$defs/id"},
+        "criterion_id": {"enum": ["none.v1", "request_milk.v1", "select_red_cup.v1"]},
+        "act": {"enum": ["request_item", "select_item", "none"]},
+        "slots": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "item": {"enum": ["milk", "water", "cup"]},
+            "color": {"enum": ["red", "blue"]}
+          }
+        },
+        "confidence": {"type": "number", "minimum": 0, "maximum": 1},
+        "context_supported": {"type": "boolean"},
+        "scaffold_level_used": {"type": "integer", "minimum": 0, "maximum": 6},
+        "quest_satisfied": {"type": "boolean"},
+        "error_type": {
+          "enum": [null, "low_confidence", "wrong_slot", "unmatched", "no_completed_prompt"]
+        }
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"act": {"const": "request_item"}}},
+          "then": {"properties": {"slots": {"required": ["item"], "maxProperties": 1}}}
+        },
+        {
+          "if": {"properties": {"act": {"const": "select_item"}}},
+          "then": {"properties": {"slots": {"required": ["item", "color"], "minProperties": 2}}}
+        },
+        {
+          "if": {"properties": {"act": {"const": "none"}}},
+          "then": {"properties": {"slots": {"maxProperties": 0}, "quest_satisfied": {"const": false}}}
+        }
+      ]
+    },
+    "world_event": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "event_id",
+        "kind",
+        "base_revision",
+        "resulting_revision",
+        "source_evidence_id",
+        "from_node_id",
+        "to_node_id"
+      ],
+      "properties": {
+        "event_id": {"$ref": "#/$defs/id"},
+        "kind": {"enum": ["virtual_item_granted", "quest_completed"]},
+        "base_revision": {"type": "integer", "minimum": 0},
+        "resulting_revision": {"type": "integer", "minimum": 1},
+        "source_evidence_id": {"$ref": "#/$defs/id"},
+        "from_node_id": {"enum": ["collect_milk", "find_red_cup", "picnic_ready"]},
+        "to_node_id": {"enum": ["collect_milk", "find_red_cup", "picnic_ready"]},
+        "item_id": {"enum": ["milk_token", "red_cup_token"]},
+        "quest_id": {"const": "milk_picnic"}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"kind": {"const": "virtual_item_granted"}}},
+          "then": {
+            "required": ["item_id"],
+            "not": {"required": ["quest_id"]}
+          }
+        },
+        {
+          "if": {"properties": {"kind": {"const": "quest_completed"}}},
+          "then": {
+            "required": ["quest_id"],
+            "not": {"required": ["item_id"]}
+          }
+        }
+      ]
+    }
+  }
+}

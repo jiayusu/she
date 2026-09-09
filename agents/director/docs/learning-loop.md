@@ -1,0 +1,98 @@
+# 当前学习导向 Agentic Loop
+
+本页描述当前代码。现实语言 RPG 的产品定义见
+`docs/architecture/12-embodied-language-rpg.md`（仓库根相对路径）。
+
+## 两种运行范围
+
+`POST /agent/direct` 根据部署配置有两种状态范围：
+
+- 配置 `SHE_MEMORY_URL`：使用 `DurableLearning`，上一回合、幂等、delivery 与 RPG 状态来自
+  Shared State；这是 Compose 和 Gateway 主路径。
+- 未配置 `SHE_MEMORY_URL`：使用 `LearningDirector` 的进程内 Map，15 分钟过期、最多 1000 个
+  session；只适合组件演示，重启后丢失。
+
+两种路径都不直接写 Learner Profile、KG 或设备。持久路径只通过 Memory HTTP API提交。
+
+## 固定阶段
+
+```text
+input → assessment → curriculum → scaffold → story → decision
+```
+
+`LearningLoopHooks` 强制每阶段最多执行一次且不可越序。它是确定性调用顺序，不会递归创建
+Agent、不加载外部 Hook，也不会访问开放互联网。
+
+RPG 回合的关键触发条件：
+
+| 输入/事实 | 触发结果 | 世界是否变化 |
+|---|---|---|
+| 首次确认 `fridge` | `collect_milk/presenting`，发审核提示 | 否，rev=1 |
+| 节点仍在 `seeking_object` 时收到 speech/resume | 继续 `explore` | 否 |
+| 上一提示仍 `planned/issuing` 即收到新回合 | `delivery_pending`，不提交新 turn | 否 |
+| 上一提示 `failed/expired` 后收到非 resume | `previous_delivery_not_completed` | 否 |
+| ASR < 0.8 | `reinvite`，不增加失败次数 | 否 |
+| 清楚但槽位错误 | 提高 scaffold；第二次后 pause | 否 |
+| 已确认物体 + 提示完成 + `request_item(milk)` | 发 `milk_token`，进入 `find_red_cup` | rev 1→2 |
+| 已确认桌/杯 + 提示完成 + `select_item(red cup)` | 发红杯并完成任务 | rev 2→3→4 |
+| 情绪 valence < -0.45 | pause | 否 |
+| paused 后显式 `resume` | 重新呈现当前节点提示 | 否 |
+
+`presenting` 是持久 RPG 状态；设备 ACK 由 Memory 的 delivery 独立保存。Gateway 的只读摘要把
+`presenting + completed` 投影成 `awaiting_speech`，把 `presenting + failed/expired` 投影成
+`delivery_failed`。ACK 不产生 world event。
+
+Shared State 恢复的 durable turn 不受本地 15 分钟 Map TTL 影响。失败/过期后只有显式 `resume`
+可以提交恢复动作；普通 speech/object 回合保持关闭。若失败发生在已提交的成功反馈上，ACK 不会
+回滚既有 world transition；恢复动作会重播同一审核成功反馈，但携带空 `world_events`，因此不会
+重复发道具或推进 revision。恢复资格来自 StorySeed 中有限的成功反馈 ID 与 `advance_story`
+动作，所以恢复播放再次失败后仍可继续显式 `resume`。客户端应依据独立 `delivery_status` 进入
+恢复路径。
+
+## Assessment 与剧情判定
+
+`SpeechActResolver` 只回答当前剧情 criterion 是否满足；`AssessmentAgent` 只形成教学 evidence
+候选。二者不得互相替代。
+
+- “Milk!” 在上一提示明确二选一时可以推进剧情，但完整目标句评估为未达到。
+- “I want water.” 是 request act，但 item 槽错误，不推进取奶任务。
+- ASR 置信度只表示转写可信度；没有专用 evaluator 时
+  `pronunciation_intelligibility=null`。
+- 单次成功最多形成 candidate/observed evidence；Memory 不自动提升 mastery。
+
+## 幂等与提交
+
+持久路径为请求计算哈希，并使用 `child_id + session_id + turn_id` 读取状态：
+
+1. 同一 turn、同一请求返回已提交响应；
+2. 同一 turn、不同请求返回 idempotency conflict；
+3. `previous_turn_id` 与最新回合不一致时拒绝；
+4. world transition 在 Memory 事务内核对上一节点、revision、inventory、当前节点
+   `confirmed_object`、事件顺序、Speech Act evidence、上一 `action_id`/scaffold、上一 delivery
+   已完成，以及节点/脚手架对应的审核 prompt ID；
+5. Interaction 只在提交成功后渲染，Gateway 再 claim、发送和等待 ACK。
+
+## 隐私与审计
+
+新 trace 只记录阶段、原因、失败次数和 ID。持久响应不保存 `utterance` 字段；请求正文不写入
+RPG world event。旧 `/agent/dispatch` 仍有历史 JSONL/session 行为，因此只作为迁移入口，不能
+承担新产品长期状态。
+
+## 尚未完成
+
+- 真实 ASR、发音 evaluator 与 response latency；
+- 跨种子 Learner Model、复习计划和经过儿童研究验证的阈值；
+- 生产身份/家庭授权；
+- 自动把真实 pointing/ASR 设备事件编排为 RPG turn；
+- 真实 RDK X5 与儿童研究验收。
+
+## 验证入口
+
+```sh
+npm test --prefix agents/director
+npm run typecheck --prefix agents/director
+python -m pytest shared/contracts/tests -q
+node scripts/rpg-smoke.mjs
+```
+
+这些命令是后续授权验证入口；文档本身不构成运行证据。

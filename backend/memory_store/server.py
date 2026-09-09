@@ -18,6 +18,8 @@ from memstore.service import MemoryService  # noqa: E402
 
 app = Flask(__name__)
 svc: MemoryService = None  # type: ignore
+if os.environ.get("SHE_MEMORY_WSGI") == "1":
+    svc = MemoryService()
 
 
 def log(msg):
@@ -33,6 +35,40 @@ def err(msg, code=400):
 
 
 # ================================================================ PRD §6 接口
+@app.route("/memory/learning/state", methods=["GET"])
+def learning_state():
+    try:
+        return jsonify(svc.learning.read(request.args.get("child_id"), request.args.get("session_id"), request.args.get("turn_id")))
+    except ValueError as ex:
+        return err(str(ex), 409)
+
+
+@app.post("/memory/learning/commit")
+def learning_commit():
+    try:
+        return jsonify(svc.learning.commit(body()))
+    except (ValueError, KeyError, TypeError) as ex:
+        return err(str(ex), 409)
+
+
+@app.post("/memory/learning/claim")
+def learning_claim():
+    b = body()
+    try:
+        return jsonify(svc.learning.claim(b.get("child_id"), b.get("session_id"), b.get("turn_id"), b.get("device_session")))
+    except (ValueError, TypeError) as ex:
+        return err(str(ex), 409)
+
+
+@app.post("/memory/learning/ack")
+def learning_ack():
+    b = body()
+    try:
+        return jsonify(svc.learning.ack(b.get("command_id"), b.get("device_id"), b.get("device_session"), b.get("status")))
+    except (ValueError, TypeError) as ex:
+        return err(str(ex), 409)
+
+
 @app.post("/memory/episodes")
 def episodes_write():
     """写入(来自 Agent 调度 FR-G04): 每轮对话一条 episode, 向量入库。"""

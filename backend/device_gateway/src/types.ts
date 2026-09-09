@@ -29,6 +29,7 @@ export interface DeviceCommand {
 }
 
 export interface CommandDraft {
+  commandId?: string;
   type: DeviceCommand["type"];
   payload: JsonObject;
 }

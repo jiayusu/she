@@ -1,7 +1,7 @@
 # 原始下载文件(体积大, 按 README W1 步骤重新获取)
 raw/conceptnet-assertions-*.csv.gz
 
-# 运行产物
+# 运行产物(canonical 路径: 代码里 DATA = ROOT / "data")
 data/kg.db*
 data/kg_test.db*
 data/kg.graphml
@@ -9,8 +9,22 @@ data/embeddings/
 data/snapshots/
 data/packs/
 data/edges_candidates.csv.gz
-data/reports/llm_clean_decisions.jsonl
+data/reports/llm_clean_decisions*.jsonl
 data/reports/acceptance_report.json
+
+# 按类型兜底: 上面的规则是路径锚定的, 曾漏掉 kg/data/ 下的同类产物,
+# 导致约 60MB 二进制被误提交(见 playbooks/changes/2026-09-08-015-*)。
+# 这些产物一律由管线重新生成, 任何深度都不入库。
+**/embeddings/
+**/snapshots/
+**/packs/
+*.graphml
+*.npy
+*.idx
+*.pt
+**/edges_candidates.csv.gz
+**/llm_clean_decisions*.jsonl
+**/reports/
 
 __pycache__/
 *.pyc

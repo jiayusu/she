@@ -10,6 +10,7 @@ enum AppAPIError: Error, Equatable, Sendable {
 @MainActor
 protocol AppAPI: AnyObject {
     func dashboard() async throws -> DashboardSnapshot
+    func questState(identity: RpgReadIdentity) async throws -> RpgQuestSummary
     func weeklyReport() async throws -> WeeklyReport
     func deviceSettings(deviceID: String) async throws -> DeviceSettings
     func updateDeviceSettings(deviceID: String, patch: DeviceSettingsPatch) async throws -> DeviceSettings
